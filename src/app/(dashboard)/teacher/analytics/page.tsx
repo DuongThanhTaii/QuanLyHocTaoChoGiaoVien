@@ -1,0 +1,66 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FileSpreadsheet } from 'lucide-react';
+
+export default function AnalyticsPage() {
+  const mockData = {
+    totalRevenue: 45500000,
+    taxableRevenue: 45500000,
+    taxLiability: 2275000, // 5%
+    month: 8,
+    year: 2026
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thống kê & Thuế</h1>
+          <p className="text-zinc-500">Báo cáo doanh thu và nghĩa vụ thuế tháng {mockData.month}/{mockData.year}.</p>
+        </div>
+        <Button variant="outline" className="border-zinc-300 text-zinc-700">
+          <FileSpreadsheet className="mr-2 h-4 w-4" /> Xuất Excel
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="border-zinc-200 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Tổng doanh thu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-zinc-900">{mockData.totalRevenue.toLocaleString('vi-VN')} đ</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-zinc-200 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-500 uppercase tracking-wider">DT chịu thuế</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-zinc-900">{mockData.taxableRevenue.toLocaleString('vi-VN')} đ</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-zinc-200 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Thuế dự kiến (5%)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-zinc-900">{mockData.taxLiability.toLocaleString('vi-VN')} đ</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-zinc-200 shadow-sm bg-zinc-50/50">
+        <CardHeader>
+          <CardTitle>Lưu ý quan trọng</CardTitle>
+          <CardDescription>
+            Số liệu trên được tổng hợp tự động từ các hóa đơn có trạng thái "Đã thu". 
+            Bạn cần đối soát lại với thực tế trước khi sử dụng số liệu này để kê khai với cơ quan Thuế.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
+  );
+}
