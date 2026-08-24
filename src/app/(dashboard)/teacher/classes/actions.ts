@@ -4,9 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/infrastructure/auth/supabase/server';
-// import { ClassService } from '@/application/services/class.service';
-// import { SupabaseClassRepository } from '@/infrastructure/persistence/supabase/repositories/class.repository';
-// import { SupabaseEnrollmentRepository } from '@/infrastructure/persistence/supabase/repositories/enrollment.repository';
+import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
+import { ClassService } from '@/application/services/class.service';
 import { Money } from '@/domains/shared/value-objects';
 
 const CreateClassSchema = z.object({
@@ -36,20 +35,18 @@ export async function createClass(formData: FormData) {
     return { error: 'Invalid data' };
   }
 
-  // DI Setup would go here
-  // const classService = new ClassService(new SupabaseClassRepository(supabase), new SupabaseEnrollmentRepository(supabase));
-  // const result = await classService.createClass({
-  //   teacherId: user.id,
-  //   name: parsed.data.name,
-  //   subject: parsed.data.subject,
-  //   feePerSession: new Money(parsed.data.feePerSession),
-  //   feeType: 'per_session',
-  //   color: parsed.data.color,
-  //   isActive: true
-  // });
-
-  // Simulate success for now
-  const result = { isSuccess: () => true, getError: () => new Error('Stub') };
+  const repos = await getRepositories();
+  const classService = new ClassService(repos.classes, repos.enrollments);
+  
+  const result = await classService.createClass({
+    teacherId: user.id,
+    name: parsed.data.name,
+    subject: parsed.data.subject,
+    feePerSession: new Money(parsed.data.feePerSession),
+    feeType: 'per_session' as const,
+    color: parsed.data.color,
+    isActive: true
+  });
 
   if (result.isSuccess()) {
     revalidatePath('/teacher/classes');

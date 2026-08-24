@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VNPayAdapter } from '@/infrastructure/payment/vnpay.adapter';
-// import { InvoiceRepository } from '@/infrastructure/persistence/supabase/repositories/invoice.repository';
-// import { NotificationService } from '@/infrastructure/notification/notification.service';
+import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
+import { Money } from '@/domains/shared/value-objects';
 
 export async function POST(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const payload = Object.fromEntries(searchParams.entries());
-    
-    // VNPay usually sends data via GET return URL or POST webhook. 
-    // If it's POST body:
-    // const body = await req.json();
 
     const gateway = new VNPayAdapter();
     const verification = gateway.verifyWebhook(payload, payload.vnp_SecureHash || '');
@@ -22,17 +18,27 @@ export async function POST(req: NextRequest) {
     const data = verification.getValue();
     
     if (data.status === 'success') {
+      const repos = await getRepositories();
+      
       // 1. Fetch invoice
-      // const invoice = await invoiceRepo.findById(data.invoiceId);
+      const invoice = await repos.invoices.findById(data.invoiceId);
+      if (!invoice) {
+        return NextResponse.json({ RspCode: '01', Message: 'Invoice not found' }, { status: 404 });
+      }
       
       // 2. Mark as paid
-      // invoice.markAsPaid({ amount: data.amount, currency: 'VND' }, 'vnpay', data.transactionRef);
-      // await invoiceRepo.save(invoice);
+      const payResult = invoice.markAsPaid(
+        new Money(data.amount),
+        'vnpay',
+        data.transactionRef
+      );
       
-      // 3. Notify
-      // await notificationService.notifyPaymentSuccess(invoice);
+      if (payResult.isSuccess()) {
+        await repos.invoices.save(invoice);
+        return NextResponse.json({ RspCode: '00', Message: 'Confirm Success' });
+      }
       
-      return NextResponse.json({ RspCode: '00', Message: 'Confirm Success' });
+      return NextResponse.json({ RspCode: '01', Message: 'Payment processing failed' });
     }
 
     return NextResponse.json({ RspCode: '01', Message: 'Payment Failed' });

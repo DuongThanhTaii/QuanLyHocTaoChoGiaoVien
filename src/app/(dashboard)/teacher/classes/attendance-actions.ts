@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/infrastructure/auth/supabase/server';
-// import { AttendanceService } from '@/application/services/attendance.service';
+import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
+import { AttendanceService } from '@/application/services/attendance.service';
+import { AttendanceStatus } from '@/domains/attendance/entities/attendance-record';
 
 const MarkAttendanceSchema = z.object({
   slotId: z.string().uuid(),
@@ -34,18 +36,17 @@ export async function markAttendance(formData: FormData) {
     return { error: 'Invalid data' };
   }
 
-  // DI Setup
-  // const attendanceService = new AttendanceService(new SupabaseAttendanceRepository(supabase));
-  // const result = await attendanceService.markAttendance(
-  //   parsed.data.slotId, 
-  //   parsed.data.studentId, 
-  //   parsed.data.classId, 
-  //   parsed.data.status, 
-  //   user.id, 
-  //   parsed.data.note
-  // );
-
-  const result = { isSuccess: () => true, getError: () => new Error('Stub') };
+  const repos = await getRepositories();
+  const attendanceService = new AttendanceService(repos.attendance);
+  
+  const result = await attendanceService.markAttendance(
+    parsed.data.slotId,
+    parsed.data.studentId,
+    parsed.data.classId,
+    parsed.data.status as AttendanceStatus,
+    user.id,
+    parsed.data.note
+  );
 
   if (result.isSuccess()) {
     revalidatePath(`/teacher/classes/${parsed.data.classId}/attendance`);

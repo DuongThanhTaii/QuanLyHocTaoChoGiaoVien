@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/infrastructure/auth/supabase/server';
-// Note: In a real app, you would inject the actual repository implementations
-// This is a stub showing the integration point
+import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
 import { SubscriptionAdminService } from '@/application/services/admin-subscription.service';
 
 export async function POST(req: NextRequest) {
@@ -16,14 +15,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const enabled = Boolean(body.enabled);
 
-    // Dependencies would be injected here
-    // const adminService = new SubscriptionAdminService(
-    //   subscriptionRepo, planRepo, configRepo, userRepo
-    // );
-    // const result = await adminService.toggleBillingMode(user.id, enabled);
-
-    // Stub response for now
-    const result = { isSuccess: () => true, getError: () => new Error('Stub error') };
+    const repos = await getRepositories();
+    const adminService = new SubscriptionAdminService(
+      repos.subscriptions,
+      repos.plans,
+      repos.systemConfig,
+      repos.users
+    );
+    
+    const result = await adminService.toggleBillingMode(user.id, enabled);
 
     if (result.isSuccess()) {
       return NextResponse.json({ success: true, enabled });
