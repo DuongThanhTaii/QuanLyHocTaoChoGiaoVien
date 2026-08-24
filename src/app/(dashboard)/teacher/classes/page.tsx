@@ -64,7 +64,7 @@ export default async function TeacherClassesPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-xl text-zinc-900">{c.name}</CardTitle>
-                    <CardDescription className="mt-1">{c.feeAmount.toLocaleString('vi-VN')} đ/buổi</CardDescription>
+                    <CardDescription className="mt-1">{(c.feeAmount || 0).toLocaleString('vi-VN')} đ/buổi</CardDescription>
                   </div>
                   <Badge variant="secondary" className="bg-zinc-100 text-zinc-700 hover:bg-zinc-200">
                     {c.subject || 'Khác'}
