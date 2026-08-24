@@ -1,6 +1,7 @@
 import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
+import { addScheduleSlot } from './actions';
 
 export default async function SchedulePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -45,13 +46,43 @@ export default async function SchedulePage({ params }: { params: Promise<{ id: s
                   {(slot._startTime || slot.startTime).substring(0, 5)} - {(slot._endTime || slot.endTime).substring(0, 5)}
                 </div>
               ))}
-              
-              <button className="text-xs text-gray-500 hover:text-blue-600 w-full text-center mt-2">
-                + Thêm
-              </button>
             </div>
           );
         })}
+      </div>
+
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <h2 className="text-lg font-bold mb-4 text-gray-800">Thêm lịch học</h2>
+        <form action={addScheduleSlot as any} className="flex gap-4 items-end">
+          <input type="hidden" name="classId" value={classId} />
+          
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Thứ</label>
+            <select name="dayOfWeek" className="border rounded p-2 bg-white" required>
+              <option value="1">Thứ 2</option>
+              <option value="2">Thứ 3</option>
+              <option value="3">Thứ 4</option>
+              <option value="4">Thứ 5</option>
+              <option value="5">Thứ 6</option>
+              <option value="6">Thứ 7</option>
+              <option value="0">Chủ Nhật</option>
+            </select>
+          </div>
+          
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Giờ bắt đầu</label>
+            <input type="time" name="startTime" className="border rounded p-2 bg-white" required />
+          </div>
+          
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">Giờ kết thúc</label>
+            <input type="time" name="endTime" className="border rounded p-2 bg-white" required />
+          </div>
+          
+          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Thêm
+          </button>
+        </form>
       </div>
     </div>
   );

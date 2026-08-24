@@ -61,6 +61,9 @@ export class Lesson extends AggregateRoot {
 
   get classId() { return this._classId; }
   get title() { return this._title; }
+  get content() { return this._content; }
+  get weekNumber() { return this._weekNumber; }
+  get date() { return this._date; }
   get materials() { return this._materials; }
   get createdBy() { return this._createdBy; }
 }

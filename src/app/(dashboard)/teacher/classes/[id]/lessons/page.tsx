@@ -1,78 +1,55 @@
-'use client'
+import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
+import { CreateLessonForm, UploadMaterialForm } from './client-components';
 
-import { useState } from 'react';
-
-export default function TeacherLessonsPage({ params }: { params: { id: string } }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      // 1. Get signed URL
-      const res = await fetch('/api/upload/signed-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: file.name,
-          fileType: file.type,
-          classId: params.id
-        })
-      });
-
-      const { signedUrl, path } = await res.json();
-      if (!signedUrl) throw new Error("Could not get signed URL");
-
-      // 2. Upload file directly to Supabase Storage
-      const uploadRes = await fetch(signedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file
-      });
-
-      if (!uploadRes.ok) throw new Error("Upload failed");
-
-      // 3. Call Server Action to save Material DB record
-      // await saveMaterialRecord({ path, name: file.name, ... })
-      
-      alert('Upload thành công!');
-      setFile(null);
-    } catch (err: any) {
-      alert('Lỗi: ' + err.message);
-    } finally {
-      setUploading(false);
-    }
-  };
+export default async function TeacherLessonsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const repos = await getRepositories();
+  const lessons = await repos.content.findLessonsByClass(id);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow mt-8">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Quản lý Bài giảng & Tài liệu</h1>
       
-      <div className="bg-gray-50 p-6 rounded-lg border mb-8">
-        <h2 className="text-lg font-semibold mb-4">Upload Tài liệu mới</h2>
-        <form onSubmit={handleUpload} className="flex gap-4 items-center">
-          <input 
-            type="file" 
-            onChange={e => setFile(e.target.files?.[0] || null)}
-            className="border p-2 rounded flex-1 bg-white"
-          />
-          <button 
-            type="submit" 
-            disabled={!file || uploading}
-            className="bg-blue-600 text-white px-6 py-2 rounded font-medium disabled:opacity-50"
-          >
-            {uploading ? 'Đang upload...' : 'Upload'}
-          </button>
-        </form>
-      </div>
+      <CreateLessonForm classId={id} />
 
       <div>
-        <h2 className="text-lg font-semibold mb-4">Danh sách tài liệu</h2>
-        {/* Render list of lessons/materials here */}
-        <p className="text-gray-500 italic">Chưa có tài liệu nào.</p>
+        <h2 className="text-xl font-semibold mb-4">Danh sách bài giảng</h2>
+        {lessons.length === 0 ? (
+          <p className="text-gray-500 italic">Chưa có bài giảng nào.</p>
+        ) : (
+          <div className="space-y-6">
+            {lessons.map((lesson) => (
+              <div key={lesson.id} className="border rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-900">{lesson.title}</h3>
+                {lesson.content && (
+                  <p className="text-gray-700 mt-2 whitespace-pre-wrap">{lesson.content}</p>
+                )}
+                
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-gray-600 mb-2">Tài liệu đính kèm:</h4>
+                  {(!lesson.materials || lesson.materials.length === 0) ? (
+                    <p className="text-sm text-gray-500 italic">Chưa có tài liệu.</p>
+                  ) : (
+                    <ul className="list-disc pl-5 space-y-1">
+                      {lesson.materials.map((m) => (
+                        <li key={m.id} className="text-sm">
+                          <a href={`/api/materials/${m.id}`} className="text-blue-600 hover:underline">
+                            {m.name}
+                          </a>
+                          <span className="text-gray-500 text-xs ml-2">
+                            ({Math.round(m.sizeBytes / 1024)} KB)
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <UploadMaterialForm classId={id} lessonId={lesson.id} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

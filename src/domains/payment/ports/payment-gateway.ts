@@ -1,5 +1,5 @@
 import { Result } from '../../shared/result';
-import { Invoice } from './invoice';
+import { Invoice } from '../entities/invoice';
 
 export interface PaymentWebhookPayload {
   transactionRef: string;

@@ -1,5 +1,5 @@
 import { createClass } from '../actions';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,7 +15,7 @@ export default function CreateClassPage() {
       </div>
 
       <Card className="border-zinc-200 shadow-sm">
-        <form action={createClass}>
+        <form action={createClass as any}>
           <CardHeader>
             <CardTitle className="text-lg">Thông tin lớp học</CardTitle>
             <CardDescription>Điền đầy đủ các thông tin bắt buộc để mở lớp.</CardDescription>
@@ -62,9 +62,9 @@ export default function CreateClassPage() {
             </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-3 border-t border-zinc-100 pt-6">
-            <Button asChild variant="outline" className="text-zinc-700">
-              <Link href="/teacher/classes">Hủy</Link>
-            </Button>
+            <Link href="/teacher/classes" className={buttonVariants({ variant: 'outline', className: 'text-zinc-700' })}>
+              Hủy
+            </Link>
             <Button type="submit" className="bg-zinc-900 text-white hover:bg-zinc-800">
               Khởi tạo Lớp
             </Button>

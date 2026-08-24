@@ -90,12 +90,12 @@ export default function DashboardLayout({ children, userRole = 'teacher' }: { ch
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">Hồ sơ cá nhân</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/pricing" className="cursor-pointer">Gói đăng ký (Pro)</Link>
-                  </DropdownMenuItem>
+                  <Link href="/profile" className="cursor-pointer">
+                    <DropdownMenuItem>Hồ sơ cá nhân</DropdownMenuItem>
+                  </Link>
+                  <Link href="/pricing" className="cursor-pointer">
+                    <DropdownMenuItem>Gói đăng ký (Pro)</DropdownMenuItem>
+                  </Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>

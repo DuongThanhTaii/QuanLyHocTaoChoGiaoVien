@@ -4,6 +4,8 @@ import { IEnrollmentRepository } from '../ports/enrollment.repository';
 import { Result } from '../../domains/shared/result';
 import { Invoice } from '../../domains/payment/entities/invoice';
 
+import { Money } from '../../domains/shared/value-objects';
+
 export class AutoGenerateInvoiceUseCase {
   constructor(
     private invoiceRepo: IInvoiceRepository,
@@ -42,8 +44,8 @@ export class AutoGenerateInvoiceUseCase {
           lineItems: [{
             description: `Học phí tháng ${month}/${year}`,
             quantity: effectiveSessions,
-            unitPrice: { amount: unitPrice, currency: 'VND', equals: () => true, add: () => null, subtract: () => null, multiply: () => null } as any, // Mock value object methods for now
-            amount: { amount: subtotal, currency: 'VND', equals: () => true, add: () => null, subtract: () => null, multiply: () => null } as any
+            unitPrice: new Money(unitPrice),
+            amount: new Money(subtotal)
           }],
           taxRate: 5, // 5% VAT or similar
           dueDate: new Date(year, month, 5) // Due on the 5th of next month

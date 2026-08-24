@@ -18,7 +18,7 @@ export default function RegisterPage() {
             Điền thông tin bên dưới để đăng ký tài khoản mới
           </CardDescription>
         </CardHeader>
-        <form action={register}>
+        <form action={register as any}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">Họ và tên</Label>

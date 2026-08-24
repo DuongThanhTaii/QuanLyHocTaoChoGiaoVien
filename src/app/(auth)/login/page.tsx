@@ -17,7 +17,7 @@ export default function LoginPage() {
             Nhập email và mật khẩu để truy cập tài khoản của bạn
           </CardDescription>
         </CardHeader>
-        <form action={login}>
+        <form action={login as any}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

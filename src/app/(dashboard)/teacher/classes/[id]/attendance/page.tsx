@@ -65,7 +65,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
           </div>
         ) : (
           students.map((student: any) => (
-            <form action={markAttendance} key={student.id} className="flex items-center justify-between border-b pb-4">
+            <form action={markAttendance as any} key={student.id} className="flex items-center justify-between border-b pb-4">
               <input type="hidden" name="classId" value={classId} />
               <input type="hidden" name="studentId" value={student.id} />
               <input type="hidden" name="slotId" value={slotId} />

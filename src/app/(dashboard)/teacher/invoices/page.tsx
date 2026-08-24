@@ -24,8 +24,30 @@ export default async function TeacherInvoicesPage() {
 
   async function generateInvoices() {
     'use server';
-    // Implementation for generating invoices would go here using AutoGenerateInvoiceUseCase
-    console.log('Generating invoices...');
+    const { getRepositories } = await import('@/infrastructure/persistence/supabase/repositories/get-repositories');
+    const { AutoGenerateInvoiceUseCase } = await import('@/application/services/invoice-generation.service');
+    const { revalidatePath } = await import('next/cache');
+    
+    const sbase = await createClient();
+    const { data: { user: currentUser } } = await sbase.auth.getUser();
+    
+    if (!currentUser) return;
+    
+    const repos = await getRepositories();
+    const useCase = new AutoGenerateInvoiceUseCase(repos.invoices, repos.attendance, repos.enrollments);
+    
+    const { data: classesData } = await sbase.from('classes').select('id').eq('teacher_id', currentUser.id);
+    const classes = classesData || [];
+    
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    
+    for (const cls of classes) {
+      await useCase.execute(currentUser.id, cls.id, currentMonth, currentYear);
+    }
+    
+    revalidatePath('/teacher/invoices');
   }
 
   return (
