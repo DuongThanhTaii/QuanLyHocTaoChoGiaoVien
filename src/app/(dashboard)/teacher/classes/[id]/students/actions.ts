@@ -75,3 +75,61 @@ export async function enrollStudent(formData: FormData) {
   revalidatePath(`/teacher/classes/${classId}/students`);
   return { success: true };
 }
+
+export async function linkParent(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || user.user_metadata?.role !== 'teacher') {
+    return { error: 'Unauthorized' };
+  }
+
+  const classId = formData.get('classId') as string;
+  const studentId = formData.get('studentId') as string;
+  const parentEmail = formData.get('parentEmail') as string;
+
+  if (!classId || !studentId || !parentEmail) {
+    return { error: 'Missing required fields' };
+  }
+
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Find parent by email
+  const { data: parentProfile, error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .select('id, role')
+    .eq('email', parentEmail)
+    .single();
+
+  if (profileError || !parentProfile) {
+    return { error: 'Phụ huynh chưa đăng ký tài khoản' };
+  }
+
+  if (parentProfile.role !== 'parent') {
+    return { error: 'Tài khoản này không phải là phụ huynh' };
+  }
+
+  // Insert into parent_students
+  const { error: insertError } = await supabaseAdmin
+    .from('parent_students')
+    .insert({
+      parent_id: parentProfile.id,
+      student_id: studentId,
+      relationship: 'Phụ huynh',
+      can_pay: true,
+      can_view_grades: true
+    });
+
+  if (insertError) {
+    if (insertError.code === '23505') {
+      return { error: 'Đã liên kết phụ huynh này với học sinh' };
+    }
+    return { error: 'Lỗi khi liên kết phụ huynh' };
+  }
+
+  revalidatePath(`/teacher/classes/${classId}/students`);
+  return { success: true };
+}

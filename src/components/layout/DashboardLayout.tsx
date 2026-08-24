@@ -33,8 +33,13 @@ const teacherNav: SidebarItem[] = [
   { icon: FolderOpen, label: 'Công cụ (Word)', href: '/teacher/tools/word' },
 ];
 
+const parentNav: SidebarItem[] = [
+  { icon: Users, label: 'Con của tôi', href: '/parent/students' },
+  { icon: CreditCard, label: 'Hóa đơn học phí', href: '/parent/invoices' },
+];
+
 export default function DashboardLayout({ children, userRole = 'teacher' }: { children: ReactNode, userRole?: string }) {
-  const navItems = userRole === 'teacher' ? teacherNav : []; // Assuming teacher for now
+  const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : [];
 
   return (
     <div className="flex h-screen bg-zinc-50 overflow-hidden font-sans">
