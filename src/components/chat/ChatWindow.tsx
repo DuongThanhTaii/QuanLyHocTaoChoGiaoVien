@@ -18,12 +18,12 @@ export default function ChatWindow({ conversationId, currentUserId }: { conversa
   };
 
   return (
-    <div className="flex flex-col h-[500px] border rounded-lg overflow-hidden bg-white">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border bg-white">
       <div className="bg-gray-100 p-4 border-b font-semibold text-gray-800">
         Chat Nhóm
       </div>
       
-      <div className="flex-1 p-4 overflow-y-auto space-y-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         {messages.map((msg, idx) => {
           const isMe = msg.sender_id === currentUserId;
           return (
