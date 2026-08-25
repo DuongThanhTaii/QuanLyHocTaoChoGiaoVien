@@ -17,7 +17,7 @@ const RegisterSchema = z.object({
   role: z.enum(['teacher', 'student', 'parent', 'admin'])
 })
 
-export async function login(formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
@@ -41,7 +41,7 @@ export async function login(formData: FormData) {
   redirect('/dashboard')
 }
 
-export async function register(formData: FormData) {
+export async function register(prevState: any, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string

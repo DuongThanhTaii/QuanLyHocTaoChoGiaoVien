@@ -14,7 +14,7 @@ const EnrollStudentSchema = z.object({
   customFee: z.coerce.number().optional()
 });
 
-export async function enrollStudent(formData: FormData) {
+export async function enrollStudent(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -76,7 +76,7 @@ export async function enrollStudent(formData: FormData) {
   return { success: true };
 }
 
-export async function linkParent(formData: FormData) {
+export async function linkParent(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
