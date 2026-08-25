@@ -6,6 +6,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const role = user?.user_metadata?.role || 'teacher';
+  const userName = user?.user_metadata?.full_name || user?.email || '';
 
-  return <DashboardLayout userRole={role}>{children}</DashboardLayout>;
+  return <DashboardLayout userRole={role} userName={userName}>{children}</DashboardLayout>;
 }

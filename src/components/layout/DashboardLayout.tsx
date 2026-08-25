@@ -38,7 +38,7 @@ const parentNav: SidebarItem[] = [
   { icon: CreditCard, label: 'Hóa đơn học phí', href: '/parent/invoices' },
 ];
 
-export default function DashboardLayout({ children, userRole = 'teacher' }: { children: ReactNode, userRole?: string }) {
+export default function DashboardLayout({ children, userRole = 'teacher', userName = '' }: { children: ReactNode, userRole?: string, userName?: string }) {
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : [];
 
   return (
@@ -80,7 +80,9 @@ export default function DashboardLayout({ children, userRole = 'teacher' }: { ch
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
-            <h2 className="text-zinc-800 font-medium text-lg hidden sm:block">Chào mừng trở lại</h2>
+            <h2 className="text-zinc-800 font-medium text-lg hidden sm:block">
+              Chào {userName ? `${userName} ` : ''}trở lại
+            </h2>
           </div>
           
           <div className="flex items-center gap-4">
