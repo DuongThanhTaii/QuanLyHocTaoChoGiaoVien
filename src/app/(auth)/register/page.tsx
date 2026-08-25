@@ -1,3 +1,6 @@
+'use client';
+
+import { useActionState } from 'react';
 import { register } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,8 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { AlertCircle } from 'lucide-react';
+
+const initialState = { error: '' };
 
 export default function RegisterPage() {
+  const [state, formAction, isPending] = useActionState(register as any, initialState);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 font-sans py-12">
       <Card className="w-full max-w-md border-zinc-200 shadow-sm">
@@ -18,8 +26,15 @@ export default function RegisterPage() {
             Điền thông tin bên dưới để đăng ký tài khoản mới
           </CardDescription>
         </CardHeader>
-        <form action={register as any}>
+        <form action={formAction}>
           <CardContent className="space-y-4">
+            {state?.error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {state.error}
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="fullName">Họ và tên</Label>
               <Input 
@@ -67,8 +82,8 @@ export default function RegisterPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full bg-zinc-900 hover:bg-zinc-800 text-white">
-              Đăng ký
+            <Button type="submit" disabled={isPending} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white disabled:opacity-50">
+              {isPending ? 'Đang xử lý...' : 'Đăng ký'}
             </Button>
             <div className="text-center text-sm text-zinc-500">
               Đã có tài khoản?{' '}
