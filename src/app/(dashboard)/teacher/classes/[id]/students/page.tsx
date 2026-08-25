@@ -1,11 +1,9 @@
 import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { enrollStudent, linkParent } from './actions';
 import Link from 'next/link';
+import { EnrollStudentForm, LinkParentForm } from './StudentForms';
 
 export default async function ClassStudentsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -39,76 +37,8 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Thêm học sinh</CardTitle>
-            <CardDescription>Thêm học sinh vào lớp bằng email.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form action={enrollStudent as any} className="flex flex-col gap-4">
-              <input type="hidden" name="classId" value={classId} />
-              <div className="space-y-2">
-                <Label htmlFor="email">Email học sinh</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="student@example.com"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customFee">Học phí tùy chỉnh (Tùy chọn)</Label>
-                <Input
-                  id="customFee"
-                  name="customFee"
-                  type="number"
-                  placeholder="Ví dụ: 100000"
-                />
-              </div>
-              <Button type="submit" className="w-full">Thêm vào lớp</Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Liên kết Phụ huynh</CardTitle>
-            <CardDescription>Cấp quyền cho phụ huynh theo dõi tiến độ học tập.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form action={linkParent as any} className="flex flex-col gap-4">
-              <input type="hidden" name="classId" value={classId} />
-              <div className="space-y-2">
-                <Label htmlFor="studentId">Học sinh</Label>
-                <select 
-                  id="studentId" 
-                  name="studentId" 
-                  required
-                  className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">-- Chọn học sinh --</option>
-                  {studentsWithProfiles.map(({ user }) => (
-                    <option key={user?.id} value={user?.id}>
-                      {user?.fullName || user?.email.value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="parentEmail">Email phụ huynh</Label>
-                <Input
-                  id="parentEmail"
-                  name="parentEmail"
-                  type="email"
-                  placeholder="parent@example.com"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">Liên kết</Button>
-            </form>
-          </CardContent>
-        </Card>
+        <EnrollStudentForm classId={classId} />
+        <LinkParentForm classId={classId} students={studentsWithProfiles} />
       </div>
 
       <Card>
