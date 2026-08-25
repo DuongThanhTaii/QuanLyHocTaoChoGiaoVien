@@ -1,11 +1,19 @@
+'use client';
+
+import { useActionState } from 'react';
 import { login } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { AlertCircle } from 'lucide-react';
+
+const initialState = { error: '' };
 
 export default function LoginPage() {
+  const [state, formAction, isPending] = useActionState(login as any, initialState);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 font-sans">
       <Card className="w-full max-w-md border-zinc-200 shadow-sm">
@@ -17,8 +25,14 @@ export default function LoginPage() {
             Nhập email và mật khẩu để truy cập tài khoản của bạn
           </CardDescription>
         </CardHeader>
-        <form action={login as any}>
+        <form action={formAction}>
           <CardContent className="space-y-4">
+            {state?.error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {state.error}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -47,8 +61,8 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full bg-zinc-900 hover:bg-zinc-800 text-white">
-              Đăng nhập
+            <Button type="submit" disabled={isPending} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white disabled:opacity-50">
+              {isPending ? 'Đang xử lý...' : 'Đăng nhập'}
             </Button>
             <div className="text-center text-sm text-zinc-500">
               Chưa có tài khoản?{' '}
