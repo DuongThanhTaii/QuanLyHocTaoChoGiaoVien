@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -28,8 +29,10 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        {children}
-        <Toaster />
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   );
