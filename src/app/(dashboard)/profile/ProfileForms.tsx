@@ -95,14 +95,13 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
               <TableHead>Ngân hàng</TableHead>
               <TableHead>Số tài khoản</TableHead>
               <TableHead>Tên chủ TK</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {accounts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-zinc-500 py-6">
+                <TableCell colSpan={4} className="text-center text-zinc-500 py-6">
                   Chưa có tài khoản nào được thêm.
                 </TableCell>
               </TableRow>
@@ -112,39 +111,39 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
                 <TableCell className="font-medium">{acc.bank_name}</TableCell>
                 <TableCell>{acc.account_number}</TableCell>
                 <TableCell>{acc.account_name}</TableCell>
-                <TableCell>
-                  {acc.is_default ? (
-                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                  ) : (
-                    <button 
-                      onClick={() => handleSetDefault(acc.id)}
-                      className="text-zinc-400 hover:text-yellow-500 transition-colors"
-                      title="Đặt làm mặc định"
-                    >
-                      <Star className="w-5 h-5" />
-                    </button>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button className="text-zinc-400 hover:text-red-500 transition-colors">
-                        <Trash2 className="w-5 h-5" />
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-3">
+                    {acc.is_default ? (
+                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 shrink-0" />
+                    ) : (
+                      <button 
+                        onClick={() => handleSetDefault(acc.id)}
+                        className="text-zinc-400 hover:text-yellow-500 transition-colors shrink-0 flex items-center justify-center"
+                        title="Đặt làm mặc định"
+                      >
+                        <Star className="w-5 h-5" />
                       </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Bạn có chắc chắn muốn xóa tài khoản {acc.bank_name} - {acc.account_number}?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Hủy</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(acc.id)}>Đồng ý xóa</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button className="text-zinc-400 hover:text-red-500 transition-colors shrink-0 flex items-center justify-center" title="Xóa tài khoản">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Bạn có chắc chắn muốn xóa tài khoản {acc.bank_name} - {acc.account_number}?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Hủy</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(acc.id)}>Đồng ý xóa</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
