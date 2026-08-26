@@ -19,7 +19,9 @@ import {
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Trash2 } from 'lucide-react';
+import { VIETNAM_BANKS } from '@/lib/banks';
 
 const initialState = { error: '', success: false, message: '' };
 
@@ -175,8 +177,22 @@ export function AddBankAccountForm() {
       <form action={formAction} key={key}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="bankName">Ngân hàng (VD: Vietcombank, MB Bank)</Label>
-            <Input id="bankName" name="bankName" required />
+            <Label htmlFor="bankName">Ngân hàng</Label>
+            <Select name="bankName" required>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn ngân hàng..." />
+              </SelectTrigger>
+              <SelectContent>
+                {VIETNAM_BANKS.map((bank) => (
+                  <SelectItem key={bank.bin} value={bank.shortName}>
+                    <div className="flex items-center gap-2">
+                      <img src={bank.logo} alt={bank.shortName} className="w-6 h-6 object-contain rounded-sm" />
+                      <span>{bank.shortName}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="accountNumber">Số tài khoản</Label>
