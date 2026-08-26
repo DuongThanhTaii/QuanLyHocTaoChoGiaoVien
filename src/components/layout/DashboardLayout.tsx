@@ -76,45 +76,26 @@ export default function DashboardLayout({ children, userRole = 'teacher', userNa
           </Link>
           
           <DropdownMenu>
-            <DropdownMenuTrigger className="outline-none w-full">
-              <div className="flex items-center gap-3 px-1 py-1.5 text-sm font-medium rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer w-full text-left">
-                <Avatar className="h-9 w-9 border border-zinc-200 shrink-0">
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>GV</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col flex-1 overflow-hidden leading-tight">
-                  <span className="truncate font-medium text-zinc-900">{userName || 'Người dùng'}</span>
-                  <span className="truncate text-xs text-zinc-500 font-normal">{userEmail || 'user@giasupro.vn'}</span>
-                </div>
-                <MoreVertical className="w-4 h-4 text-zinc-400 shrink-0" />
-              </div>
+            <DropdownMenuTrigger className="outline-none w-full flex items-center gap-3 px-1 py-1.5 text-sm font-medium rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer text-left">
+              <Avatar className="h-9 w-9 border border-zinc-200 shrink-0">
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback>GV</AvatarFallback>
+              </Avatar>
+              <span className="flex flex-col flex-1 overflow-hidden leading-tight">
+                <span className="truncate font-medium text-zinc-900">{userName || 'Người dùng'}</span>
+                <span className="truncate text-xs text-zinc-500 font-normal">{userEmail || 'user@giasupro.vn'}</span>
+              </span>
+              <MoreVertical className="w-4 h-4 text-zinc-400 shrink-0" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="right" sideOffset={8} className="w-56">
-              <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="size-8 border border-zinc-200">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>GV</AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{userName || 'Người dùng'}</span>
-                    <span className="truncate text-xs text-muted-foreground">{userEmail || 'user@giasupro.vn'}</span>
-                  </div>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-56">
               <DropdownMenuGroup>
+                <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <Link href="/profile" className="cursor-pointer">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <CircleUserRound className="w-4 h-4 mr-2" />
-                    Hồ sơ cá nhân
-                  </DropdownMenuItem>
+                  <DropdownMenuItem>Hồ sơ cá nhân</DropdownMenuItem>
                 </Link>
                 <Link href="/pricing" className="cursor-pointer">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Gói đăng ký (Pro)
-                  </DropdownMenuItem>
+                  <DropdownMenuItem>Gói đăng ký (Pro)</DropdownMenuItem>
                 </Link>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
