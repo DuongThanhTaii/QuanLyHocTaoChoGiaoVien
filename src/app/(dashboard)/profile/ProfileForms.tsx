@@ -158,15 +158,19 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
 export function AddBankAccountForm() {
   const [state, formAction, isPending] = useActionState(addBankAccount as any, initialState);
   const [key, setKey] = useState(Date.now()); // to reset form
+  const [selectedBank, setSelectedBank] = useState<string>('');
 
   useEffect(() => {
     if (state?.success && state?.message) {
       toast.success(state.message);
       setKey(Date.now()); // reset form
+      setSelectedBank('');
     } else if (state?.error) {
       toast.error(state.error);
     }
   }, [state]);
+
+  const bankInfo = VIETNAM_BANKS.find(b => b.shortName === selectedBank);
 
   return (
     <Card>
@@ -178,16 +182,23 @@ export function AddBankAccountForm() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="bankName">Ngân hàng</Label>
-            <Select name="bankName" required>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn ngân hàng..." />
+            <Select name="bankName" required value={selectedBank} onValueChange={setSelectedBank}>
+              <SelectTrigger className="w-full h-12">
+                {bankInfo ? (
+                  <div className="flex items-center gap-2">
+                    <img src={bankInfo.logo} alt={bankInfo.shortName} className="w-8 h-8 object-contain rounded-sm bg-white" />
+                    <span className="font-medium text-zinc-900">{bankInfo.shortName}</span>
+                  </div>
+                ) : (
+                  <span className="text-zinc-500">Chọn ngân hàng...</span>
+                )}
               </SelectTrigger>
               <SelectContent>
                 {VIETNAM_BANKS.map((bank) => (
                   <SelectItem key={bank.bin} value={bank.shortName}>
-                    <div className="flex items-center gap-2">
-                      <img src={bank.logo} alt={bank.shortName} className="w-6 h-6 object-contain rounded-sm" />
-                      <span>{bank.shortName}</span>
+                    <div className="flex items-center gap-3">
+                      <img src={bank.logo} alt={bank.shortName} className="w-8 h-8 object-contain rounded-sm bg-white" />
+                      <span className="font-medium">{bank.shortName}</span>
                     </div>
                   </SelectItem>
                 ))}
@@ -196,15 +207,15 @@ export function AddBankAccountForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="accountNumber">Số tài khoản</Label>
-            <Input id="accountNumber" name="accountNumber" required />
+            <Input id="accountNumber" name="accountNumber" className="h-12 text-lg" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="accountName">Tên chủ tài khoản (In hoa không dấu)</Label>
-            <Input id="accountName" name="accountName" placeholder="NGUYEN VAN A" required />
+            <Input id="accountName" name="accountName" className="h-12 text-lg uppercase" placeholder="NGUYEN VAN A" required />
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} className="w-full h-12 text-md">
             {isPending ? 'Đang thêm...' : 'Thêm tài khoản'}
           </Button>
         </CardFooter>
