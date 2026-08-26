@@ -49,8 +49,13 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
   const timeRange = slot ? `${slot.start_time} - ${slot.end_time}` : 'Không có lịch học (Ngoài giờ)';
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow mt-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Điểm danh lớp học</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Điểm danh lớp học</h1>
+        <p className="text-zinc-500">Quản lý điểm danh ngày {new Date().toLocaleDateString('vi-VN')}</p>
+      </div>
+
+      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
       <div className="bg-gray-50 p-4 rounded mb-6 flex justify-between items-center">
         <div>
           <p className="font-semibold text-gray-700">Ngày: {new Date().toLocaleDateString('vi-VN')}</p>
@@ -94,6 +99,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
             </form>
           ))
         )}
+      </div>
       </div>
     </div>
   );

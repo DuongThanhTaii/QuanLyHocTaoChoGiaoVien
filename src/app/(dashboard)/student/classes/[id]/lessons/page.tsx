@@ -6,8 +6,13 @@ export default function StudentLessonsPage({ params }: { params: { id: string } 
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow mt-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Tài liệu học tập</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tài liệu học tập</h1>
+        <p className="text-zinc-500">Xem và tải tài liệu môn học</p>
+      </div>
+      
+      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
       
       <div className="space-y-4">
         {materials.map(m => (
@@ -24,6 +29,7 @@ export default function StudentLessonsPage({ params }: { params: { id: string } 
             </button>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );

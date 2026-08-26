@@ -7,8 +7,13 @@ export default async function TeacherLessonsPage({ params }: { params: Promise<{
   const lessons = await repos.content.findLessonsByClass(id);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow mt-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Quản lý Bài giảng & Tài liệu</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Quản lý Bài giảng & Tài liệu</h1>
+        <p className="text-zinc-500">Thêm và quản lý bài giảng, tài liệu cho lớp {id}</p>
+      </div>
+      
+      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
       
       <CreateLessonForm classId={id} />
 
@@ -50,6 +55,7 @@ export default async function TeacherLessonsPage({ params }: { params: Promise<{
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

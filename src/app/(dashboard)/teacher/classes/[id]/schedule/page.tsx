@@ -29,9 +29,13 @@ export default async function SchedulePage({ params }: { params: Promise<{ id: s
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow mt-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Thời khóa biểu</h1>
-      <p className="text-gray-600 mb-6">Quản lý lịch học lặp lại hàng tuần cho lớp {classId}</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thời khóa biểu</h1>
+        <p className="text-zinc-500">Quản lý lịch học lặp lại hàng tuần cho lớp {classId}</p>
+      </div>
+      
+      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
       
       <div className="grid grid-cols-7 gap-2">
         {days.map((day) => {
@@ -83,6 +87,7 @@ export default async function SchedulePage({ params }: { params: Promise<{ id: s
             Thêm
           </button>
         </form>
+      </div>
       </div>
     </div>
   );
