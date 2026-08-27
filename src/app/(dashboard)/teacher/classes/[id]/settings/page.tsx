@@ -1,6 +1,7 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QRCodeDisplay } from './QRCodeDisplay';
+import { DeleteClassButton } from './DeleteClassButton';
 
 export default async function ClassSettingsPage({
   params,
@@ -68,13 +69,13 @@ export default async function ClassSettingsPage({
       </div>
       
       {/* Cấu hình khác của lớp sẽ được đặt ở đây */}
-      <Card className="border-zinc-200 shadow-sm mt-6">
+      <Card className="border-red-100 shadow-sm mt-6">
         <CardHeader>
-          <CardTitle>Cài đặt chung</CardTitle>
-          <CardDescription>Chỉnh sửa tên lớp, môn học và các tùy chọn khác.</CardDescription>
+          <CardTitle className="text-red-600">Vùng nguy hiểm (Danger Zone)</CardTitle>
+          <CardDescription>Các thao tác không thể hoàn tác đối với lớp học này.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-zinc-500">Đang cập nhật form cài đặt...</p>
+          <DeleteClassButton classId={id} />
         </CardContent>
       </Card>
     </div>

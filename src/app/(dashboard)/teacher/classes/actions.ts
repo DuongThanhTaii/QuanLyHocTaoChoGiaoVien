@@ -177,3 +177,25 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
   revalidatePath('/student/classes');
   redirect(`/student/classes/${classId}`);
 }
+
+export async function deleteClass(classId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Unauthorized' };
+  
+  const repos = await getRepositories();
+  const classroom = await repos.classes.findById(classId);
+  
+  if (!classroom || classroom.teacherId !== user.id) {
+    return { error: 'Class not found or unauthorized' };
+  }
+  
+  try {
+    await repos.classes.delete(classId);
+  } catch (e: any) {
+    return { error: e.message };
+  }
+  
+  revalidatePath('/teacher/classes');
+  redirect('/teacher/classes');
+}
