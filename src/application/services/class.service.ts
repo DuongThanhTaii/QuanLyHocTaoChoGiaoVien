@@ -32,7 +32,7 @@ export class ClassService {
     }
 
     const customFee = customFeeAmount ? new Money(customFeeAmount) : undefined;
-    const enrollmentResult = Enrollment.create(classId, studentId, customFee);
+    const enrollmentResult = Enrollment.create(classId, studentId, 'ACTIVE', customFee);
     
     if (!enrollmentResult.isSuccess()) {
       return enrollmentResult;

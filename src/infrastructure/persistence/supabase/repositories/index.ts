@@ -12,6 +12,9 @@ import { SupabaseSystemConfigRepository } from './system-config.repository';
 import { SupabaseAnalyticsRepository } from './analytics.repository';
 import { SupabaseChatRepository } from './chat.repository';
 
+import { SupabaseStudentRepository } from './student.repository';
+import { SupabaseGuardianRepository } from './guardian.repository';
+
 export interface Repositories {
   users: SupabaseUserRepository;
   classes: SupabaseClassRepository;
@@ -25,6 +28,8 @@ export interface Repositories {
   systemConfig: SupabaseSystemConfigRepository;
   analytics: SupabaseAnalyticsRepository;
   chat: SupabaseChatRepository;
+  students: SupabaseStudentRepository;
+  guardians: SupabaseGuardianRepository;
 }
 
 export function createRepositories(client: SupabaseClient): Repositories {
@@ -40,7 +45,9 @@ export function createRepositories(client: SupabaseClient): Repositories {
     subscriptions: new SupabaseSubscriptionRepository(client),
     systemConfig: new SupabaseSystemConfigRepository(client),
     analytics: new SupabaseAnalyticsRepository(client),
-    chat: new SupabaseChatRepository(client)
+    chat: new SupabaseChatRepository(client),
+    students: new SupabaseStudentRepository(client),
+    guardians: new SupabaseGuardianRepository(client)
   };
 }
 

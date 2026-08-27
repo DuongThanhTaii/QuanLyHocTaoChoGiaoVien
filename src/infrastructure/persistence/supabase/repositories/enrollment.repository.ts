@@ -12,8 +12,10 @@ export class SupabaseEnrollmentRepository implements IEnrollmentRepository {
       _id: row.id,
       _classId: row.class_id,
       _studentId: row.student_id,
-      _enrolledAt: new Date(row.enrolled_at),
+      _status: row.status,
+      _enrolledAt: new Date(row.joined_at), // changed from enrolled_at
       _leftAt: row.left_at ? new Date(row.left_at) : null,
+      _tuitionPlanId: row.tuition_plan_id,
       _customFee: row.custom_fee !== null ? new Money(row.custom_fee) : null,
     });
     return entity;
@@ -53,7 +55,7 @@ export class SupabaseEnrollmentRepository implements IEnrollmentRepository {
       .from('enrollments')
       .select('*')
       .eq('class_id', classId)
-      .is('left_at', null);
+      .eq('status', 'ACTIVE'); // changed from is null left_at
 
     if (error) {
       throw new Error(`Failed to find active enrollments by class ID: ${error.message}`);
@@ -83,8 +85,10 @@ export class SupabaseEnrollmentRepository implements IEnrollmentRepository {
         id: e._id,
         class_id: e._classId,
         student_id: e._studentId,
-        enrolled_at: e._enrolledAt ? e._enrolledAt.toISOString() : undefined,
+        status: e._status,
+        joined_at: e._enrolledAt ? e._enrolledAt.toISOString() : undefined,
         left_at: e._leftAt ? e._leftAt.toISOString() : null,
+        tuition_plan_id: e._tuitionPlanId,
         custom_fee: e._customFee ? e._customFee.amount : null,
       }, { onConflict: 'id' });
 

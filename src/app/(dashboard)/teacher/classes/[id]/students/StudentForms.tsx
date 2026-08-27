@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { enrollStudent, linkParent } from './actions';
+import { addStudentManual } from '../../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,7 @@ const initialEnrollState = { error: '', success: false };
 const initialLinkState = { error: '', success: false };
 
 export function EnrollStudentForm({ classId }: { classId: string }) {
-  const [state, formAction, isPending] = useActionState(enrollStudent as any, initialEnrollState);
+  const [state, formAction, isPending] = useActionState(addStudentManual as any, initialEnrollState);
 
   useEffect(() => {
     if (state?.success) {
@@ -23,93 +23,32 @@ export function EnrollStudentForm({ classId }: { classId: string }) {
   }, [state]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Thêm học sinh</CardTitle>
-        <CardDescription>Thêm học sinh vào lớp bằng email.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="flex flex-col gap-4">
-          <input type="hidden" name="classId" value={classId} />
+    <div className="bg-white p-6 rounded-lg border border-zinc-200">
+      <form action={formAction} className="flex flex-col gap-4">
+        <input type="hidden" name="classId" value={classId} />
+        
+        <div className="space-y-2">
+          <Label htmlFor="fullName">Họ và tên học sinh <span className="text-red-500">*</span></Label>
+          <Input id="fullName" name="fullName" placeholder="Nguyễn Văn A" required />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email học sinh</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="student@example.com"
-              required
-            />
+            <Label htmlFor="phone">Số điện thoại</Label>
+            <Input id="phone" name="phone" placeholder="09xxxx (Tùy chọn)" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="customFee">Học phí tùy chỉnh (Tùy chọn)</Label>
-            <Input
-              id="customFee"
-              name="customFee"
-              type="number"
-              placeholder="Ví dụ: 100000"
-            />
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" placeholder="email@ (Tùy chọn)" />
           </div>
-          <Button type="submit" disabled={isPending} className="w-full">
-            {isPending ? 'Đang thêm...' : 'Thêm vào lớp'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+
+        <Button type="submit" disabled={isPending} className="w-full mt-2">
+          {isPending ? 'Đang thêm...' : 'Thêm học sinh'}
+        </Button>
+      </form>
+    </div>
   );
 }
 
-export function LinkParentForm({ classId, students }: { classId: string, students: any[] }) {
-  const [state, formAction, isPending] = useActionState(linkParent as any, initialLinkState);
 
-  useEffect(() => {
-    if (state?.success) {
-      toast.success('Đã liên kết phụ huynh thành công!');
-    } else if (state?.error) {
-      toast.error(state.error);
-    }
-  }, [state]);
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Liên kết Phụ huynh</CardTitle>
-        <CardDescription>Cấp quyền cho phụ huynh theo dõi tiến độ học tập.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="flex flex-col gap-4">
-          <input type="hidden" name="classId" value={classId} />
-          <div className="space-y-2">
-            <Label htmlFor="studentId">Học sinh</Label>
-            <select 
-              id="studentId" 
-              name="studentId" 
-              required
-              className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">-- Chọn học sinh --</option>
-              {students.map(({ user }) => (
-                <option key={user?.id} value={user?.id}>
-                  {user?.fullName || user?.email?.value}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="parentEmail">Email phụ huynh</Label>
-            <Input
-              id="parentEmail"
-              name="parentEmail"
-              type="email"
-              placeholder="parent@example.com"
-              required
-            />
-          </div>
-          <Button type="submit" disabled={isPending} className="w-full">
-            {isPending ? 'Đang liên kết...' : 'Liên kết'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}

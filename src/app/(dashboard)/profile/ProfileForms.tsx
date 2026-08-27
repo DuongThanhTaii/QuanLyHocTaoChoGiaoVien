@@ -125,10 +125,8 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
                       </button>
                     )}
                     <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <button className="text-zinc-400 hover:text-red-500 transition-colors shrink-0 flex items-center justify-center" title="Xóa tài khoản">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                      <AlertDialogTrigger className="text-zinc-400 hover:text-red-500 transition-colors shrink-0 flex items-center justify-center" title="Xóa tài khoản">
+                        <Trash2 className="w-5 h-5" />
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -181,7 +179,7 @@ export function AddBankAccountForm() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="bankName">Ngân hàng</Label>
-            <Select name="bankName" required value={selectedBank} onValueChange={setSelectedBank}>
+            <Select name="bankName" required value={selectedBank} onValueChange={(val) => setSelectedBank(val || '')}>
               <SelectTrigger className="w-full h-12">
                 {bankInfo ? (
                   <div className="flex items-center gap-2">

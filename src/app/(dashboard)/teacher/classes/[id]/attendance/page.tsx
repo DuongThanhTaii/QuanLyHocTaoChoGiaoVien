@@ -19,10 +19,10 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
   // Fetch enrolled students
   const enrollments = await repos.enrollments.findActiveByClass(classId);
   
-  // Fetch student profiles
+  // Fetch student profiles from new students table
   const studentIds = enrollments.map((e: any) => e._studentId || e.studentId);
   const { data: profiles } = await supabase
-    .from('profiles')
+    .from('students')
     .select('id, full_name')
     .in('id', studentIds.length ? studentIds : ['dummy-id']);
 
@@ -45,18 +45,16 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
     .limit(1)
     .single();
 
+  // In the future, this should point to class_sessions. 
+  // For now we keep slotId to avoid breaking everything before implementing schedule logic fully.
   const slotId = slot?.id || 'uuid-slot-123';
   const timeRange = slot ? `${slot.start_time} - ${slot.end_time}` : 'Không có lịch học (Ngoài giờ)';
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Điểm danh lớp học</h1>
-        <p className="text-zinc-500">Quản lý điểm danh ngày {new Date().toLocaleDateString('vi-VN')}</p>
-      </div>
-
       <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
-      <div className="bg-gray-50 p-4 rounded mb-6 flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-zinc-900">Điểm danh ngày {new Date().toLocaleDateString('vi-VN')}</h2>
+        <div className="bg-gray-50 p-4 rounded mb-6 flex justify-between items-center">
         <div>
           <p className="font-semibold text-gray-700">Ngày: {new Date().toLocaleDateString('vi-VN')}</p>
           <p className="text-sm text-gray-500">Giờ học: {timeRange}</p>

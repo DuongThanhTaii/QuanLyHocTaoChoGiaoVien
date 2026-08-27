@@ -1,4 +1,6 @@
-export default function StudentLessonsPage({ params }: { params: { id: string } }) {
+export default async function StudentLessonsPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const classId = resolvedParams.id;
   // In a real app, you would fetch the materials and generate Signed Download URLs for them.
   const materials = [
     { id: '1', name: 'Chuong_1_Toan_Hoc_co_ban.pdf', size: '2MB' },

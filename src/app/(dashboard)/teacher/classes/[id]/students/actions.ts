@@ -64,7 +64,7 @@ export async function enrollStudent(prevState: any, formData: FormData) {
   }
 
   const customFeeMoney = customFee ? new Money(customFee) : undefined;
-  const enrollmentResult = Enrollment.create(classId, profile.id, customFeeMoney);
+  const enrollmentResult = Enrollment.create(classId, profile.id, 'ACTIVE', customFeeMoney);
 
   if (!enrollmentResult.isSuccess()) {
     return { error: enrollmentResult.getError().message };
