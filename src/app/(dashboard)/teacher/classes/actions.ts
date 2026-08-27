@@ -12,11 +12,16 @@ import { v4 as uuidv4 } from 'uuid';
 const CreateClassWizardSchema = z.object({
   name: z.string().min(2),
   subject: z.string().optional(),
-  feePerSession: z.coerce.number().min(0),
+  feeAmount: z.coerce.number().min(0),
+  feeType: z.enum(['per_session', 'per_month', 'per_course']),
   color: z.string().optional(),
   description: z.string().optional(),
-  scheduleType: z.string().optional(), // 'fixed', 'flexible', 'none'
-  // More schedule fields can be added here
+  scheduleType: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  weekDays: z.array(z.string()).optional(),
+  startTime: z.string().optional(),
+  durationMinutes: z.coerce.number().optional()
 });
 
 export async function createClassWizard(prevState: any, formData: FormData) {
@@ -30,15 +35,22 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   const rawData = {
     name: formData.get('name'),
     subject: formData.get('subject'),
-    feePerSession: formData.get('feePerSession'),
+    feeAmount: formData.get('feeAmount'),
+    feeType: formData.get('feeType') || 'per_session',
     color: formData.get('color'),
     description: formData.get('description'),
     scheduleType: formData.get('scheduleType'),
+    startDate: formData.get('startDate'),
+    endDate: formData.get('endDate'),
+    weekDays: formData.getAll('weekDays'),
+    startTime: formData.get('startTime'),
+    durationMinutes: formData.get('durationMinutes')
   };
 
   const parsed = CreateClassWizardSchema.safeParse(rawData);
   if (!parsed.success) {
-    return { error: 'Invalid data' };
+    const errorMessages = parsed.error.issues.map((e: any) => e.message).join(', ');
+    return { error: 'Invalid data: ' + errorMessages };
   }
 
   // 1. Create Class
@@ -49,8 +61,8 @@ export async function createClassWizard(prevState: any, formData: FormData) {
     teacherId: user.id,
     name: parsed.data.name,
     subject: parsed.data.subject,
-    feePerSession: new Money(parsed.data.feePerSession),
-    feeType: 'per_session' as const,
+    feePerSession: new Money(parsed.data.feeAmount), // Renamed from feePerSession to feeAmount in our context, but Domain expects feePerSession (representing fee magnitude)
+    feeType: parsed.data.feeType,
     color: parsed.data.color,
     description: parsed.data.description,
     isActive: true
@@ -77,6 +89,49 @@ export async function createClassWizard(prevState: any, formData: FormData) {
 
   if (invError) {
     console.error('Failed to create invitation', invError);
+  }
+
+  // 4. Generate Schedule Sessions if Fixed
+  if (parsed.data.scheduleType === 'fixed' && parsed.data.startDate && parsed.data.weekDays && parsed.data.weekDays.length > 0) {
+    try {
+      const start = new Date(parsed.data.startDate);
+      const end = parsed.data.endDate ? new Date(parsed.data.endDate) : new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000); // default to 90 days if no end date
+      
+      const dayMap: Record<string, number> = {
+        'Chủ nhật': 0,
+        'Thứ 2': 1, 'Thứ 3': 2, 'Thứ 4': 3, 'Thứ 5': 4, 'Thứ 6': 5, 'Thứ 7': 6
+      };
+      const allowedDays = parsed.data.weekDays.map(d => dayMap[d]).filter(d => d !== undefined);
+      
+      let currentDate = new Date(start);
+      const sessionsToInsert = [];
+      const startTime = parsed.data.startTime || '18:00';
+      const duration = parsed.data.durationMinutes || 90;
+      let sessionOrder = 1;
+
+      while (currentDate <= end) {
+        if (allowedDays.includes(currentDate.getDay())) {
+          const dateStr = currentDate.toISOString().split('T')[0];
+          sessionsToInsert.push({
+            class_id: classId,
+            session_date: dateStr,
+            start_time: startTime,
+            duration_minutes: duration,
+            title: `Buổi ${sessionOrder}`,
+            status: 'SCHEDULED'
+          });
+          sessionOrder++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      if (sessionsToInsert.length > 0) {
+        const { error: sessionErr } = await supabase.from('class_sessions').insert(sessionsToInsert);
+        if (sessionErr) console.error('Failed to generate sessions:', sessionErr);
+      }
+    } catch (err) {
+      console.error('Session generation error:', err);
+    }
   }
 
   revalidatePath('/teacher/classes');

@@ -32,7 +32,7 @@ export default async function CreateClassPage() {
 
   if (!canCreateClass) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tạo Lớp Học Mới</h1>
           <p className="text-zinc-500">Thiết lập thông tin cơ bản cho lớp học của bạn.</p>
@@ -58,7 +58,7 @@ export default async function CreateClassPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tạo Lớp Học Mới</h1>
         <p className="text-zinc-500">Thiết lập thông tin cơ bản cho lớp học của bạn.</p>
