@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { QRCodeDisplay } from '../settings/QRCodeDisplay';
 import { EnrollStudentForm } from './StudentForms';
 
-export function AddStudentTabs({ classId, invitationCode }: { classId: string, invitationCode?: string }) {
-  const joinUrl = invitationCode ? `https://giasupro.taidt.id.vn/join/${invitationCode}` : '';
+export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: string, invitationCode?: string, joinUrl?: string }) {
 
   return (
     <Card className="border-zinc-200 shadow-sm sticky top-6">
@@ -48,6 +47,7 @@ export function AddStudentTabs({ classId, invitationCode }: { classId: string, i
                    <p className="text-xs text-zinc-400 mt-2">Chưa tạo mã lớp</p>
                  </div>
                )}
+               {joinUrl && <p className="break-all text-center text-xs text-zinc-500">{joinUrl}</p>}
              </div>
           </TabsContent>
           

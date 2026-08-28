@@ -94,8 +94,8 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   // 4. Generate Schedule Sessions if Fixed
   if (parsed.data.scheduleType === 'fixed' && parsed.data.startDate && parsed.data.weekDays && parsed.data.weekDays.length > 0) {
     try {
-      const start = new Date(parsed.data.startDate);
-      const end = parsed.data.endDate ? new Date(parsed.data.endDate) : new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000); // default to 90 days if no end date
+      const start = parseCalendarDate(parsed.data.startDate);
+      const end = parsed.data.endDate ? parseCalendarDate(parsed.data.endDate) : new Date(start.getFullYear(), start.getMonth(), start.getDate() + 90); // default to 90 days if no end date
       
       const dayMap: Record<string, number> = {
         'Chủ nhật': 0,
@@ -111,12 +111,12 @@ export async function createClassWizard(prevState: any, formData: FormData) {
 
       while (currentDate <= end) {
         if (allowedDays.includes(currentDate.getDay())) {
-          const dateStr = currentDate.toISOString().split('T')[0];
+          const dateStr = formatCalendarDate(currentDate);
           sessionsToInsert.push({
             class_id: classId,
             session_date: dateStr,
             start_time: startTime,
-            duration_minutes: duration,
+            end_time: addMinutes(startTime, duration),
             title: `Buổi ${sessionOrder}`,
             status: 'SCHEDULED'
           });
@@ -137,6 +137,21 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   revalidatePath('/teacher/classes');
   // Redirect to the success screen of the wizard or the class workspace
   redirect(`/teacher/classes/${classId}/settings?success=true&code=${joinCode}`);
+}
+
+function addMinutes(time: string, minutes: number): string {
+  const [hours, mins] = time.split(':').map(Number);
+  const totalMinutes = ((hours * 60 + mins + minutes) % (24 * 60) + 24 * 60) % (24 * 60);
+  return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+}
+
+function parseCalendarDate(date: string): Date {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function formatCalendarDate(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 const AddStudentManualSchema = z.object({

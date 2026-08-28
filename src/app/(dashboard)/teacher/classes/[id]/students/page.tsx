@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AddStudentTabs } from './AddStudentTabs';
 import { createClient } from '@/infrastructure/auth/supabase/server';
+import { getAppUrl } from '@/lib/app-url';
 
 export default async function ClassStudentsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const classId = params.id;
   const repos = await getRepositories();
   const supabase = await createClient();
+  const appUrl = await getAppUrl();
 
   const enrollments = await repos.enrollments.findActiveByClass(classId);
 
@@ -83,7 +85,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
 
         {/* Right Column: Add Student Widget */}
         <div className="space-y-6">
-           <AddStudentTabs classId={classId} invitationCode={activeInvitation?.join_code} />
+           <AddStudentTabs classId={classId} invitationCode={activeInvitation?.join_code} joinUrl={activeInvitation ? `${appUrl}/join/${activeInvitation.join_code}` : undefined} />
         </div>
 
       </div>

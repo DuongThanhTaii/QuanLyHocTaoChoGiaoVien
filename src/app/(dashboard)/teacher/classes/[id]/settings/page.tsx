@@ -2,6 +2,7 @@ import { createClient } from '@/infrastructure/auth/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { DeleteClassButton } from './DeleteClassButton';
+import { getAppUrl } from '@/lib/app-url';
 
 export default async function ClassSettingsPage({
   params,
@@ -14,6 +15,7 @@ export default async function ClassSettingsPage({
   const sp = await searchParams;
   
   const supabase = await createClient();
+  const appUrl = await getAppUrl();
 
   const { data: invitations } = await supabase
     .from('class_invitations')
@@ -25,7 +27,7 @@ export default async function ClassSettingsPage({
   const activeInvitation = invitations?.[0];
   
   // The absolute URL for joining. In a real app, you'd get this from env
-  const joinUrl = activeInvitation ? `https://giasupro.taidt.id.vn/join/${activeInvitation.join_code}` : '';
+  const joinUrl = activeInvitation ? `${appUrl}/join/${activeInvitation.join_code}` : '';
 
   return (
     <div className="space-y-6">
@@ -60,7 +62,7 @@ export default async function ClassSettingsPage({
           </CardHeader>
           <CardContent className="flex justify-center">
              {joinUrl ? (
-                <QRCodeDisplay value={joinUrl} />
+                <div className="space-y-3 text-center"><QRCodeDisplay value={joinUrl} /><p className="break-all text-xs text-zinc-500">{joinUrl}</p></div>
              ) : (
                <p className="text-zinc-500 text-sm">Chưa có mã QR</p>
              )}

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
@@ -38,7 +37,7 @@ export function CreateClassWizard() {
 
   return (
     <form action={formAction} className="space-y-6">
-      {step === 1 && (
+      <div className={step === 1 ? '' : 'hidden'}>
         <Card className="border-zinc-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Bước 1: Thông tin chung</CardTitle>
@@ -47,7 +46,7 @@ export function CreateClassWizard() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Tên lớp <span className="text-red-500">*</span></Label>
-              <Input id="name" name="name" required placeholder="VD: Machine Learning Cơ Bản" className="bg-white" />
+              <Input id="name" name="name" required={step === 1} placeholder="VD: Toán lớp 12" className="bg-white" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -57,32 +56,23 @@ export function CreateClassWizard() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="color">Nhãn màu</Label>
-                <Select name="color" defaultValue="#18181b">
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Chọn màu" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="#18181b">Đen bóng (Mặc định)</SelectItem>
-                    <SelectItem value="#2563eb">Xanh dương</SelectItem>
-                    <SelectItem value="#16a34a">Xanh lá</SelectItem>
-                    <SelectItem value="#dc2626">Đỏ</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select id="color" name="color" defaultValue="#18181b" className="h-9 w-full rounded-lg border border-input bg-white px-3 text-sm">
+                  <option value="#18181b">Đen bóng (Mặc định)</option>
+                  <option value="#2563eb">Xanh dương</option>
+                  <option value="#16a34a">Xanh lá</option>
+                  <option value="#dc2626">Đỏ</option>
+                </select>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
               <div className="space-y-2">
                 <Label>Hình thức học phí</Label>
-                <Select name="feeType" value={feeType} onValueChange={(val) => setFeeType(val || '')}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Chọn hình thức tính" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="per_session">Tính theo buổi</SelectItem>
-                    <SelectItem value="per_month">Tính theo tháng (Cố định)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select id="feeType" name="feeType" value={feeType} onChange={(event) => setFeeType(event.target.value)} className="h-9 w-full rounded-lg border border-input bg-white px-3 text-sm">
+                  <option value="per_session">Tính theo buổi</option>
+                  <option value="per_month">Tính theo tháng (cố định)</option>
+                  <option value="per_course">Tính theo khóa học</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="feeAmount">Mức học phí (VND) <span className="text-red-500">*</span></Label>
@@ -90,7 +80,7 @@ export function CreateClassWizard() {
                   id="feeAmount" 
                   name="feeAmount" 
                   type="number" 
-                  required 
+                  required={step === 1}
                   min="0" 
                   step="1000" 
                   placeholder="150000" 
@@ -118,7 +108,7 @@ export function CreateClassWizard() {
             </Button>
           </CardFooter>
         </Card>
-      )}
+      </div>
 
       {step === 2 && (
         <Card className="border-zinc-200 shadow-sm">
@@ -150,21 +140,16 @@ export function CreateClassWizard() {
                         <Info className="w-4 h-4 text-red-500 cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        <p>Hệ thống quản lý lịch học dạng linh hoạt (Session-based). Bạn có thể dễ dàng thay đổi ngày giờ, hoặc báo nghỉ, học bù cho từng buổi học cụ thể sau khi lớp được tạo.</p>
+                        <p>Với lịch linh hoạt, bạn có thể tự thêm, thay đổi ngày giờ, báo nghỉ hoặc học bù cho từng buổi sau khi lớp được tạo.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <Select name="scheduleType" value={scheduleType} onValueChange={(val) => setScheduleType(val || '')}>
-                  <SelectTrigger className="bg-white w-full">
-                    <SelectValue placeholder="Chọn kiểu lịch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fixed">Lịch cố định hàng tuần (VD: T2, T4)</SelectItem>
-                    <SelectItem value="flexible">Lịch linh hoạt (Tùy biến mỗi tuần)</SelectItem>
-                    <SelectItem value="none">Chưa thiết lập</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select id="scheduleType" name="scheduleType" value={scheduleType} onChange={(event) => setScheduleType(event.target.value)} className="h-9 w-full rounded-lg border border-input bg-white px-3 text-sm">
+                  <option value="fixed">Lịch cố định hàng tuần (ví dụ: Thứ 2, Thứ 4)</option>
+                  <option value="flexible">Lịch linh hoạt (tự thêm từng buổi sau khi tạo lớp)</option>
+                  <option value="none">Chưa thiết lập lịch</option>
+                </select>
               </div>
 
               {scheduleType === 'fixed' && (
@@ -189,7 +174,7 @@ export function CreateClassWizard() {
                       <Input type="number" name="durationMinutes" defaultValue="90" step="15" className="bg-white" />
                     </div>
                   </div>
-                  <p className="text-xs text-zinc-500">Hệ thống sẽ tự động sinh các buổi học (sessions) dựa trên khoảng thời gian khai giảng - kết thúc và lịch học này.</p>
+                  <p className="text-xs text-zinc-500">Hệ thống sẽ tự động tạo các buổi học dựa trên ngày khai giảng, ngày kết thúc và lịch học này.</p>
                 </div>
               )}
             </div>
