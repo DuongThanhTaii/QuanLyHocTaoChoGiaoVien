@@ -189,6 +189,24 @@ const AddStudentManualSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
 });
 
+const UpdateClassSettingsSchema = z.object({
+  classId: z.string().uuid(), name: z.string().min(2), subject: z.string().optional(), description: z.string().optional(),
+  feeAmount: z.coerce.number().min(0), feeType: z.enum(['per_session', 'per_month', 'per_course']), color: z.string()
+});
+
+export async function updateClassSettings(prevState: any, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const parsed = UpdateClassSettingsSchema.safeParse(Object.fromEntries(formData));
+  if (!user || user.user_metadata?.role !== 'teacher') return { error: 'Bạn không có quyền chỉnh sửa lớp này.' };
+  if (!parsed.success) return { error: 'Thông tin lớp học chưa hợp lệ.' };
+  const { classId, feeAmount, ...data } = parsed.data;
+  const { error } = await supabase.from('classes').update({ name: data.name, subject: data.subject || null, description: data.description || null, fee_per_session: feeAmount, fee_type: data.feeType, color: data.color }).eq('id', classId).eq('teacher_id', user.id);
+  if (error) return { error: error.message };
+  revalidatePath(`/teacher/classes/${classId}`);
+  return { success: true };
+}
+
 export async function addStudentManual(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

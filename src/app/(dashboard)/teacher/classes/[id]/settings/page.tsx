@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { DeleteClassButton } from './DeleteClassButton';
 import { getAppUrl } from '@/lib/app-url';
+import { ClassSettingsForm } from './ClassSettingsForm';
 
 export default async function ClassSettingsPage({
   params,
@@ -16,6 +17,7 @@ export default async function ClassSettingsPage({
   
   const supabase = await createClient();
   const appUrl = await getAppUrl();
+  const { data: classroom } = await supabase.from('classes').select('id, name, subject, description, fee_per_session, fee_type, color').eq('id', id).single();
 
   const { data: invitations } = await supabase
     .from('class_invitations')
@@ -69,6 +71,7 @@ export default async function ClassSettingsPage({
           </CardContent>
         </Card>
       </div>
+      {classroom && <Card className="border-zinc-200 shadow-sm"><CardHeader><CardTitle>Thông tin lớp học</CardTitle><CardDescription>Điều chỉnh thông tin cơ bản và học phí của lớp.</CardDescription></CardHeader><CardContent><ClassSettingsForm classroom={classroom} /></CardContent></Card>}
       
       {/* Cấu hình khác của lớp sẽ được đặt ở đây */}
       <Card className="border-red-100 shadow-sm mt-6">
