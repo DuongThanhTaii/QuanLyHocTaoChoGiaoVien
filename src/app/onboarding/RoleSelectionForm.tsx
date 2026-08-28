@@ -24,10 +24,10 @@ export function RoleSelectionForm() {
         <div 
           onClick={() => setSelectedRole('teacher')}
           className={`relative group flex flex-col items-center p-6 bg-white rounded-2xl cursor-pointer transition-all duration-300 ease-out
-            ${selectedRole === 'teacher' ? 'ring-2 ring-blue-600 shadow-md' : 'border border-zinc-200 shadow-sm hover:shadow-lg hover:border-blue-300'}`}
+            ${selectedRole === 'teacher' ? 'border-2 border-blue-600 shadow-md' : 'border-2 border-zinc-200 shadow-sm hover:shadow-lg hover:border-blue-300'}`}
         >
           {selectedRole === 'teacher' && (
-            <div className="absolute -top-3 -right-3 bg-blue-600 text-white rounded-full p-1.5 shadow-sm z-20 transition-all duration-300 scale-in-center">
+            <div className="absolute -top-3 -right-3 bg-blue-600 text-white rounded-full p-1.5 shadow-sm z-20 transition-all duration-300">
               <Check className="w-5 h-5 stroke-[3]" />
             </div>
           )}
@@ -46,10 +46,10 @@ export function RoleSelectionForm() {
         <div 
           onClick={() => setSelectedRole('student')}
           className={`relative group flex flex-col items-center p-6 bg-white rounded-2xl cursor-pointer transition-all duration-300 ease-out
-            ${selectedRole === 'student' ? 'ring-2 ring-green-600 shadow-md' : 'border border-zinc-200 shadow-sm hover:shadow-lg hover:border-green-300'}`}
+            ${selectedRole === 'student' ? 'border-2 border-green-600 shadow-md' : 'border-2 border-zinc-200 shadow-sm hover:shadow-lg hover:border-green-300'}`}
         >
           {selectedRole === 'student' && (
-            <div className="absolute -top-3 -right-3 bg-green-600 text-white rounded-full p-1.5 shadow-sm z-20 transition-all duration-300 scale-in-center">
+            <div className="absolute -top-3 -right-3 bg-green-600 text-white rounded-full p-1.5 shadow-sm z-20 transition-all duration-300">
               <Check className="w-5 h-5 stroke-[3]" />
             </div>
           )}
@@ -68,10 +68,10 @@ export function RoleSelectionForm() {
         <div 
           onClick={() => setSelectedRole('guardian')}
           className={`relative group flex flex-col items-center p-6 bg-white rounded-2xl cursor-pointer transition-all duration-300 ease-out
-            ${selectedRole === 'guardian' ? 'ring-2 ring-purple-600 shadow-md' : 'border border-zinc-200 shadow-sm hover:shadow-lg hover:border-purple-300'}`}
+            ${selectedRole === 'guardian' ? 'border-2 border-purple-600 shadow-md' : 'border-2 border-zinc-200 shadow-sm hover:shadow-lg hover:border-purple-300'}`}
         >
           {selectedRole === 'guardian' && (
-            <div className="absolute -top-3 -right-3 bg-purple-600 text-white rounded-full p-1.5 shadow-sm z-20 transition-all duration-300 scale-in-center">
+            <div className="absolute -top-3 -right-3 bg-purple-600 text-white rounded-full p-1.5 shadow-sm z-20 transition-all duration-300">
               <Check className="w-5 h-5 stroke-[3]" />
             </div>
           )}
