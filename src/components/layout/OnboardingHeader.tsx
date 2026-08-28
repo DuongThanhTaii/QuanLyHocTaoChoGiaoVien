@@ -25,9 +25,9 @@ export function OnboardingHeader() {
   ];
 
   return (
-    <header className="w-full bg-white px-6 pt-12 pb-8 flex flex-col items-center justify-center z-50">
+    <header className="w-full bg-white px-6 pt-8 pb-4 flex flex-col items-center justify-center z-50">
       {/* Stepper */}
-      <div className="flex items-center w-full max-w-md mb-12">
+      <div className="flex items-center w-full max-w-md mb-8">
         {steps.map((step, index) => {
           const isCompleted = step.num < currentStep;
           const isActive = step.num === currentStep;
