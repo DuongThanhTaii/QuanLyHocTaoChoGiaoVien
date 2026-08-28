@@ -15,20 +15,20 @@ export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(login as any, initialState);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 font-sans">
-      <Card className="w-full max-w-md border-zinc-200 shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 font-sans">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
+          <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
             Đăng nhập
           </CardTitle>
-          <CardDescription className="text-zinc-500">
+          <CardDescription className="text-muted-foreground">
             Nhập email và mật khẩu để truy cập tài khoản của bạn
           </CardDescription>
         </CardHeader>
         <form action={formAction}>
           <CardContent className="space-y-4">
             {state?.error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
+              <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 {state.error}
               </div>
@@ -41,13 +41,12 @@ export default function LoginPage() {
                 type="email" 
                 placeholder="m@example.com" 
                 required 
-                className="bg-white"
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Mật khẩu</Label>
-                <Link href="#" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+                <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -56,17 +55,16 @@ export default function LoginPage() {
                 name="password" 
                 type="password" 
                 required 
-                className="bg-white"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" disabled={isPending} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white disabled:opacity-50">
+            <Button type="submit" disabled={isPending} className="w-full disabled:opacity-50">
               {isPending ? 'Đang xử lý...' : 'Đăng nhập'}
             </Button>
-            <div className="text-center text-sm text-zinc-500">
+            <div className="text-center text-sm text-muted-foreground">
               Chưa có tài khoản?{' '}
-              <Link href="/register" className="font-medium text-zinc-900 hover:underline">
+              <Link href="/register" className="font-medium text-foreground hover:underline">
                 Đăng ký ngay
               </Link>
             </div>

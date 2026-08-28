@@ -5,16 +5,18 @@ export async function middleware(request: NextRequest) {
   // Update session for Supabase Auth
   const response = await updateSession(request)
 
-  const isTeacherRoute = request.nextUrl.pathname.startsWith('/teacher')
-  
-  if (isTeacherRoute) {
-    // Basic Subscription Guard implementation
-    // A more complex implementation would fetch the subscription from the database.
-    // For now, we rely on updateSession logic to redirect if not authenticated.
-    // We could check user_metadata.role here or rely on layouts.
+  // Skip role check for auth routes and static paths
+  if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register') || request.nextUrl.pathname.startsWith('/onboarding') || request.nextUrl.pathname === '/') {
+    return response;
   }
 
-  return response
+  // Get user from the updated session headers/cookies (if available)
+  // Actually, updateSession already verifies auth, but we need the role here.
+  // Instead of fetching from DB in middleware (which is slow), we rely on a cookie 
+  // or just let the (dashboard)/layout.tsx do the heavy lifting.
+  // Wait, layout.tsx is Server Component, it can check safely!
+
+  return response;
 }
 
 export const config = {

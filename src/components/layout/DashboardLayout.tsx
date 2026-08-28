@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { logout } from '@/app/(auth)/actions';
 import { ReactNode } from 'react';
 import {
@@ -45,69 +48,102 @@ const studentNav: SidebarItem[] = [
   { icon: Calendar, label: 'Thời khóa biểu', href: '/student/schedule' },
 ];
 
-export default function DashboardLayout({ children, userRole = 'teacher', userName = '', userEmail = '' }: { children: ReactNode, userRole?: string, userName?: string, userEmail?: string }) {
-  const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : [];
+function NavItem({ item, pathname }: { item: SidebarItem, pathname: string }) {
+  // Logic to determine active state. Special case for dashboard root to avoid matching everything
+  const isActive = item.href === '/teacher' || item.href === '/parent' || item.href === '/student' 
+    ? pathname === item.href 
+    : pathname.startsWith(item.href);
 
   return (
-    <div className="flex h-screen bg-zinc-50 overflow-hidden font-sans">
+    <Link
+      href={item.href}
+      className={`relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group
+        ${isActive 
+          ? "text-primary bg-primary/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]" 
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        }
+      `}
+    >
+      <item.icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`} />
+      <span className="z-10">{item.label}</span>
+      
+      {/* Subtle hover/active gradient background */}
+      {isActive && (
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50 pointer-events-none" />
+      )}
+    </Link>
+  );
+}
+
+export default function DashboardLayout({ children, userRole = 'teacher', userName = '', userEmail = '' }: { children: ReactNode, userRole?: string, userName?: string, userEmail?: string }) {
+  const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : [];
+  const pathname = usePathname();
+  const isSettingsActive = pathname.startsWith('/settings');
+
+  return (
+    <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-zinc-200 flex flex-col transition-all duration-300">
-        <div className="h-16 flex items-center px-6 border-b border-zinc-100">
-          <div className="flex items-center gap-2 text-zinc-900 font-bold text-xl tracking-tight">
-            <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center text-white">
+      <aside className="w-64 bg-card border-r border-border flex flex-col transition-all duration-300 z-10">
+        <div className="h-16 flex items-center px-6 border-b border-border">
+          <div className="flex items-center gap-2 text-foreground font-bold text-xl tracking-tight">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shadow-sm">
               G
             </div>
-            GiaSư<span className="font-light">Pro</span>
+            GiaSư<span className="font-light text-muted-foreground">Pro</span>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {navItems.map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
-            >
-              <item.icon className="w-5 h-5 text-zinc-500" />
-              {item.label}
-            </Link>
+            <NavItem key={index} item={item} pathname={pathname} />
           ))}
         </div>
 
-        <div className="p-4 border-t border-zinc-200">
-          <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors mb-2">
-            <Settings className="w-5 h-5 text-zinc-500" />
-            Cài đặt
+        <div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
+          <Link 
+            href="/settings" 
+            className={`relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group mb-2
+              ${isSettingsActive 
+                ? "text-primary bg-primary/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]" 
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }
+            `}
+          >
+            <Settings className={`w-5 h-5 transition-colors duration-300 ${isSettingsActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`} />
+            <span className="z-10">Cài đặt</span>
+            {isSettingsActive && (
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50 pointer-events-none" />
+            )}
           </Link>
           
           <DropdownMenu>
-            <DropdownMenuTrigger className="outline-none w-full flex items-center gap-3 px-1 py-1.5 text-sm font-medium rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer text-left">
-              <Avatar className="h-9 w-9 border border-zinc-200 shrink-0">
+            <DropdownMenuTrigger className="outline-none w-full flex items-center gap-3 px-1 py-1.5 text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer text-left border border-transparent hover:border-border">
+              <Avatar className="h-9 w-9 border border-border shrink-0">
                 <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>GV</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">GV</AvatarFallback>
               </Avatar>
               <span className="flex flex-col flex-1 overflow-hidden leading-tight">
-                <span className="truncate font-medium text-zinc-900">{userName || 'Người dùng'}</span>
-                <span className="truncate text-xs text-zinc-500 font-normal">{userEmail || 'user@giasupro.vn'}</span>
+                <span className="truncate font-medium text-foreground">{userName || 'Người dùng'}</span>
+                <span className="truncate text-xs text-muted-foreground font-normal">{userEmail || 'user@giasupro.vn'}</span>
               </span>
-              <MoreVertical className="w-4 h-4 text-zinc-400 shrink-0" />
+              <MoreVertical className="w-4 h-4 text-muted-foreground shrink-0" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-56">
+            <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-56 bg-popover border-border">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-border" />
                 <Link href="/profile" className="cursor-pointer">
-                  <DropdownMenuItem>Hồ sơ cá nhân</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-muted cursor-pointer">Hồ sơ cá nhân</DropdownMenuItem>
                 </Link>
                 <Link href="/pricing" className="cursor-pointer">
-                  <DropdownMenuItem>Gói đăng ký (Pro)</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-muted cursor-pointer">Gói đăng ký (Pro)</DropdownMenuItem>
                 </Link>
               </DropdownMenuGroup>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuGroup>
                 <form action={logout}>
                   <button type="submit" className="w-full text-left">
-                    <DropdownMenuItem className="text-red-600 cursor-pointer w-full">
+                    <DropdownMenuItem className="text-destructive hover:bg-destructive/10 cursor-pointer w-full focus:text-destructive focus:bg-destructive/10">
                       <LogOut className="w-4 h-4 mr-2" />
                       Đăng xuất
                     </DropdownMenuItem>
@@ -120,18 +156,18 @@ export default function DashboardLayout({ children, userRole = 'teacher', userNa
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-background">
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-6 shrink-0">
+        <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-6 shrink-0 sticky top-0 z-10">
           <div className="flex items-center gap-4">
-            <h2 className="text-zinc-800 font-medium text-lg hidden sm:block">
-              Chào {userName ? `${userName} ` : ''}trở lại
+            <h2 className="text-foreground font-medium text-lg hidden sm:block">
+              Chào {userName ? <span className="font-semibold text-primary">{userName}</span> : ''} trở lại
             </h2>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-zinc-50/50 p-6">
+        <main className="flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-6xl">
             {children}
           </div>
