@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/(auth)/actions';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import { useThemeColor } from '../providers/theme-color-provider';
 import {
   LayoutDashboard,
   Users,
@@ -75,10 +77,33 @@ function NavItem({ item, pathname }: { item: SidebarItem, pathname: string }) {
   );
 }
 
-export default function DashboardLayout({ children, userRole = 'teacher', userName = '', userEmail = '' }: { children: ReactNode, userRole?: string, userName?: string, userEmail?: string }) {
+export default function DashboardLayout({ 
+  children, 
+  userRole = 'teacher', 
+  userName = '', 
+  userEmail = '',
+  uiSettings 
+}: { 
+  children: ReactNode, 
+  userRole?: string, 
+  userName?: string, 
+  userEmail?: string,
+  uiSettings?: { theme?: string; themeColor?: string }
+}) {
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : [];
   const pathname = usePathname();
   const isSettingsActive = pathname.startsWith('/settings');
+
+  const { setTheme } = useTheme();
+  const { setThemeColor } = useThemeColor();
+
+  useEffect(() => {
+    if (uiSettings && !sessionStorage.getItem('theme_synced')) {
+      if (uiSettings.theme) setTheme(uiSettings.theme);
+      if (uiSettings.themeColor) setThemeColor(uiSettings.themeColor as any);
+      sessionStorage.setItem('theme_synced', 'true');
+    }
+  }, [uiSettings, setTheme, setThemeColor]);
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">

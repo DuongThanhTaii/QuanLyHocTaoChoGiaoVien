@@ -11,6 +11,10 @@ export interface UserProps {
   avatarUrl?: string;
   role: UserRole;
   timezone: string;
+  uiSettings?: {
+    theme?: string;
+    themeColor?: string;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -22,6 +26,7 @@ export class User extends AggregateRoot {
   private _avatarUrl?: string;
   private _role: UserRole;
   private _timezone: string;
+  private _uiSettings?: { theme?: string; themeColor?: string };
   private _createdAt: Date;
   private _updatedAt: Date;
 
@@ -33,6 +38,7 @@ export class User extends AggregateRoot {
     this._avatarUrl = props.avatarUrl;
     this._role = props.role;
     this._timezone = props.timezone || 'Asia/Ho_Chi_Minh';
+    this._uiSettings = props.uiSettings;
     this._createdAt = props.createdAt || new Date();
     this._updatedAt = props.updatedAt || new Date();
   }
@@ -50,6 +56,7 @@ export class User extends AggregateRoot {
   get fullName(): string { return this._fullName; }
   get role(): UserRole { return this._role; }
   get timezone(): string { return this._timezone; }
+  get uiSettings(): { theme?: string; themeColor?: string } | undefined { return this._uiSettings; }
   
   updateProfile(fullName: string, phone?: string, avatarUrl?: string): Result<void> {
     if (!fullName || fullName.trim().length === 0) {
@@ -60,6 +67,16 @@ export class User extends AggregateRoot {
     if (avatarUrl) this._avatarUrl = avatarUrl;
     this._updatedAt = new Date();
     
+    return Result.ok(undefined);
+  }
+
+  updateUiSettings(theme?: string, themeColor?: string): Result<void> {
+    this._uiSettings = {
+      ...this._uiSettings,
+      ...(theme && { theme }),
+      ...(themeColor && { themeColor })
+    };
+    this._updatedAt = new Date();
     return Result.ok(undefined);
   }
 }

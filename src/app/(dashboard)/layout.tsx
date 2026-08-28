@@ -14,7 +14,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   // Fetch profile to check onboarding status
   const { data: profile } = await supabase
     .from('profiles')
-    .select('status, full_name')
+    .select('status, full_name, ui_settings')
     .eq('id', user.id)
     .single();
 
@@ -34,5 +34,14 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const userName = profile?.full_name || user?.email?.split('@')[0] || '';
   const userEmail = user?.email || '';
 
-  return <DashboardLayout userRole={role} userName={userName} userEmail={userEmail}>{children}</DashboardLayout>;
+  return (
+    <DashboardLayout 
+      userRole={role} 
+      userName={userName} 
+      userEmail={userEmail}
+      uiSettings={profile?.ui_settings}
+    >
+      {children}
+    </DashboardLayout>
+  );
 }

@@ -16,6 +16,7 @@ export class SupabaseUserRepository implements IUserRepository {
       _avatarUrl: row.avatar_url,
       _role: row.role,
       _timezone: row.timezone,
+      _uiSettings: row.ui_settings,
       _createdAt: new Date(row.created_at),
       _updatedAt: new Date(row.updated_at),
     });
@@ -63,6 +64,7 @@ export class SupabaseUserRepository implements IUserRepository {
         avatar_url: u._avatarUrl,
         role: u._role,
         timezone: u._timezone,
+        ui_settings: u._uiSettings,
         created_at: u._createdAt ? u._createdAt.toISOString() : undefined,
         updated_at: u._updatedAt ? u._updatedAt.toISOString() : undefined,
       });

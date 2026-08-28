@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { useThemeColor } from "@/components/providers/theme-color-provider";
 import { Moon, Sun, Monitor } from "lucide-react";
 import { useEffect, useState } from "react";
+import { saveUiSettings } from "./actions";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -14,6 +15,16 @@ export default function SettingsPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleSetTheme = (newTheme: string) => {
+    setTheme(newTheme);
+    saveUiSettings(newTheme, undefined).catch(console.error);
+  };
+
+  const handleSetColor = (newColor: any) => {
+    setThemeColor(newColor);
+    saveUiSettings(undefined, newColor).catch(console.error);
+  };
 
   if (!mounted) {
     return (
@@ -40,7 +51,7 @@ export default function SettingsPage() {
           <h3 className="text-lg font-medium text-foreground">Chế độ hiển thị (Theme)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
-              onClick={() => setTheme('light')}
+              onClick={() => handleSetTheme('light')}
               className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 bg-background'}`}
             >
               <div className={`p-2 rounded-lg ${theme === 'light' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
@@ -53,7 +64,7 @@ export default function SettingsPage() {
             </button>
 
             <button
-              onClick={() => setTheme('dark')}
+              onClick={() => handleSetTheme('dark')}
               className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 bg-background'}`}
             >
               <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
@@ -66,7 +77,7 @@ export default function SettingsPage() {
             </button>
 
             <button
-              onClick={() => setTheme('system')}
+              onClick={() => handleSetTheme('system')}
               className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${theme === 'system' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 bg-background'}`}
             >
               <div className={`p-2 rounded-lg ${theme === 'system' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
@@ -96,7 +107,7 @@ export default function SettingsPage() {
             ].map((color) => (
               <button
                 key={color.id}
-                onClick={() => setThemeColor(color.id as any)}
+                onClick={() => handleSetColor(color.id as any)}
                 className="group flex items-center gap-3 p-2 transition-all hover:opacity-80"
               >
                 <div className={`w-8 h-8 rounded-full shadow-sm flex items-center justify-center ${color.class}`}>
