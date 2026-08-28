@@ -40,8 +40,13 @@ const parentNav: SidebarItem[] = [
   { icon: CreditCard, label: 'Hóa đơn học phí', href: '/parent/invoices' },
 ];
 
+const studentNav: SidebarItem[] = [
+  { icon: BookOpen, label: 'Lớp học của tôi', href: '/student/classes' },
+  { icon: Calendar, label: 'Thời khóa biểu', href: '/student/schedule' },
+];
+
 export default function DashboardLayout({ children, userRole = 'teacher', userName = '', userEmail = '' }: { children: ReactNode, userRole?: string, userName?: string, userEmail?: string }) {
-  const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : [];
+  const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : [];
 
   return (
     <div className="flex h-screen bg-zinc-50 overflow-hidden font-sans">
