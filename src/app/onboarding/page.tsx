@@ -12,7 +12,7 @@ export default async function OnboardingRoleSelectionPage() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex flex-col md:flex-row flex-1">
       {/* Cột Giáo viên */}
       <Link href="/onboarding/teacher" className="group relative flex-1 flex flex-col items-center justify-center p-8 bg-blue-50/30 hover:bg-blue-50 transition-colors duration-300 overflow-hidden border-b md:border-b-0 md:border-r border-zinc-200 cursor-pointer">
         <div className="absolute inset-0 flex items-end justify-center pb-10 opacity-5 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none">
@@ -45,11 +45,6 @@ export default async function OnboardingRoleSelectionPage() {
           <p className="text-purple-700/80">Theo dõi quá trình học tập, lịch học và học phí của con em mình.</p>
         </div>
       </Link>
-      
-      {/* Nút thoát nổi */}
-      <div className="absolute top-6 left-6 z-50 text-center w-full md:w-auto pointer-events-none">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900/40">GiaSu Pro</h1>
-      </div>
     </div>
   );
 }

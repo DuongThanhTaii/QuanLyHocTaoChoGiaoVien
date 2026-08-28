@@ -15,7 +15,7 @@ export default function StudentOnboardingPage() {
   const [state, formAction, isPending] = useActionState(completeStudentOnboarding as any, initialState);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12">
+    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 py-12">
       <Card className="w-full max-w-md border-zinc-200 shadow-sm">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
