@@ -13,8 +13,6 @@ const LoginSchema = z.object({
 const RegisterSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  fullName: z.string().min(2),
-  role: z.enum(['teacher', 'student', 'parent', 'admin'])
 })
 
 export async function login(prevState: any, formData: FormData) {
@@ -44,12 +42,15 @@ export async function login(prevState: any, formData: FormData) {
 export async function register(prevState: any, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const fullName = formData.get('fullName') as string
-  const role = formData.get('role') as string
+  const confirmPassword = formData.get('confirmPassword') as string
 
-  const result = RegisterSchema.safeParse({ email, password, fullName, role })
+  if (password !== confirmPassword) {
+    return { error: 'Mật khẩu không khớp' }
+  }
+
+  const result = RegisterSchema.safeParse({ email, password })
   if (!result.success) {
-    return { error: 'Invalid input' }
+    return { error: 'Email không hợp lệ hoặc mật khẩu quá ngắn' }
   }
 
   const supabase = await createClient()
@@ -58,10 +59,7 @@ export async function register(prevState: any, formData: FormData) {
     email,
     password,
     options: {
-      data: {
-        full_name: fullName,
-        role: role
-      }
+      // Bỏ qua tạo metadata (full_name, role) vì sẽ làm ở bước onboarding
     }
   })
 
@@ -70,7 +68,7 @@ export async function register(prevState: any, formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/login?registered=true')
+  redirect('/register/verify-email?email=' + encodeURIComponent(email))
 }
 
 export async function logout() {
