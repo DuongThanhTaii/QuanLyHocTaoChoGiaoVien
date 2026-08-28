@@ -15,17 +15,17 @@ export default function StudentOnboardingPage() {
   const [state, formAction, isPending] = useActionState(completeStudentOnboarding as any, initialState);
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 py-12">
-      <Card className="w-full max-w-md border-zinc-200 shadow-sm">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
-            Thông tin Học sinh
-          </CardTitle>
-          <CardDescription className="text-zinc-500">
-            Hoàn thiện thông tin để tham gia lớp học
-          </CardDescription>
-        </CardHeader>
-        <form action={formAction}>
+    <div className="flex flex-1 items-center justify-center bg-white px-4 py-8">
+      <form action={formAction} className="w-full max-w-md">
+        <Card className="border-zinc-200 shadow-sm">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
+              Thông tin Học sinh
+            </CardTitle>
+            <CardDescription className="text-zinc-500">
+              Hoàn thiện thông tin để tham gia lớp học
+            </CardDescription>
+          </CardHeader>
           <CardContent className="space-y-4">
             {state?.error && (
               <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
@@ -73,8 +73,8 @@ export default function StudentOnboardingPage() {
               </Link>
             </div>
           </CardFooter>
-        </form>
-      </Card>
+        </Card>
+      </form>
     </div>
   );
 }

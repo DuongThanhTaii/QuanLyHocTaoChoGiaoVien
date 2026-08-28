@@ -15,17 +15,17 @@ export default function GuardianOnboardingPage() {
   const [state, formAction, isPending] = useActionState(completeGuardianOnboarding as any, initialState);
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 py-12">
-      <Card className="w-full max-w-md border-zinc-200 shadow-sm">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
-            Thông tin Phụ huynh
-          </CardTitle>
-          <CardDescription className="text-zinc-500">
-            Hoàn thiện thông tin để theo dõi con em
-          </CardDescription>
-        </CardHeader>
-        <form action={formAction}>
+    <div className="flex flex-1 items-center justify-center bg-white px-4 py-8">
+      <form action={formAction} className="w-full max-w-md">
+        <Card className="border-zinc-200 shadow-sm">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
+              Thông tin Phụ huynh
+            </CardTitle>
+            <CardDescription className="text-zinc-500">
+              Hoàn thiện thông tin để theo dõi tiến trình học tập
+            </CardDescription>
+          </CardHeader>
           <CardContent className="space-y-4">
             {state?.error && (
               <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
@@ -39,7 +39,7 @@ export default function GuardianOnboardingPage() {
               <Input 
                 id="fullName" 
                 name="fullName" 
-                placeholder="Nguyễn Văn B" 
+                placeholder="Trần Thị B" 
                 required 
                 className="bg-white"
               />
@@ -65,8 +65,8 @@ export default function GuardianOnboardingPage() {
               </Link>
             </div>
           </CardFooter>
-        </form>
-      </Card>
+        </Card>
+      </form>
     </div>
   );
 }

@@ -11,7 +11,16 @@ export function OnboardingHeader() {
   let title = "Vai trò của bạn là gì?";
   let subtitle = "Chọn vai trò phù hợp để chúng tôi thiết lập GiaSu Pro cho bạn.";
   
-  if (pathname !== '/onboarding') {
+  if (pathname.includes('/register/verify-email')) {
+    currentStep = 2;
+    title = "Xác thực Email";
+    subtitle = "Vui lòng kiểm tra hộp thư đến của bạn và làm theo hướng dẫn.";
+  } else if (pathname.includes('/register')) {
+    currentStep = 1;
+    title = "Tạo tài khoản mới";
+    subtitle = "Bắt đầu hành trình của bạn với GiaSu Pro ngay hôm nay.";
+  } else if (pathname !== '/onboarding') {
+    // Nếu không phải trang /onboarding gốc mà là các trang con (VD: /onboarding/teacher)
     currentStep = 4;
     title = "Thông tin cá nhân";
     subtitle = "Hoàn thiện thông tin để bắt đầu sử dụng hệ thống.";
