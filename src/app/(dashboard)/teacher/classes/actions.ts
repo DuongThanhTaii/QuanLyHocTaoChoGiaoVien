@@ -21,7 +21,8 @@ const CreateClassWizardSchema = z.object({
   endDate: z.string().optional(),
   weekDays: z.array(z.string()).optional(),
   startTime: z.string().optional(),
-  durationMinutes: z.coerce.number().optional()
+  durationMinutes: z.coerce.number().optional(),
+  studentContacts: z.string().optional()
 });
 
 export async function createClassWizard(prevState: any, formData: FormData) {
@@ -44,7 +45,8 @@ export async function createClassWizard(prevState: any, formData: FormData) {
     endDate: formData.get('endDate'),
     weekDays: formData.getAll('weekDays'),
     startTime: formData.get('startTime'),
-    durationMinutes: formData.get('durationMinutes')
+    durationMinutes: formData.get('durationMinutes'),
+    studentContacts: formData.get('studentContacts')
   };
 
   const parsed = CreateClassWizardSchema.safeParse(rawData);
@@ -73,6 +75,32 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   }
 
   const classId = classResult.getValue().id;
+
+  // Add any students entered during the class-creation wizard.
+  try {
+    const contacts = JSON.parse(parsed.data.studentContacts || '[]') as Array<{ email?: string; phone?: string }>;
+    for (const contact of contacts) {
+      const email = contact.email?.trim() || null;
+      const phone = contact.phone?.trim() || null;
+      if (!email && !phone) continue;
+
+      const { data: student, error: studentError } = await supabase
+        .from('students')
+        .insert({ full_name: email || phone, email, phone })
+        .select('id')
+        .single();
+
+      if (studentError || !student) throw studentError ?? new Error('Không thể tạo hồ sơ học sinh');
+
+      const { error: enrollmentError } = await supabase
+        .from('enrollments')
+        .insert({ class_id: classId, student_id: student.id, status: 'ACTIVE' });
+
+      if (enrollmentError) throw enrollmentError;
+    }
+  } catch (error) {
+    console.error('Failed to add students during class creation:', error);
+  }
 
   // 2. Generate random 6-char Join Code
   const joinCode = Math.random().toString(36).substring(2, 8).toUpperCase();

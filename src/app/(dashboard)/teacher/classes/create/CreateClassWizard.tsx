@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info } from 'lucide-react';
+import { Info, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -28,6 +28,12 @@ export function CreateClassWizard() {
 
   const [feeType, setFeeType] = useState('per_session');
   const [scheduleType, setScheduleType] = useState('fixed');
+  const [studentContacts, setStudentContacts] = useState<Array<{ email: string; phone: string }>>([]);
+
+  const addStudentContact = () => setStudentContacts((contacts) => [...contacts, { email: '', phone: '' }]);
+  const updateStudentContact = (index: number, field: 'email' | 'phone', value: string) => {
+    setStudentContacts((contacts) => contacts.map((contact, contactIndex) => contactIndex === index ? { ...contact, [field]: value } : contact));
+  };
 
   useEffect(() => {
     if (state?.error) {
@@ -93,6 +99,28 @@ export function CreateClassWizard() {
                 * Học phí tính theo tháng sẽ yêu cầu tạo hóa đơn thủ công hoặc tạo mẫu thanh toán định kỳ.
               </p>
             )}
+
+            <input type="hidden" name="studentContacts" value={JSON.stringify(studentContacts)} />
+            <div className="space-y-3 rounded-lg border border-zinc-200 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label>Học sinh tham gia ngay</Label>
+                  <p className="text-xs text-zinc-500">Thêm học sinh bằng email hoặc số điện thoại (có thể bỏ qua).</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={addStudentContact}>
+                  <Plus className="size-4" /> Thêm học sinh
+                </Button>
+              </div>
+              {studentContacts.map((contact, index) => (
+                <div key={index} className="flex flex-col gap-2 sm:flex-row">
+                  <Input type="email" value={contact.email} onChange={(event) => updateStudentContact(index, 'email', event.target.value)} placeholder="Email học sinh" />
+                  <Input type="tel" value={contact.phone} onChange={(event) => updateStudentContact(index, 'phone', event.target.value)} placeholder="Số điện thoại học sinh" />
+                  <Button type="button" variant="ghost" size="icon" aria-label="Xóa học sinh" onClick={() => setStudentContacts((contacts) => contacts.filter((_, contactIndex) => contactIndex !== index))}>
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">Mô tả lớp học</Label>
