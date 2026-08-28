@@ -43,14 +43,14 @@ export async function completeTeacherOnboarding(prevState: any, formData: FormDa
   // 2. Insert user_roles
   const { error: roleError } = await supabase
     .from('user_roles')
-    .insert({ user_id: user.id, role: 'teacher', is_primary: true })
+    .upsert({ user_id: user.id, role: 'teacher', is_primary: true })
 
   if (roleError) return { error: roleError.message }
 
   // 3. Insert teacher_profiles
   const { error: teacherError } = await supabase
     .from('teacher_profiles')
-    .insert({ user_id: user.id, phone })
+    .upsert({ user_id: user.id, phone })
 
   if (teacherError) return { error: teacherError.message }
 
@@ -86,14 +86,14 @@ export async function completeStudentOnboarding(prevState: any, formData: FormDa
   // 2. Insert user_roles
   const { error: roleError } = await supabase
     .from('user_roles')
-    .insert({ user_id: user.id, role: 'student', is_primary: true })
+    .upsert({ user_id: user.id, role: 'student', is_primary: true })
 
   if (roleError) return { error: roleError.message }
 
   // 3. Insert student_profiles
   const { error: studentError } = await supabase
     .from('student_profiles')
-    .insert({ user_id: user.id, phone, school })
+    .upsert({ user_id: user.id, phone, school })
 
   if (studentError) return { error: studentError.message }
 
@@ -128,14 +128,14 @@ export async function completeGuardianOnboarding(prevState: any, formData: FormD
   // 2. Insert user_roles
   const { error: roleError } = await supabase
     .from('user_roles')
-    .insert({ user_id: user.id, role: 'parent', is_primary: true }) // Using 'parent' or 'guardian'? Enum says 'parent'
+    .upsert({ user_id: user.id, role: 'parent', is_primary: true }) // Using 'parent' or 'guardian'? Enum says 'parent'
 
   if (roleError) return { error: roleError.message }
 
   // 3. Insert guardian_profiles
   const { error: guardianError } = await supabase
     .from('guardian_profiles')
-    .insert({ user_id: user.id, phone })
+    .upsert({ user_id: user.id, phone })
 
   if (guardianError) return { error: guardianError.message }
 
