@@ -1,8 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
 
 export default async function OnboardingRoleSelectionPage() {
   const supabase = await createClient();
@@ -12,53 +11,45 @@ export default async function OnboardingRoleSelectionPage() {
     redirect('/login');
   }
 
-  // TODO: Check if user has an invitation token in cookie, if yes, skip this page.
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12">
-      <div className="w-full max-w-2xl space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Bạn là ai?</h1>
-          <p className="text-zinc-500">
-            Chọn vai trò phù hợp để chúng tôi thiết lập GiaSu Pro cho bạn.
-          </p>
+    <div className="flex flex-col md:flex-row min-h-screen">
+      {/* Cột Giáo viên */}
+      <Link href="/onboarding/teacher" className="group relative flex-1 flex flex-col items-center justify-center p-8 bg-blue-50/30 hover:bg-blue-50 transition-colors duration-300 overflow-hidden border-b md:border-b-0 md:border-r border-zinc-200 cursor-pointer">
+        <div className="absolute inset-0 flex items-end justify-center pb-10 opacity-5 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none">
+          <Image src="/images/onboarding/teacher.jpg" alt="Teacher" width={400} height={400} className="object-contain" />
         </div>
+        <div className="relative z-10 text-center max-w-sm">
+          <h2 className="text-3xl font-bold text-blue-900 mb-4 group-hover:scale-105 transition-transform">Giáo viên / Gia sư</h2>
+          <p className="text-blue-700/80">Quản lý lớp học, học sinh, lịch dạy, học phí và bài tập dễ dàng.</p>
+        </div>
+      </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <RoleCard 
-            href="/onboarding/teacher"
-            icon={<BookOpen className="w-8 h-8 mb-4 text-blue-600" />}
-            title="Giáo viên / Gia sư"
-            description="Quản lý lớp học, học sinh, lịch dạy, học phí và bài tập."
-          />
-          <RoleCard 
-            href="/onboarding/student"
-            icon={<GraduationCap className="w-8 h-8 mb-4 text-green-600" />}
-            title="Học sinh"
-            description="Xem lịch học, bài tập, bài giảng và tiến độ học tập."
-          />
-          <RoleCard 
-            href="/onboarding/guardian"
-            icon={<Users className="w-8 h-8 mb-4 text-purple-600" />}
-            title="Phụ huynh"
-            description="Theo dõi quá trình học tập và học phí của con."
-          />
+      {/* Cột Học sinh */}
+      <Link href="/onboarding/student" className="group relative flex-1 flex flex-col items-center justify-center p-8 bg-green-50/30 hover:bg-green-50 transition-colors duration-300 overflow-hidden border-b md:border-b-0 md:border-r border-zinc-200 cursor-pointer">
+        <div className="absolute inset-0 flex items-end justify-center pb-10 opacity-5 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none">
+          <Image src="/images/onboarding/student.jpg" alt="Student" width={400} height={400} className="object-contain" />
         </div>
+        <div className="relative z-10 text-center max-w-sm">
+          <h2 className="text-3xl font-bold text-green-900 mb-4 group-hover:scale-105 transition-transform">Học sinh</h2>
+          <p className="text-green-700/80">Xem lịch học, bài tập, bài giảng và theo dõi tiến độ học tập của bản thân.</p>
+        </div>
+      </Link>
+
+      {/* Cột Phụ huynh */}
+      <Link href="/onboarding/guardian" className="group relative flex-1 flex flex-col items-center justify-center p-8 bg-purple-50/30 hover:bg-purple-50 transition-colors duration-300 overflow-hidden cursor-pointer">
+        <div className="absolute inset-0 flex items-end justify-center pb-10 opacity-5 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none">
+          <Image src="/images/onboarding/parent.jpg" alt="Parent" width={400} height={400} className="object-contain" />
+        </div>
+        <div className="relative z-10 text-center max-w-sm">
+          <h2 className="text-3xl font-bold text-purple-900 mb-4 group-hover:scale-105 transition-transform">Phụ huynh</h2>
+          <p className="text-purple-700/80">Theo dõi quá trình học tập, lịch học và học phí của con em mình.</p>
+        </div>
+      </Link>
+      
+      {/* Nút thoát nổi */}
+      <div className="absolute top-6 left-6 z-50 text-center w-full md:w-auto pointer-events-none">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900/40">GiaSu Pro</h1>
       </div>
     </div>
-  );
-}
-
-function RoleCard({ href, icon, title, description }: { href: string, icon: React.ReactNode, title: string, description: string }) {
-  return (
-    <Link href={href} className="block group">
-      <Card className="h-full border-zinc-200 shadow-sm transition-all hover:border-zinc-900 hover:shadow-md cursor-pointer">
-        <CardContent className="p-6 flex flex-col items-center text-center">
-          {icon}
-          <h3 className="font-semibold text-lg mb-2 text-zinc-900 group-hover:text-black">{title}</h3>
-          <p className="text-sm text-zinc-500">{description}</p>
-        </CardContent>
-      </Card>
-    </Link>
   );
 }
