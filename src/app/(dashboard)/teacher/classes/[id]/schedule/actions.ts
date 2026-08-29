@@ -6,24 +6,11 @@ import { ScheduleSlot } from '@/domains/schedule/entities/schedule-slot';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export async function addScheduleSlot(formData: FormData) {
+export async function addScheduleSlot(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
-
-  // Ensure user is teacher
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profile?.role !== 'teacher') {
-    throw new Error('Forbidden');
-  }
+  if (!user) return { error: 'Unauthorized' };
 
   const classId = formData.get('classId') as string;
   const dayOfWeek = parseInt(formData.get('dayOfWeek') as string, 10);
@@ -31,10 +18,16 @@ export async function addScheduleSlot(formData: FormData) {
   const endTime = formData.get('endTime') as string;
 
   if (!classId || isNaN(dayOfWeek) || !startTime || !endTime) {
-    throw new Error('Missing required fields');
+    return { error: 'Missing required fields' };
   }
 
   const repos = await getRepositories();
+
+  // Verify class owner
+  const classroom = await repos.classes.findById(classId);
+  if (!classroom || classroom.teacherId !== user.id) {
+    return { error: 'Forbidden' };
+  }
 
   const slotResult = ScheduleSlot.createRecurring(
     classId,
@@ -47,8 +40,40 @@ export async function addScheduleSlot(formData: FormData) {
     return { error: slotResult.getError().message };
   }
 
-  await repos.schedules.save(slotResult.getValue());
+  try {
+    await repos.schedules.save(slotResult.getValue());
+    revalidatePath(`/teacher/classes/${classId}/schedule`);
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
 
-  revalidatePath(`/teacher/classes/${classId}/schedule`);
-  redirect(`/teacher/classes/${classId}/schedule`);
+export async function deleteScheduleSlot(prevState: any, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Unauthorized' };
+
+  const classId = formData.get('classId') as string;
+  const slotId = formData.get('slotId') as string;
+
+  if (!classId || !slotId) return { error: 'Missing required fields' };
+
+  const repos = await getRepositories();
+
+  // Verify class owner
+  const classroom = await repos.classes.findById(classId);
+  if (!classroom || classroom.teacherId !== user.id) {
+    return { error: 'Forbidden' };
+  }
+
+  try {
+    await repos.schedules.delete(slotId);
+
+    revalidatePath(`/teacher/classes/${classId}/schedule`);
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
 }

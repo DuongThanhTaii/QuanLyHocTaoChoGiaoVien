@@ -37,7 +37,7 @@ const teacherNav: SidebarItem[] = [
   { icon: CreditCard, label: 'Hóa đơn học phí', href: '/teacher/invoices' },
   { icon: MessageSquare, label: 'Tin nhắn', href: '/teacher/chat' },
   { icon: BarChart, label: 'Thống kê & Thuế', href: '/teacher/analytics' },
-  { icon: FolderOpen, label: 'Công cụ (Word)', href: '/teacher/tools/word' },
+  { icon: FolderOpen, label: 'Tiện ích & Biểu mẫu', href: '/teacher/tools' },
 ];
 
 const parentNav: SidebarItem[] = [
@@ -48,6 +48,7 @@ const parentNav: SidebarItem[] = [
 const studentNav: SidebarItem[] = [
   { icon: BookOpen, label: 'Lớp học của tôi', href: '/student/classes' },
   { icon: Calendar, label: 'Thời khóa biểu', href: '/student/schedule' },
+  { icon: CreditCard, label: 'Học phí', href: '/student/invoices' },
 ];
 
 function NavItem({ item, pathname }: { item: SidebarItem, pathname: string }) {

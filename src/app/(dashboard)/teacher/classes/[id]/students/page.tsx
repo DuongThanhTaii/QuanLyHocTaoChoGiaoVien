@@ -8,6 +8,7 @@ import { getAppUrl } from '@/lib/app-url';
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Plus } from 'lucide-react';
+import { CopyPersonalLinkButton } from './CopyPersonalLinkButton';
 
 export default async function ClassStudentsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -67,12 +68,13 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                     <TableHead>Email</TableHead>
                     <TableHead>SĐT</TableHead>
                     <TableHead>Trạng thái</TableHead>
+                    <TableHead className="text-right">Hành động</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {students.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                         Chưa có học sinh nào trong lớp.
                       </TableCell>
                     </TableRow>
@@ -86,6 +88,24 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                         <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20">
                           Đang học
                         </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {!studentProfile?.user_id && activeInvitation && (
+                          <div className="flex justify-end">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              title="Sao chép link liên kết cá nhân"
+                              onClick={async () => {
+                                // This needs to be a client component to use onClick, but page.tsx is a Server Component.
+                                // I will use a separate small client component `CopyPersonalLinkButton` instead.
+                              }}
+                              className="hidden"
+                            >
+                            </Button>
+                            <CopyPersonalLinkButton url={`${appUrl}/join/${activeInvitation.join_code}?claim=${studentProfile.id}`} />
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

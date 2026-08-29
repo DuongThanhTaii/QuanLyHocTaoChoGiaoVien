@@ -310,14 +310,57 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
 
   // 2. Find or create Student profile for this user
   let student = await repos.students.findByUserId(user.id);
+  
   if (!student) {
     const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    student = await repos.students.create({
-      user_id: user.id,
-      full_name: profile?.full_name || 'Học sinh',
-      phone: profile?.phone,
-      email: profile?.email
-    });
+    
+    let matchedStudent = null;
+    const claim = formData.get('claim')?.toString();
+    
+    if (claim) {
+      // Teacher gave a specific student ID to claim
+      const { data: claimStudent } = await supabaseAdmin.from('students').select('*').eq('id', claim).is('user_id', null).single();
+      if (claimStudent) {
+        matchedStudent = claimStudent;
+      }
+    }
+    
+    // Attempt to match by phone or email for unlinked student records if no claim or claim failed
+    if (!matchedStudent && (profile?.email || profile?.phone)) {
+      let query = supabaseAdmin.from('students').select('*').is('user_id', null);
+      if (profile.email && profile.phone) {
+        query = query.or(`email.eq.${profile.email},phone.eq.${profile.phone}`);
+      } else if (profile.email) {
+        query = query.eq('email', profile.email);
+      } else if (profile.phone) {
+        query = query.eq('phone', profile.phone);
+      }
+      
+      const { data: matches } = await query;
+      
+      if (matches && matches.length > 0) {
+        matchedStudent = matches[0];
+      }
+    }
+    
+    if (matchedStudent) {
+      const { error: updateError } = await supabaseAdmin.from('students')
+        .update({ user_id: user.id })
+        .eq('id', matchedStudent.id);
+        
+      if (!updateError) {
+        student = matchedStudent;
+      }
+    }
+
+    if (!student) {
+      student = await repos.students.create({
+        user_id: user.id,
+        full_name: profile?.full_name || 'Học sinh',
+        phone: profile?.phone,
+        email: profile?.email
+      });
+    }
   }
 
   // 3. Create Enrollment

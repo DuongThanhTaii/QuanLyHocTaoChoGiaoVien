@@ -11,7 +11,7 @@ function JoinButton() {
   return <Button type="submit" className="w-full" disabled={pending}>{pending ? 'Đang tham gia...' : 'Tham gia lớp học'}</Button>;
 }
 
-export function JoinClassForm({ code }: { code: string }) {
+export function JoinClassForm({ code, claim }: { code: string, claim?: string }) {
   const [state, formAction] = useActionState(joinClassByCode as any, { error: '' });
 
   useEffect(() => {
@@ -21,6 +21,7 @@ export function JoinClassForm({ code }: { code: string }) {
   return (
     <form action={formAction}>
       <input type="hidden" name="code" value={code} />
+      {claim && <input type="hidden" name="claim" value={claim} />}
       <JoinButton />
     </form>
   );

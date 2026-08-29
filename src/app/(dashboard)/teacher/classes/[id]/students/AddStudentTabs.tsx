@@ -7,6 +7,8 @@ import { EnrollStudentForm } from './StudentForms';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+import { ExcelUpload } from './ExcelUpload';
+
 export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: string, invitationCode?: string, joinUrl?: string }) {
 
   return (
@@ -28,8 +30,9 @@ export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: 
             <div className="space-y-4">
               <div className="text-sm text-zinc-500 mb-4">
                 Thêm trực tiếp hồ sơ học sinh. Học sinh không cần phải có tài khoản.
+                <br />
+                <span className="text-amber-600 font-medium text-xs">Mẹo: Hãy điền Số điện thoại hoặc Email để học sinh có thể tự động liên kết tài khoản khi tham gia bằng mã.</span>
               </div>
-              {/* Reuse the modified EnrollStudentForm or create a new AddStudentManualForm here */}
               <EnrollStudentForm classId={classId} />
             </div>
           </TabsContent>
@@ -109,14 +112,7 @@ export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: 
           </TabsContent>
 
           <TabsContent value="excel" className="mt-4">
-             <div className="space-y-4">
-               <div className="text-sm text-zinc-500 mb-4">
-                 Tính năng nhập học sinh hàng loạt từ file Excel đang được phát triển.
-               </div>
-               <div className="h-32 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400">
-                 Kéo thả file .xlsx vào đây
-               </div>
-             </div>
+             <ExcelUpload classId={classId} onUploadSuccess={() => { window.location.reload(); }} />
           </TabsContent>
         </Tabs>
       </div>
