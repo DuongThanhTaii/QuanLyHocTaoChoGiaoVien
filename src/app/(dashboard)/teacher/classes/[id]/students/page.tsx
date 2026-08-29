@@ -90,19 +90,8 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        {!studentProfile?.user_id && activeInvitation && (
+                        {studentProfile && !studentProfile.user_id && activeInvitation && (
                           <div className="flex justify-end">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              title="Sao chép link liên kết cá nhân"
-                              onClick={async () => {
-                                // This needs to be a client component to use onClick, but page.tsx is a Server Component.
-                                // I will use a separate small client component `CopyPersonalLinkButton` instead.
-                              }}
-                              className="hidden"
-                            >
-                            </Button>
                             <CopyPersonalLinkButton url={`${appUrl}/join/${activeInvitation.join_code}?claim=${studentProfile.id}`} />
                           </div>
                         )}

@@ -260,22 +260,26 @@ export async function addStudentManual(prevState: any, formData: FormData) {
 
   const repos = await getRepositories();
 
-  // 1. Check if student already exists by phone/email (simplified for now, ideally search globally)
-  // Here we just create a new standalone student record
-  const student = await repos.students.create({
-    full_name: parsed.data.fullName,
-    phone: parsed.data.phone || null,
-    email: parsed.data.email || null,
-  });
+  try {
+    // 1. Check if student already exists by phone/email (simplified for now, ideally search globally)
+    // Here we just create a new standalone student record
+    const student = await repos.students.create({
+      full_name: parsed.data.fullName,
+      phone: parsed.data.phone || null,
+      email: parsed.data.email || null,
+    });
 
-  // 2. Create Enrollment
-  const { error } = await supabase.from('enrollments').insert({
-    class_id: parsed.data.classId,
-    student_id: student.id,
-    status: 'ACTIVE'
-  });
+    // 2. Create Enrollment
+    const { error } = await supabase.from('enrollments').insert({
+      class_id: parsed.data.classId,
+      student_id: student.id,
+      status: 'ACTIVE'
+    });
 
-  if (error) return { error: error.message };
+    if (error) return { error: error.message };
+  } catch (err: any) {
+    return { error: err.message || 'Lỗi khi thêm học sinh' };
+  }
 
   revalidatePath(`/teacher/classes/${parsed.data.classId}/students`);
   return { success: true };
