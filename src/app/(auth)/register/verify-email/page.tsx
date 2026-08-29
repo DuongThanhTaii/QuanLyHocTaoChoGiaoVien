@@ -35,8 +35,8 @@ export default async function VerifyEmailPage({
             </p>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/login">Đăng nhập</Link>
+            <Button variant="outline" className="w-full">
+              <Link href="/login">Về trang đăng nhập</Link>
             </Button>
             <div className="text-sm text-zinc-500 mt-4">
               Không nhận được email? <span className="font-medium cursor-pointer hover:underline text-zinc-900">Gửi lại (TODO)</span>
