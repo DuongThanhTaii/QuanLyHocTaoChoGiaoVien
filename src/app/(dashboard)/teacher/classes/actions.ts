@@ -383,8 +383,7 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
     status: 'PENDING'
   });
 
-  if (error) {
-    if (error.code === '23505') return { error: 'Bạn đã tham gia lớp này rồi' };
+  if (error && error.code !== '23505') {
     return { error: error.message };
   }
 
