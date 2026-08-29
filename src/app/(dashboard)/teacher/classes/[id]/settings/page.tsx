@@ -5,6 +5,7 @@ import { DeleteClassButton } from './DeleteClassButton';
 import { getAppUrl } from '@/lib/app-url';
 import { ClassSettingsForm } from './ClassSettingsForm';
 import { GenerateInvitationButton } from './GenerateInvitationButton';
+import { CopyableLink } from './CopyableLink';
 
 export default async function ClassSettingsPage({
   params,
@@ -59,7 +60,7 @@ export default async function ClassSettingsPage({
               </div>
               <div className="flex-1 w-full flex flex-col items-center justify-center p-6 border-t md:border-t-0 md:border-l border-zinc-100">
                 <QRCodeDisplay value={joinUrl} />
-                <p className="break-all text-xs text-zinc-500 mt-4 text-center max-w-[250px]">{joinUrl}</p>
+                <CopyableLink url={joinUrl} />
               </div>
             </div>
           ) : (
