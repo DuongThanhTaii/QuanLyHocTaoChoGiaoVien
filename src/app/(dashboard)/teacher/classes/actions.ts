@@ -108,7 +108,11 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   const tokenHash = uuidv4();
 
   // 3. Create Class Invitation
-  const { error: invError } = await supabase.from('class_invitations').insert({
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { error: invError } = await supabaseAdmin.from('class_invitations').insert({
     class_id: classId,
     join_code: joinCode,
     token_hash: tokenHash,
@@ -285,8 +289,13 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
   const code = formData.get('code')?.toString().toUpperCase().trim();
   if (!code) return { error: 'Mã lớp không hợp lệ' };
 
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   // 1. Find invitation
-  const { data: invitation } = await supabase
+  const { data: invitation } = await supabaseAdmin
     .from('class_invitations')
     .select('class_id, status')
     .eq('join_code', code)

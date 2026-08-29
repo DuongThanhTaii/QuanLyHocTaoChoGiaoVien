@@ -1,0 +1,1 @@
+import { createClient } from '@supabase/supabase-js'; import dotenv from 'dotenv'; dotenv.config({path: '.env.local'}); const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY); supabase.rpc('is_teacher_of_class', {cid: '724134bb-7bea-4ed4-bef4-651c446aad13'}).then(console.log).catch(console.error);  

@@ -20,7 +20,10 @@ export default async function ClassSettingsPage({
   const appUrl = await getAppUrl();
   const { data: classroom } = await supabase.from('classes').select('id, name, subject, description, fee_per_session, fee_type, color').eq('id', id).single();
 
-  const { data: invitations } = await supabase
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  const { data: invitations } = await supabaseAdmin
     .from('class_invitations')
     .select('*')
     .eq('class_id', id)
