@@ -235,8 +235,8 @@ export async function generateClassInvitationCode(classId: string) {
 
   if (error) return { error: error.message };
   
-  revalidatePath(`/teacher/classes/${classId}/settings`);
-  revalidatePath(`/teacher/classes/${classId}/students`);
+  revalidatePath('/teacher/classes', 'layout');
+  revalidatePath('/student/classes', 'layout');
   return { success: true };
 }
 
