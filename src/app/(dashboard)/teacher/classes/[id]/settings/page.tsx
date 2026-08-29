@@ -4,6 +4,7 @@ import { QRCodeDisplay } from './QRCodeDisplay';
 import { DeleteClassButton } from './DeleteClassButton';
 import { getAppUrl } from '@/lib/app-url';
 import { ClassSettingsForm } from './ClassSettingsForm';
+import { GenerateInvitationButton } from './GenerateInvitationButton';
 
 export default async function ClassSettingsPage({
   params,
@@ -52,7 +53,10 @@ export default async function ClassSettingsPage({
                 <span className="text-4xl font-black tracking-widest text-zinc-900">{activeInvitation.join_code}</span>
               </div>
             ) : (
-              <p className="text-zinc-500 text-sm">Chưa có mã tham gia nào được tạo.</p>
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-zinc-500 text-sm">Chưa có mã tham gia nào được tạo.</p>
+                <GenerateInvitationButton classId={id} />
+              </div>
             )}
           </CardContent>
         </Card>
@@ -66,7 +70,10 @@ export default async function ClassSettingsPage({
              {joinUrl ? (
                 <div className="space-y-3 text-center"><QRCodeDisplay value={joinUrl} /><p className="break-all text-xs text-zinc-500">{joinUrl}</p></div>
              ) : (
-               <p className="text-zinc-500 text-sm">Chưa có mã QR</p>
+               <div className="flex flex-col items-center gap-2">
+                 <p className="text-zinc-500 text-sm">Chưa có mã QR</p>
+                 <GenerateInvitationButton classId={id} />
+               </div>
              )}
           </CardContent>
         </Card>

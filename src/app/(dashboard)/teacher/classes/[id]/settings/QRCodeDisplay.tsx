@@ -10,8 +10,14 @@ export function QRCodeDisplay({ value }: { value: string }) {
         size={200}
         bgColor={"#ffffff"}
         fgColor={"#18181b"}
-        level={"L"}
+        level={"H"}
         includeMargin={false}
+        imageSettings={{
+          src: "/icon.png",
+          height: 48,
+          width: 48,
+          excavate: true
+        }}
       />
     </div>
   );

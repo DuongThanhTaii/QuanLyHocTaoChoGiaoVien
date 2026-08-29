@@ -4,16 +4,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QRCodeDisplay } from '../settings/QRCodeDisplay';
 import { EnrollStudentForm } from './StudentForms';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: string, invitationCode?: string, joinUrl?: string }) {
 
   return (
-    <Card className="border-zinc-200 shadow-sm sticky top-6">
-      <CardHeader>
-        <CardTitle>Thêm Học Sinh Mới</CardTitle>
-        <CardDescription>Chọn một trong các phương thức sau để thêm học sinh vào lớp.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="space-y-6">
+      <div className="space-y-1.5">
+        <h2 className="text-lg font-semibold leading-none tracking-tight">Thêm Học Sinh Mới</h2>
+        <p className="text-sm text-muted-foreground">Chọn một trong các phương thức sau để thêm học sinh vào lớp.</p>
+      </div>
+      <div>
         <Tabs defaultValue="manual" className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-zinc-100">
             <TabsTrigger value="manual" className="text-xs">Thủ công</TabsTrigger>
@@ -47,7 +49,29 @@ export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: 
                    <p className="text-xs text-zinc-400 mt-2">Chưa tạo mã lớp</p>
                  </div>
                )}
-               {joinUrl && <p className="break-all text-center text-xs text-zinc-500">{joinUrl}</p>}
+               {joinUrl && (
+                 <>
+                   <p className="break-all text-center text-xs text-zinc-500">{joinUrl}</p>
+                   <Button 
+                     variant="outline" 
+                     className="w-full mt-4"
+                     onClick={() => {
+                       if (navigator.share) {
+                         navigator.share({
+                           title: 'Tham gia lớp học',
+                           text: `Tham gia lớp học với mã: ${invitationCode}`,
+                           url: joinUrl,
+                         }).catch(console.error);
+                       } else {
+                         navigator.clipboard.writeText(joinUrl);
+                         toast.success('Đã sao chép link tham gia!');
+                       }
+                     }}
+                   >
+                     Chia sẻ liên kết
+                   </Button>
+                 </>
+               )}
              </div>
           </TabsContent>
           
@@ -57,7 +81,27 @@ export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: 
                  Đưa mã QR này cho học sinh quét để tham gia lớp:
                </div>
                {joinUrl ? (
-                 <QRCodeDisplay value={joinUrl} />
+                 <>
+                   <QRCodeDisplay value={joinUrl} />
+                   <Button 
+                     variant="outline" 
+                     className="w-full mt-4"
+                     onClick={() => {
+                       if (navigator.share) {
+                         navigator.share({
+                           title: 'Tham gia lớp học',
+                           text: 'Quét mã QR hoặc truy cập đường link để tham gia lớp học.',
+                           url: joinUrl,
+                         }).catch(console.error);
+                       } else {
+                         navigator.clipboard.writeText(joinUrl);
+                         toast.success('Đã sao chép link tham gia!');
+                       }
+                     }}
+                   >
+                     Chia sẻ liên kết
+                   </Button>
+                 </>
                ) : (
                  <p className="text-sm text-zinc-500">Chưa có mã lớp</p>
                )}
@@ -75,7 +119,7 @@ export function AddStudentTabs({ classId, invitationCode, joinUrl }: { classId: 
              </div>
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

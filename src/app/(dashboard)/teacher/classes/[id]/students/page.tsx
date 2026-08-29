@@ -6,6 +6,9 @@ import { AddStudentTabs } from './AddStudentTabs';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { getAppUrl } from '@/lib/app-url';
 
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Plus } from 'lucide-react';
+
 export default async function ClassStudentsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const classId = params.id;
@@ -36,18 +39,24 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left Column: Student List */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-zinc-200 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Học sinh trong lớp</CardTitle>
-                <CardDescription>Danh sách {students.length} học sinh đang học</CardDescription>
+      <Card className="border-zinc-200 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Học sinh trong lớp</CardTitle>
+            <CardDescription>Danh sách {students.length} học sinh đang học</CardDescription>
+          </div>
+          <Sheet>
+            <SheetTrigger render={<Button size="sm" className="h-[41px] px-4" />}>
+              <Plus className="h-4 w-4 mr-2" /> Thêm học sinh
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+              <div className="mt-6">
+                <AddStudentTabs classId={classId} invitationCode={activeInvitation?.join_code} joinUrl={activeInvitation ? `${appUrl}/join/${activeInvitation.join_code}` : undefined} />
               </div>
-            </CardHeader>
-            <CardContent>
+            </SheetContent>
+          </Sheet>
+        </CardHeader>
+        <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -80,15 +89,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                 </TableBody>
               </Table>
             </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column: Add Student Widget */}
-        <div className="space-y-6">
-           <AddStudentTabs classId={classId} invitationCode={activeInvitation?.join_code} joinUrl={activeInvitation ? `${appUrl}/join/${activeInvitation.join_code}` : undefined} />
-        </div>
-
-      </div>
+      </Card>
     </div>
   );
 }

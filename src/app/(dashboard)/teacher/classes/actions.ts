@@ -207,6 +207,29 @@ export async function updateClassSettings(prevState: any, formData: FormData) {
   return { success: true };
 }
 
+export async function generateClassInvitationCode(classId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'teacher') return { error: 'Bạn không có quyền.' };
+
+  const joinCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const tokenHash = uuidv4();
+
+  const { error } = await supabase.from('class_invitations').insert({
+    class_id: classId,
+    join_code: joinCode,
+    token_hash: tokenHash,
+    type: 'GENERAL',
+    status: 'ACTIVE'
+  });
+
+  if (error) return { error: error.message };
+  
+  revalidatePath(`/teacher/classes/${classId}/settings`);
+  revalidatePath(`/teacher/classes/${classId}/students`);
+  return { success: true };
+}
+
 export async function addStudentManual(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
