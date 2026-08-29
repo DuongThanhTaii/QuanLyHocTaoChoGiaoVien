@@ -50,7 +50,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
               <Plus className="h-4 w-4 mr-2" /> Thêm học sinh
             </SheetTrigger>
             <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
-              <div className="mt-6">
+              <div className="p-6 pt-12">
                 <AddStudentTabs classId={classId} invitationCode={activeInvitation?.join_code} joinUrl={activeInvitation ? `${appUrl}/join/${activeInvitation.join_code}` : undefined} />
               </div>
             </SheetContent>
