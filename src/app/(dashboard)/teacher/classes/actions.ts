@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/infrastructure/auth/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
 import { ClassService } from '@/application/services/class.service';
 import { Money } from '@/domains/shared/value-objects';
@@ -212,10 +213,19 @@ export async function generateClassInvitationCode(classId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'teacher') return { error: 'Bạn không có quyền.' };
 
+  // Verify ownership
+  const { data: clazz } = await supabase.from('classes').select('teacher_id').eq('id', classId).single();
+  if (!clazz || clazz.teacher_id !== user.id) return { error: 'Lớp học không thuộc về bạn.' };
+
   const joinCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   const tokenHash = uuidv4();
 
-  const { error } = await supabase.from('class_invitations').insert({
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY! // Bypasses RLS
+  );
+
+  const { error } = await supabaseAdmin.from('class_invitations').insert({
     class_id: classId,
     join_code: joinCode,
     token_hash: tokenHash,

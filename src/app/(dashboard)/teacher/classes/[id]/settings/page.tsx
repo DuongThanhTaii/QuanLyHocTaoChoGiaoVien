@@ -40,44 +40,33 @@ export default async function ClassSettingsPage({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-zinc-200 shadow-sm">
-          <CardHeader>
-            <CardTitle>Mã tham gia lớp học</CardTitle>
-            <CardDescription>Cung cấp mã này cho học sinh để tham gia lớp</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {activeInvitation ? (
-              <div className="flex flex-col items-center justify-center p-6 bg-zinc-50 rounded-lg border border-zinc-200">
-                <span className="text-sm text-zinc-500 mb-2">Mã Lớp</span>
-                <span className="text-4xl font-black tracking-widest text-zinc-900">{activeInvitation.join_code}</span>
+      <Card className="border-zinc-200 shadow-sm">
+        <CardHeader>
+          <CardTitle>Mã tham gia lớp học</CardTitle>
+          <CardDescription>Mã lớp và QR code để học sinh tham gia lớp của bạn</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {activeInvitation ? (
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1 w-full flex flex-col justify-center">
+                <div className="flex flex-col items-center justify-center p-8 bg-zinc-50 rounded-lg border border-zinc-200 h-full">
+                  <span className="text-sm text-zinc-500 mb-3 uppercase tracking-wider font-semibold">Mã Lớp</span>
+                  <span className="text-5xl font-black tracking-widest text-zinc-900">{activeInvitation.join_code}</span>
+                </div>
               </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-zinc-500 text-sm">Chưa có mã tham gia nào được tạo.</p>
-                <GenerateInvitationButton classId={id} />
+              <div className="flex-1 w-full flex flex-col items-center justify-center p-6 border-t md:border-t-0 md:border-l border-zinc-100">
+                <QRCodeDisplay value={joinUrl} />
+                <p className="break-all text-xs text-zinc-500 mt-4 text-center max-w-[250px]">{joinUrl}</p>
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-zinc-200 shadow-sm">
-          <CardHeader>
-            <CardTitle>Mã QR tham gia</CardTitle>
-            <CardDescription>Học sinh quét mã QR để vào thẳng màn hình tham gia</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-             {joinUrl ? (
-                <div className="space-y-3 text-center"><QRCodeDisplay value={joinUrl} /><p className="break-all text-xs text-zinc-500">{joinUrl}</p></div>
-             ) : (
-               <div className="flex flex-col items-center gap-2">
-                 <p className="text-zinc-500 text-sm">Chưa có mã QR</p>
-                 <GenerateInvitationButton classId={id} />
-               </div>
-             )}
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-zinc-50 rounded-lg border border-zinc-200 border-dashed space-y-4">
+              <p className="text-zinc-500 text-sm max-w-sm">Chưa có mã tham gia nào được tạo cho lớp học này. Vui lòng tạo mã để học sinh có thể tham gia lớp.</p>
+              <GenerateInvitationButton classId={id} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
       {classroom && <Card className="border-zinc-200 shadow-sm"><CardHeader><CardTitle>Thông tin lớp học</CardTitle><CardDescription>Điều chỉnh thông tin cơ bản và học phí của lớp.</CardDescription></CardHeader><CardContent><ClassSettingsForm classroom={classroom} /></CardContent></Card>}
       
       {/* Cấu hình khác của lớp sẽ được đặt ở đây */}
