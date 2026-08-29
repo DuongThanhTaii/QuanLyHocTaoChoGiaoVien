@@ -24,6 +24,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Class not found or unauthorized' }, { status: 403 });
     }
 
+    const { createClient: createAdminClient } = require('@supabase/supabase-js');
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     let addedCount = 0;
 
     for (const s of students) {
@@ -34,14 +40,23 @@ export async function POST(req: Request) {
       if (!fullName) continue;
 
       // Create standalone student record
-      const student = await repos.students.create({
-        full_name: fullName,
-        phone: phone,
-        email: email,
-      });
+      const { data: student, error: studentError } = await supabaseAdmin
+        .from('students')
+        .insert([{
+          full_name: fullName,
+          phone: phone,
+          email: email,
+        }])
+        .select()
+        .single();
+
+      if (studentError) {
+        console.error('Create student error:', studentError);
+        continue;
+      }
 
       // Enroll student
-      const { error: enrollError } = await supabase.from('enrollments').insert({
+      const { error: enrollError } = await supabaseAdmin.from('enrollments').insert({
         class_id: classId,
         student_id: student.id,
         status: 'ACTIVE'

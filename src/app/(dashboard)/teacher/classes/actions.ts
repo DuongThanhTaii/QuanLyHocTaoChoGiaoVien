@@ -258,24 +258,33 @@ export async function addStudentManual(prevState: any, formData: FormData) {
 
   if (!parsed.success) return { error: 'Invalid data' };
 
-  const repos = await getRepositories();
-
   try {
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     // 1. Check if student already exists by phone/email (simplified for now, ideally search globally)
     // Here we just create a new standalone student record
-    const student = await repos.students.create({
-      full_name: parsed.data.fullName,
-      phone: parsed.data.phone || null,
-      email: parsed.data.email || null,
-    });
-
+    const { data: student, error: studentError } = await supabaseAdmin
+      .from('students')
+      .insert([{
+        full_name: parsed.data.fullName,
+        phone: parsed.data.phone || null,
+        email: parsed.data.email || null,
+      }])
+      .select()
+      .single();
+      
+    if (studentError) throw new Error(`Failed to create student: ${studentError.message}`);
+  
     // 2. Create Enrollment
-    const { error } = await supabase.from('enrollments').insert({
+    const { error } = await supabaseAdmin.from('enrollments').insert({
       class_id: parsed.data.classId,
       student_id: student.id,
       status: 'ACTIVE'
     });
-
+  
     if (error) return { error: error.message };
   } catch (err: any) {
     return { error: err.message || 'Lỗi khi thêm học sinh' };
