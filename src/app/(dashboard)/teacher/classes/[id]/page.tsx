@@ -6,8 +6,11 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = await createClient();
 
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
   // Thống kê cơ bản
-  const { count: studentCount } = await supabase
+  const { count: studentCount } = await supabaseAdmin
     .from('enrollments')
     .select('id', { count: 'exact', head: true })
     .eq('class_id', id)

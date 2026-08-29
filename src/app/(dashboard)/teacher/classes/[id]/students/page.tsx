@@ -17,20 +17,35 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
   const supabase = await createClient();
   const appUrl = await getAppUrl();
 
-  const enrollments = await repos.enrollments.findActiveByClass(classId);
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  // Use Admin client to bypass RLS since the layout already verified teacher ownership
+  const { data: enrollmentsData } = await supabaseAdmin
+    .from('enrollments')
+    .select('*')
+    .eq('class_id', classId)
+    .eq('status', 'ACTIVE');
 
   const students = await Promise.all(
-    enrollments.map(async (enrollment) => {
-      const studentProfile = await repos.students.findById(enrollment.studentId);
+    (enrollmentsData || []).map(async (enrollment: any) => {
+      const { data: studentProfile } = await supabaseAdmin
+        .from('students')
+        .select('*')
+        .eq('id', enrollment.student_id)
+        .single();
+        
       return {
-        enrollment,
+        enrollment: {
+          id: enrollment.id,
+          studentId: enrollment.student_id,
+          classId: enrollment.class_id,
+          status: enrollment.status
+        },
         studentProfile
       };
     })
   );
-
-  const { createClient: createAdmin } = require('@supabase/supabase-js');
-  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
   const { data: invitations } = await supabaseAdmin
     .from('class_invitations')
