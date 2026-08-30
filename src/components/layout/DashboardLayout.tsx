@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from '../ui/dropdown-menu';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 
 interface SidebarItem {
   icon: any;
@@ -133,35 +134,44 @@ export default function DashboardLayout({
   const displayName = userName || (userEmail ? userEmail.split('@')[0] : 'bạn');
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
-      {/* Sidebar */}
-      <aside className={`bg-card border-r border-border flex flex-col transition-all duration-300 z-10 ${isCollapsed ? 'w-[72px]' : 'w-64'}`}>
-        
-        {/* Logo Section */}
-        <div className={`h-16 flex items-center border-b border-border transition-all duration-300 pl-2 pr-2 overflow-hidden`}>
-          <div 
-            className="flex items-center cursor-pointer group shrink-0"
-            onClick={() => isCollapsed && setIsCollapsed(false)}
-            title={isCollapsed ? "Nhấn để mở rộng bảng điều khiển" : undefined}
-          >
-            <div className="w-14 h-14 flex items-center justify-center shrink-0 relative transition-transform duration-300 group-hover:scale-105">
-              {/* Floor shadow */}
-              <div className="absolute bottom-1 w-8 h-1.5 bg-black/30 rounded-[50%] blur-[2px] z-0 translate-y-1" />
-              
-              <video 
-                ref={videoRef}
-                src="/logo.webm" 
-                className="w-full h-full object-contain scale-110 relative z-10"
-                muted 
-                playsInline
-              />
-            </div>
-            <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-1'}`}>
-              <div className="text-foreground font-bold text-xl tracking-tight">
-                GiaSư<span className="font-light text-muted-foreground">Pro</span>
-              </div>
-            </div>
-          </div>
+    <TooltipProvider>
+      <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
+        {/* Sidebar */}
+        <aside className={`bg-card border-r border-border flex flex-col transition-all duration-300 z-10 ${isCollapsed ? 'w-[72px]' : 'w-64'}`}>
+          
+          {/* Logo Section */}
+          <div className={`h-16 flex items-center border-b border-border transition-all duration-300 pl-2 pr-2 overflow-hidden`}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div 
+                  className="flex items-center cursor-pointer shrink-0"
+                  onClick={() => isCollapsed && setIsCollapsed(false)}
+                >
+                  <div className="w-14 h-14 flex items-center justify-center shrink-0 relative transition-transform duration-300">
+                    {/* Floor shadow */}
+                    <div className="absolute bottom-1 w-8 h-1.5 bg-black/30 rounded-[50%] blur-[2px] z-0 translate-y-1" />
+                    
+                    <video 
+                      ref={videoRef}
+                      src="/logo.webm" 
+                      className="w-full h-full object-contain scale-110 relative z-10"
+                      muted 
+                      playsInline
+                    />
+                  </div>
+                  <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-1'}`}>
+                    <div className="text-foreground font-bold text-xl tracking-tight">
+                      GiaSư<span className="font-light text-muted-foreground">Pro</span>
+                    </div>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent side="right">
+                  Mở rộng bảng điều khiển
+                </TooltipContent>
+              )}
+            </Tooltip>
 
           <button 
             onClick={() => setIsCollapsed(true)} 
@@ -272,6 +282,7 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
