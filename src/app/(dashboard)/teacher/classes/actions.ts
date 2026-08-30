@@ -371,7 +371,8 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Bạn cần đăng nhập để tham gia lớp' };
 
-  const code = formData.get('code')?.toString().toUpperCase().trim();
+  const rawCode = formData.get('code')?.toString().trim() || '';
+  const code = (rawCode.match(/\/join\/([^/?#]+)/i)?.[1] || rawCode).toUpperCase();
   if (!code) return { error: 'Mã lớp không hợp lệ' };
 
   const supabaseAdmin = createAdminClient(

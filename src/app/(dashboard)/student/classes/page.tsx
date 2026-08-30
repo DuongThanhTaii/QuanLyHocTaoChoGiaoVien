@@ -2,6 +2,7 @@ import { createClient } from '@/infrastructure/auth/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
+import { JoinClassCard } from './JoinClassCard';
 
 export default async function StudentClassesPage() {
   const supabase = await createClient();
@@ -20,6 +21,7 @@ export default async function StudentClassesPage() {
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Lớp học của tôi</h1>
         <p className="text-zinc-500">Danh sách các lớp học bạn đang tham gia.</p>
       </div>
+      <JoinClassCard />
 
       <Card>
         <CardHeader>
