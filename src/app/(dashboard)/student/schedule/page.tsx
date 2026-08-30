@@ -1,6 +1,5 @@
+import { ScheduleCalendar, ScheduleSlot } from '@/components/shared/calendar/ScheduleCalendar';
 import { createClient } from '@/infrastructure/auth/supabase/server';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from 'lucide-react';
 
 export default async function StudentSchedulePage() {
   const supabase = await createClient();
@@ -8,28 +7,53 @@ export default async function StudentSchedulePage() {
 
   if (!user) return null;
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thời khóa biểu</h1>
-        <p className="text-zinc-500">Lịch học sắp tới của bạn.</p>
-      </div>
+  // Fetch student entity
+  const { data: student } = await supabase.from('students').select('id').eq('user_id', user.id).single();
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lịch học tuần này</CardTitle>
-          <CardDescription>Danh sách các ca học</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12">
-            <Calendar className="mx-auto h-12 w-12 text-zinc-300" />
-            <h3 className="mt-4 text-lg font-medium text-zinc-900">Chưa có lịch học</h3>
-            <p className="mt-2 text-sm text-zinc-500">
-              Bạn không có ca học nào trong tuần này.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+  let slots: ScheduleSlot[] = [];
+
+  if (student) {
+    // Fetch enrollments
+    const { data: enrollments } = await supabase
+      .from('enrollments')
+      .select('class_id')
+      .eq('student_id', student.id)
+      .is('left_at', null);
+
+    if (enrollments && enrollments.length > 0) {
+      const classIds = enrollments.map(e => e.class_id);
+      const { data: classes } = await supabase
+        .from('classes')
+        .select('id, class_code, class_name:name')
+        .in('id', classIds);
+
+      const { data: scheduleSlots } = await supabase
+        .from('schedule_slots')
+        .select('*')
+        .in('class_id', classIds);
+
+      if (scheduleSlots && classes) {
+        slots = scheduleSlots.map(slot => {
+          const cls = classes.find(c => c.id 
+=== slot.class_id);
+          return {
+            ...slot,
+            classes: cls ? { id: cls.id, class_code: cls.class_code || '', class_name: cls.class_name } : null
+          } as ScheduleSlot;
+        });
+      }
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-130px)]">
+      <div className="mb-4">
+        <h1 className="text-rxl font-bold tracking-tight text.zinc-900">Thời khóa biểu học tập</h1>
+        <p className="text-zinc-500">Lịch học các lop của bạn trong tuần.</p>
+      </div>
+      <div className="flex-1 min-h-0">
+        <ScheduleCalendar slots={slots} userRole="student" />
+      </div>
     </div>
   );
 }

@@ -1,23 +1,48 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScheduleCalendar, ScheduleSlot } from '@/components/shared/calendar/ScheduleCalendar';
+import { createClient } from '@/infrastructure/auth/supabase/server';
 
-export default function TeacherSchedulePage() {
+export default async function TeacherSchedulePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  // Fetch classes for teacher
+  const { data: classes } = await supabase
+    .from('classes')
+    .select('id, class_code, class_name:name')
+    .eq('teacher_id', user.id);
+
+  let slots: ScheduleSlot[] = [];
+
+  if (classes && classes.length > 0) {
+    const classIds = classes.map(c => c.id);
+    const { data: scheduleSlots } = await supabase
+      .from('schedule_slots')
+      .select('*')
+      .in('class_id', classIds);
+
+    if (scheduleSlots) {
+      slots = scheduleSlots.map(slot => {
+        const cls = classes.find(c => c.id 
+=== slot.class_id);
+        return {
+          ...slot,
+          classes: cls ? { id: cls.id, class_code: cls.class_code || '', class_name: cls.class_name } : null
+        } as ScheduleSlot;
+      });
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="flex flex-col h-[calc(100vh-130px)]">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thời khóa biểu tổng</h1>
         <p className="text-zinc-500">Lịch giảng dạy tất cả các lớp của bạn trong tuần.</p>
       </div>
-      <Card className="border-zinc-200 shadow-sm">
-        <CardHeader>
-          <CardTitle>Lịch học tuần này</CardTitle>
-          <CardDescription>Chọn một lớp cụ thể để xem chi tiết hoặc điểm danh.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 flex items-center justify-center border-2 border-dashed border-zinc-200 rounded-lg bg-zinc-50">
-            <p className="text-zinc-500">Giao diện Calendar sẽ được nhúng tại đây</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex-1 min-h-0">
+        <ScheduleCalendar slots={slots} userRole="teacher" />
+      </div>
     </div>
   );
 }
