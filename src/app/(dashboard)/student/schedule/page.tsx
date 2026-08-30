@@ -24,7 +24,7 @@ export default async function StudentSchedulePage() {
       const classIds = enrollments.map(e => e.class_id);
       const { data: classes } = await supabase
         .from('classes')
-        .select('id, class_code, class_name:name')
+        .select('id, name')
         .in('id', classIds);
 
       const { data: scheduleSlots } = await supabase
@@ -34,11 +34,10 @@ export default async function StudentSchedulePage() {
 
       if (scheduleSlots && classes) {
         slots = scheduleSlots.map(slot => {
-          const cls = classes.find(c => c.id 
-=== slot.class_id);
+          const cls = classes.find(c => c.id === slot.class_id);
           return {
             ...slot,
-            classes: cls ? { id: cls.id, class_code: cls.class_code || '', class_name: cls.class_name } : null
+            classes: cls ? { id: cls.id, name: cls.name || '' } : null
           } as ScheduleSlot;
         });
       }

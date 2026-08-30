@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/(auth)/actions';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useThemeColor } from '../providers/theme-color-provider';
 import {
@@ -97,6 +97,8 @@ export default function DashboardLayout({
   uiSettings?: { theme?: string; themeColor?: string }
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : [];
   const pathname = usePathname();
   const isSettingsActive = pathname.startsWith('/settings');
@@ -111,6 +113,13 @@ export default function DashboardLayout({
       sessionStorage.setItem('theme_synced', 'true');
     }
   }, [uiSettings, setTheme, setThemeColor]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(e => console.log("Video auto-play prevented:", e));
+    }
+  }, [isCollapsed]);
 
   // Greeting Logic
   const getGreeting = () => {
@@ -130,11 +139,20 @@ export default function DashboardLayout({
         
         {/* Logo Section */}
         <div className={`h-16 flex items-center border-b border-border transition-all duration-300 ${isCollapsed ? 'px-4' : 'px-6'} overflow-hidden`}>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shadow-sm shrink-0">
-              G
+          <div className="flex items-center gap-1">
+            <div className="w-14 h-14 flex items-center justify-center shrink-0 relative">
+              {/* Floor shadow */}
+              <div className="absolute bottom-1 w-8 h-1.5 bg-black/30 rounded-[50%] blur-[2px] z-0 translate-y-1" />
+              
+              <video 
+                ref={videoRef}
+                src="/logo.webm" 
+                className="w-full h-full object-contain scale-110 relative z-10"
+                muted 
+                playsInline
+              />
             </div>
-            <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-0'}`}>
+            <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-1'}`}>
               <div className="text-foreground font-bold text-xl tracking-tight">
                 GiaSư<span className="font-light text-muted-foreground">Pro</span>
               </div>

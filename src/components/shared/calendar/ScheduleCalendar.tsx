@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { startOfWeek, addDays, format, subWeeks, addWeeks, isSameDay } from 'date-fns';
+import { startOfWeek, addDays, format, subWeeks, addWeeks, isSameDay, startOfMonth, endOfMonth, endOfWeel, isSameMonth, subMonths, addMonths, eachDayOfInterval, getDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
 
 export type ScheduleSlot = {
@@ -18,8 +19,7 @@ export type ScheduleSlot = {
   room: string | null;
   classes: {
     id: string;
-    class_code: string;
-    class_name: string;
+    name: string;
   } | null;
 };
 
@@ -37,21 +37,18 @@ const COLORS = [
   'bg-teal-100 border-teal-200 text-teal-800 dark:bg-teal-900/30 dark:border-teal-800 dark:text-teal-300',
 ];
 
-export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
+export function ScheduleCalendar { slots, userRole }: ScheduleCalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedClass, setSelectedClass] = useState<string>('all');
-
-  // Lấy các ngày trong tuần
-  const startOfCurrentWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(startOfCurrentWeek, i));
+  const [selectedClass, setSelectedClass] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'week'|'month'>('week');
 
   // Extract unique classes for filter
   const uniqueClasses = useMemo(() => {
     const classMap = new Map<string, { id: string, name: string }>();
     slots.forEach(s => {
       if (s.classes) {
-        classMap.set(s.classes.id, { id: s.classes.id, name: `${s.classes.class_code} - ${s.classes.class_name}` });
+        classMap.set(s.classes.id, { id: s.classes.id, name: s.classes.name });
       }
     });
     return Array.from(classMap.values());
@@ -68,13 +65,23 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
 
   // Lọc slot theo lớp
   const filteredSlots = useMemo(() => {
-    if (selectedClass === 'all') return slots;
+    if (!selectedClass || selectedClass === 'all') return slots;
     return slots.filter(s => s.class_id 
 === selectedClass);
   }, [slots, selectedClass]);
 
-  const nextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
-  const prevWeek = () => setCurrentDate(subWeeks(currentDate, 1));
+  const handlePrev = () => {
+    if (viewMode 
+=== 'week') setCurrentDate(subWeeks(currentDate, 1));
+    else setCurrentDate(subMonths(currentDate, 1));
+  };
+
+  const handleNext = () => {
+    if (viewMode 
+=== 'week') setCurrentDate(addWeeks(currentDate, 1));
+    else setCurrentDate(addMonths(currentDate, 1));
+  };
+
   const today = () => setCurrentDate(new Date());
 
   const handleSlotClick = (classId: string) => {
@@ -85,14 +92,12 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
 === 'student') {
       router.push(`/student/classes/${classId}`);
     } else {
-      router.push(`/parent/classes/${classId}`); // If parent has this route
+      router.push(`/parent/classes/${classId}`);
     }
   };
 
-  // Convert JS day 0-6 (Sun-Sat) to the day_of_week format used in DB (assume 0=Sun, 1=Mon, ..., 6=Sat)
   const getSlotsForDay = (date: Date) => {
-    const jsDay = date.getDay(); // 0 is Sunday
-    // if db day_of_week is exactly mapping to Date.getDay()
+    const jsDay = date.getDay();
     return filteredSlots
       .filter(s => s.day_of_week 
 === jsDay)
@@ -100,9 +105,19 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
   };
 
   const formatTime = (timeStr: string) => {
-    // timeStr is usually "HH:mm:ss"
     return timeStr.substring(0, 5);
   };
+
+  {/* Calculate week view days */}
+  const startOfCurrentWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(startOfCurrentWeek, i));
+
+  {/* Calculate month view days */}
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const monthStartDay = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const monthEndDay = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const monthDays = eachDayOfInterval({ start: monthStartDay, end: monthEndDay });
 
   return (
     <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-sm">
@@ -111,8 +126,8 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={today}>Hôm nay</Button>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={prevWeek} className="h-8 w-8"><ChevronLeft className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" onClick={nextWeek} className="h-8 w-8"><ChevronRight className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={handlePrev} className="h-8 w-8"><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={handleNext} className="h-8 w-8"><ChevronRight className="h-4 w-4" /></Button>
           </div>
           <h2 className="text-lg font-semibold ml-2 capitalize w-48">
             {format(currentDate, 'MMMM yyyy', { locale: vi })}
@@ -120,6 +135,13 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
         </div>
         
         <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-[140px]">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="week">Tuần</TabsTrigger>
+              <TabsTrigger value="month">Tháng</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <Select value={selectedClass} onValueChange={setSelectedClass}>
             <SelectTrigger className="w-[200px] h-9 bg-background">
               <SelectValue placeholder="Tất cả lớp học" />
@@ -139,64 +161,76 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
         <div className="min-w-[800px] h-full flex flex-col">
           {/* Header Row */}
           <div className="grid grid-cols-7 border-b border-border bg-card sticky top-0 z-10">
-            {weekDays.map((day, i) => {
-              const isToday = isSameDay(day, new Date());
-              return (
-                <div key={i} className={`p-3 text-center border-r border-border last:border-r-0 ${isToday ? 'bg-primary/5' : ''}`}>
-                  <div className={`text-xs font-medium uppercase mb-1 ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                    {format(day, 'EEEE', { locale: vi })}
-                  </div>
-                  <div className={`text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full mx-auto ${isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'}`}>
+            {weekDays.map((day, i) => (
+              <div key={i} className="p-3 text-center border-r border-border last:border-r-0">
+                <div className="text-xs font-medium uppercase text-muted-foreground">
+                  {format(day, 'EEEE $� { locale: vi })}
+                </div>
+                {viewMode 
+=== 'week' && (
+                  <div className=x`text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full mx-auto mt-1 ${isSameDay(day, new Date()) ? 'bg-primary text-primary-foreground' : 'text-foreground'}`}>
                     {format(day, 'd')}
                   </div>
-                </div>
-              );
-            })}
+                )}
+              </div>
+            )i}
           </div>
 
-          {/* Slots Row */}
-          <div className="grid grid-cols-7 flex-1 min-h-[400px]">
-            {weekDays.map((day, i) => {
-              const daySlots = getSlotsForDay(day);
-              const isToday = isSameDay(day, new Date());
-              return (
-                <div key={i} className={`p-2 border-r border-border last:border-r-0 flex flex-col gap-2 ${isToday ? 'bg-primary/[0.02]' : ''}`}>
-                  {daySlots.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center">
-                      {/* Empty state */}
-                    </div>
-                  ) : (
-                    daySlots.map(slot => (
+          {/* Slots Grid */}
+          {viewMode 
+=== 'week' ? (
+            <div className="grid grid-cols-7 flex-1 min-h-[400px]">
+              {weekDays.map((day, i) => {
+                const daySlots = getSlotsForDay(day);
+                const isToday = isSameDay(day, new Date());
+                return (
+                  <div key={i} className={`p-2 border-r border-border last:border-r-0 flex flex-col gap-2 ${isToday ? 'bg-primary/[0.02]' : ''}`}>
+                    {daySlots.map(slot => (
                       <div 
                         key={slot.id} 
                         onClick={() => handleSlotClick(slot.class_id)}
-                        className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all group ${classColors.get(slot.class_id)}`}
+                        className={`p3 rounded-lg border cursor-pointer hover:shadow-md transition-all group ${classColors.get(slot.class_id)}`}
                       >
                         <div className="font-semibold text-sm mb-1 leading-tight group-hover:underline">
-                          {slot.title || slot.classes?.class_name || 'Buỗi học'}
+                          {slot.title || slot.classes?.name || 'Buanỗi học'}
                         </div>
-                        {slot.classes?.class_code && (
-                          <div className="text-xs opacity-80 mb-2 font-medium">
-                            {slot.classes.class_code}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1.5 text-xs opacity-90 mb-1">
+                        <span className="block flex items-center gap-1.5 text-xs opacity-90 mb-1">
                           <Clock className="w-3 h-3" />
-                          <span>{formatTime(slot.start_time)} - '{formatTime(slot.end_time)}</span>
-                        </div>
-                        {slot.room && (
-                          <div className="flex items-center gap-1.5 text-xs opacity-90">
-                            <MapPin className="w-3 h-3" />
-                            <span className="truncate">{slot.room}</span>
-                          </div>
-                        )}
+                          {span>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
+                        </span>
                       </div>
-                    ))
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 flex-1 min-h-0 auto-rows-[120px]">
+              {monthDays.map((day, i) => {
+                const daySlots = getSlotsForDay(day);
+                const isToday = isSameDay(day, new Date());
+                const isCurrentMonth = isSameMonth(day, currentDate);
+                return (
+                  <div key={i} className={`p1.5 border-b border-r border-border last:border-r-0 flex flex-col gap-1 ${isToday ? 'bg-primary/[0.02]' : ''} ${!isCurrentMonth ? 'opacity-40 bg-muted/30' : ''}`}>
+                    <div className=x`text-right text-sm font-medium mb-1 ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                      {format(day, 'd')}
+                    </div>
+                    <div className="flex-1 overflow-y-auto flex flex-col gap-1">
+                      {daySlots.map(slot => (
+                        <div 
+                          key={slot.id} 
+                          onClick={() => handleSlotClick(slot.class_id)}
+                          className=x`px-1.5 py-1 rounded border text-[10px] leading-tight cursor-pointer hover:opacity-80 transition-opacity truncate ${classColors.get(slot.class_id)}`}
+                        >
+                          <span className="font-semibold">{formatTime(slot.start_time)}</span> {slot.title || slot.classes?.name || 'Ca học'}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
