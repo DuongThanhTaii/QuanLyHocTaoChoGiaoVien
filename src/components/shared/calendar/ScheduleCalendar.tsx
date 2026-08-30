@@ -106,7 +106,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
 
   return (
     <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-sm">
-      (* Toolbar *)
+      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-border gap-4 bg-muted/20">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={today}>Hôm nay</Button>
@@ -134,10 +134,10 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
         </div>
       </div>
 
-      (* Calendar Grid *)
+      {/* Calendar Grid */}
       <div className="flex-1 overflow-auto bg-muted/10">
         <div className="min-w-[800px] h-full flex flex-col">
-          (* Header Row *)
+          {/* Header Row */}
           <div className="grid grid-cols-7 border-b border-border bg-card sticky top-0 z-10">
             {weekDays.map((day, i) => {
               const isToday = isSameDay(day, new Date());
@@ -154,18 +154,18 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
             })}
           </div>
 
-          (* Slots Row *)
+          {/* Slots Row */}
           <div className="grid grid-cols-7 flex-1 min-h-[400px]">
             {weekDays.map((day, i) => {
               const daySlots = getSlotsForDay(day);
               const isToday = isSameDay(day, new Date());
               return (
                 <div key={i} className={`p-2 border-r border-border last:border-r-0 flex flex-col gap-2 ${isToday ? 'bg-primary/[0.02]' : ''}`}>
-                  {daySlots.length 
-=== 0 ? (
+                  {daySlots.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
-                      (* Optional empty state *)
+                      {/* Empty state */}
                     </div>
+                  ) : (  </div>
                   ) : (
                     daySlots.map(slot => (
                       <div 
