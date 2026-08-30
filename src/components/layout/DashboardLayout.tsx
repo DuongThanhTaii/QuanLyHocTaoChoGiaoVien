@@ -142,11 +142,10 @@ export default function DashboardLayout({
           {/* Logo Section */}
           <div className={`h-16 flex items-center border-b border-border transition-all duration-300 pl-2 pr-2 overflow-hidden`}>
             <Tooltip>
-              <TooltipTrigger asChild>
-                <div 
-                  className="flex items-center cursor-pointer shrink-0"
-                  onClick={() => isCollapsed && setIsCollapsed(false)}
-                >
+              <TooltipTrigger 
+                className="flex items-center cursor-pointer shrink-0 border-none outline-none bg-transparent"
+                onClick={() => isCollapsed && setIsCollapsed(false)}
+              >
                   <div className="w-14 h-14 flex items-center justify-center shrink-0 relative transition-transform duration-300">
                     {/* Floor shadow */}
                     <div className="absolute bottom-1 w-8 h-1.5 bg-black/30 rounded-[50%] blur-[2px] z-0 translate-y-1" />
@@ -164,7 +163,6 @@ export default function DashboardLayout({
                       GiaSư<span className="font-light text-muted-foreground">Pro</span>
                     </div>
                   </div>
-                </div>
               </TooltipTrigger>
               {isCollapsed && (
                 <TooltipContent side="right">
