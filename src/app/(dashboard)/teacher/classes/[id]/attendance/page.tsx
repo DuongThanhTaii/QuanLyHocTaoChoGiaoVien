@@ -77,6 +77,20 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
   const slotId = session?.id || 'uuid-slot-123'; // passed down as slotId to avoid refactoring UI/props
   const timeRange = session ? `${session.start_time} - ${session.end_time}` : 'Không có lịch học (Ngoài giờ)';
 
+  // Fetch existing attendance records for this session using admin to bypass missing RLS
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  
+  const { data: existingRecords } = await admin
+    .from('attendance_records')
+    .select('student_id, status, note')
+    .eq('session_id', slotId);
+
+  const initialAttendance = (existingRecords || []).reduce((acc: any, record: any) => {
+    acc[record.student_id] = { status: record.status, note: record.note || '' };
+    return acc;
+  }, {});
+
   return (
     <div className="space-y-6">
       <AttendanceManager 
@@ -85,6 +99,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
         students={students}
         dateString={new Date().toLocaleDateString('vi-VN')}
         timeRange={timeRange}
+        initialAttendance={initialAttendance}
       />
     </div>
   );

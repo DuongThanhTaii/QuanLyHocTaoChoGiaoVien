@@ -18,6 +18,7 @@ type AttendanceManagerProps = {
   students: Student[];
   dateString: string;
   timeRange: string;
+  initialAttendance?: Record<string, { status: string; note: string }>;
 };
 
 const statusColors = {
@@ -27,9 +28,12 @@ const statusColors = {
   excused: { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-700' }
 };
 
-export function AttendanceManager({ classId, slotId, students, dateString, timeRange }: AttendanceManagerProps) {
+export function AttendanceManager({ classId, slotId, students, dateString, timeRange, initialAttendance = {} }: AttendanceManagerProps) {
   const [attendanceState, setAttendanceState] = useState<Record<string, { status: string; note: string }>>(
-    students.reduce((acc, s) => ({ ...acc, [s.id]: { status: '', note: '' } }), {})
+    students.reduce((acc, s) => {
+      const init = initialAttendance[s.id];
+      return { ...acc, [s.id]: { status: init?.status || '', note: init?.note || '' } };
+    }, {})
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
