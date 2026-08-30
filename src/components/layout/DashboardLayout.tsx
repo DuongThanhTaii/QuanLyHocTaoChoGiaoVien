@@ -179,8 +179,11 @@ export default function DashboardLayout({
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold">GV</AvatarFallback>
               </Avatar>
               <div className={`flex items-center transition-all duration-300 overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[200px] opacity-100 ml-3'}`}>
-                <span className="flex flex-col flex-1 overflow-hidden leading-tight">
+                <span className="flex flex-col flex-1 overflow-hidden leading-tight gap-0.5">
                   <span className="truncate font-medium text-foreground">{userName || 'Người dùng'}</span>
+                  <span className="truncate text-[10px] uppercase tracking-wider text-primary font-semibold">
+                    {userRole === 'teacher' ? 'Giáo viên' : userRole === 'parent' ? 'Phụ huynh' : userRole === 'student' ? 'Học sinh' : 'Thành viên'}
+                  </span>
                   <span className="truncate text-xs text-muted-foreground font-normal">{userEmail || 'user@giasupro.vn'}</span>
                 </span>
                 <MoreVertical className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
