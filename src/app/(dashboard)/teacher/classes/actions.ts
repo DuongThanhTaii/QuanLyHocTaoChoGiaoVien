@@ -392,6 +392,12 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
   }
 
   const classId = invitation.class_id;
+  const { data: classroom } = await supabaseAdmin
+    .from('classes')
+    .select('name')
+    .eq('id', classId)
+    .maybeSingle();
+  const className = classroom?.name || 'này';
   const repos = await getRepositories();
 
   // 2. Find or create Student profile for this user
@@ -449,7 +455,25 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
     }
   }
 
-  // 3. Create Enrollment
+  // 3. Do not create a duplicate request for a class the student already joined.
+  const { data: existingEnrollment } = await supabaseAdmin
+    .from('enrollments')
+    .select('status')
+    .eq('class_id', classId)
+    .eq('student_id', student.id)
+    .maybeSingle();
+
+  if (existingEnrollment) {
+    if (existingEnrollment.status === 'ACTIVE') {
+      return { success: `Bạn đã tham gia lớp ${className}.` };
+    }
+    if (existingEnrollment.status === 'PENDING') {
+      return { success: `Yêu cầu tham gia lớp ${className} của bạn đang chờ giáo viên duyệt.` };
+    }
+    return { error: `Bạn hiện không thể gửi yêu cầu mới vào lớp ${className}. Vui lòng liên hệ giáo viên.` };
+  }
+
+  // 4. Create Enrollment
   const { error } = await supabase.from('enrollments').insert({
     class_id: classId,
     student_id: student.id,
