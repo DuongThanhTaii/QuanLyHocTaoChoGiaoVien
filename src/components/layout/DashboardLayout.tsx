@@ -153,10 +153,14 @@ export default function DashboardLayout({
                     <video 
                       ref={videoRef}
                       src="/logo.webm" 
-                      className="w-full h-full object-contain scale-110 relative z-10"
+                      className="w-full h-full object-contain scale-110 relative z-10 pointer-events-none select-none"
                       muted 
                       playsInline
+                      onContextMenu={(e) => e.preventDefault()}
+                      controlsList="nodownload"
                     />
+                    {/* Overlay to block extensions like IDM from attaching download buttons */}
+                    <div className="absolute inset-0 z-20 bg-transparent cursor-pointer" onContextMenu={(e) => e.preventDefault()} />
                   </div>
                   <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-1'}`}>
                     <div className="text-foreground font-bold text-xl tracking-tight">
