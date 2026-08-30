@@ -49,6 +49,7 @@ const studentNav: SidebarItem[] = [
   { icon: BookOpen, label: 'Lớp học của tôi', href: '/student/classes' },
   { icon: Calendar, label: 'Thời khóa biểu', href: '/student/schedule' },
   { icon: CreditCard, label: 'Học phí', href: '/student/invoices' },
+  { icon: Users, label: 'Yêu cầu liên kết', href: '/student/requests' },
 ];
 
 function NavItem({ item, pathname, isCollapsed }: { item: SidebarItem, pathname: string, isCollapsed: boolean }) {
