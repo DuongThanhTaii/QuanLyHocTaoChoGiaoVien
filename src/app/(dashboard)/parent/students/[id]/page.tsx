@@ -49,9 +49,9 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
   // Fetch attendance
   const { data: attendanceData } = await admin
     .from('attendance_records')
-    .select('*, schedule_slots(*, classes(name))')
+    .select('*, class_sessions(*, classes(name))')
     .eq('student_id', studentId)
-    .order('created_at', { ascending: false });
+    .order('marked_at', { ascending: false });
 
   const attendance = attendanceData || [];
 
@@ -92,8 +92,8 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
                 </TableRow>
               ) : (
                 attendance.map((record) => {
-                  const slot = Array.isArray(record.schedule_slots) ? record.schedule_slots[0] : record.schedule_slots;
-                  const classes = Array.isArray(slot?.classes) ? slot?.classes[0] : slot?.classes;
+                  const session = Array.isArray(record.class_sessions) ? record.class_sessions[0] : record.class_sessions;
+                  const classes = Array.isArray(session?.classes) ? session?.classes[0] : session?.classes;
                   
                   let statusBadge = '';
                   let statusText = '';
@@ -118,17 +118,17 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
 
                   return (
                     <TableRow key={record.id}>
-                      <TableCell>{new Date(record.created_at).toLocaleDateString('vi-VN')}</TableCell>
+                      <TableCell>{new Date(record.marked_at || new Date()).toLocaleDateString('vi-VN')}</TableCell>
                       <TableCell>
                         <div className="font-medium">{classes?.name}</div>
-                        <div className="text-xs text-zinc-500">{slot?.start_time} - {slot?.end_time}</div>
+                        <div className="text-xs text-zinc-500">{session?.start_time} - {session?.end_time}</div>
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${statusBadge}`}>
                           {statusText}
                         </span>
                       </TableCell>
-                      <TableCell>{record.notes || '-'}</TableCell>
+                      <TableCell>{record.note || '-'}</TableCell>
                     </TableRow>
                   );
                 })
