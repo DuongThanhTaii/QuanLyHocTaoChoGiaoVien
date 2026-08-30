@@ -9,7 +9,7 @@ export class SupabaseAttendanceRepository implements IAttendanceRepository {
     const entity = Object.create(AttendanceRecord.prototype);
     Object.assign(entity, {
       _id: row.id,
-      _slotId: row.slot_id,
+      _slotId: row.session_id,
       _studentId: row.student_id,
       _classId: row.class_id,
       _status: row.status,
@@ -40,7 +40,7 @@ export class SupabaseAttendanceRepository implements IAttendanceRepository {
     const { data, error } = await this.client
       .from('attendance_records')
       .select('*')
-      .eq('slot_id', slotId);
+      .eq('session_id', slotId);
 
     if (error) {
       throw new Error(`Failed to find attendance records by slot ID: ${error.message}`);
@@ -75,7 +75,7 @@ export class SupabaseAttendanceRepository implements IAttendanceRepository {
 
     const { data, error } = await this.client
       .from('attendance_records')
-      .select('slot_id')
+      .select('session_id')
       .eq('class_id', classId)
       .gte('marked_at', startDate)
       .lte('marked_at', endDate);
@@ -84,8 +84,8 @@ export class SupabaseAttendanceRepository implements IAttendanceRepository {
       throw new Error(`Failed to count sessions in month: ${error.message}`);
     }
 
-    // Count distinct slot_ids
-    const slotIds = new Set((data || []).map((row: any) => row.slot_id));
+    // Count distinct session_ids
+    const slotIds = new Set((data || []).map((row: any) => row.session_id));
     return slotIds.size;
   }
 
@@ -95,14 +95,14 @@ export class SupabaseAttendanceRepository implements IAttendanceRepository {
       .from('attendance_records')
       .upsert({
         id: r._id,
-        slot_id: r._slotId,
+        session_id: r._slotId,
         student_id: r._studentId,
         class_id: r._classId,
         status: r._status,
         note: r._note,
         marked_by: r._markedBy,
         marked_at: r._markedAt ? r._markedAt.toISOString() : undefined,
-      }, { onConflict: 'slot_id, student_id' });
+      }, { onConflict: 'session_id, student_id' });
 
     if (error) {
       throw new Error(`Failed to save attendance record: ${error.message}`);

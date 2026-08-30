@@ -31,7 +31,7 @@ export default async function StudentRequestsPage() {
     .from('students')
     .select('id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   let linkedGuardians: any[] = [];
   if (studentData) {

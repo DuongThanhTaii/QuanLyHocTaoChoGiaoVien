@@ -18,7 +18,7 @@ export default async function ParentStudentsPage() {
     .from('guardians')
     .select('id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   let students: any[] = [];
 

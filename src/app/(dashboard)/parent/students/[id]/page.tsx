@@ -20,7 +20,7 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
     .from('guardians')
     .select('id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!guardianData) return <div className="p-12 text-center text-zinc-500">Bạn chưa có hồ sơ phụ huynh.</div>;
 

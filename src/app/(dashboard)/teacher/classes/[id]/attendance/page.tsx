@@ -36,20 +36,46 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
     };
   });
 
-  // Try to find today's slot
-  const currentDay = new Date().getDay(); // 0-6
-  const { data: slot } = await supabase
-    .from('schedule_slots')
+  // Find or create today's session
+  const dateStr = new Date().toISOString().split('T')[0];
+  let { data: session } = await supabase
+    .from('class_sessions')
     .select('id, start_time, end_time')
     .eq('class_id', classId)
-    .eq('day_of_week', currentDay)
-    .limit(1)
-    .single();
+    .eq('session_date', dateStr)
+    .maybeSingle();
 
-  // In the future, this should point to class_sessions. 
-  // For now we keep slotId to avoid breaking everything before implementing schedule logic fully.
-  const slotId = slot?.id || 'uuid-slot-123';
-  const timeRange = slot ? `${slot.start_time} - ${slot.end_time}` : 'Không có lịch học (Ngoài giờ)';
+  if (!session) {
+    // Try to find today's schedule slot to get default times
+    const currentDay = new Date().getDay(); // 0-6
+    const { data: slot } = await supabase
+      .from('schedule_slots')
+      .select('id, start_time, end_time')
+      .eq('class_id', classId)
+      .eq('day_of_week', currentDay)
+      .limit(1)
+      .maybeSingle();
+
+    // Create session
+    const { data: newSession } = await supabase
+      .from('class_sessions')
+      .insert({
+        class_id: classId,
+        schedule_slot_id: slot?.id || null,
+        title: 'Buổi học ' + new Date().toLocaleDateString('vi-VN'),
+        session_date: dateStr,
+        start_time: slot?.start_time || '00:00:00',
+        end_time: slot?.end_time || '23:59:59',
+        status: 'SCHEDULED'
+      })
+      .select('id, start_time, end_time')
+      .single();
+    
+    session = newSession;
+  }
+
+  const slotId = session?.id || 'uuid-slot-123'; // passed down as slotId to avoid refactoring UI/props
+  const timeRange = session ? `${session.start_time} - ${session.end_time}` : 'Không có lịch học (Ngoài giờ)';
 
   return (
     <div className="space-y-6">

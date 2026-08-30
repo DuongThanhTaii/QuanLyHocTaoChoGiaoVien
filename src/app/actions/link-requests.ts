@@ -87,10 +87,10 @@ export async function respondToLinkRequest(requestId: string, accept: boolean) {
       .from('students')
       .select('id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!studentEntity) {
-      const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', user.id).single();
+      const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', user.id).maybeSingle();
       const { data: newStudent } = await supabaseAdmin
         .from('students')
         .insert({ user_id: user.id, full_name: profile?.full_name || 'Unknown', email: profile?.email })
@@ -104,10 +104,10 @@ export async function respondToLinkRequest(requestId: string, accept: boolean) {
       .from('guardians')
       .select('id')
       .eq('user_id', request.parent_id)
-      .single();
+      .maybeSingle();
 
     if (!guardianEntity) {
-      const { data: parentProfile } = await supabaseAdmin.from('profiles').select('*').eq('id', request.parent_id).single();
+      const { data: parentProfile } = await supabaseAdmin.from('profiles').select('*').eq('id', request.parent_id).maybeSingle();
       const { data: newGuardian } = await supabaseAdmin
         .from('guardians')
         .insert({ user_id: request.parent_id, full_name: parentProfile?.full_name || 'Unknown', email: parentProfile?.email })
