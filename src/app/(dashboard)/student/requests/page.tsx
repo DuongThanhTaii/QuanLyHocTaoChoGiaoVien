@@ -8,13 +8,20 @@ export default async function StudentRequestsPage() {
 
   if (!user) return null;
 
-  const { data: requests } = await supabase
+  // Sử dụng admin client để bypass RLS (vì học sinh không có quyền xem profile của phụ huynh)
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: requests } = await supabaseAdmin
     .from('guardian_student_requests')
     .select(`
       id,
       status,
       parent_id,
-      profiles:parent_id(full_name, email)
+      profiles!parent_id(full_name, email)
     `)
     .eq('student_id', user.id)
     .eq('status', 'PENDING');

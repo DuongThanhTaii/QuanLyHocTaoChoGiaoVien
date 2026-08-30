@@ -30,7 +30,7 @@ export function RequestCard({ request }: { request: any }) {
       <CardHeader>
         <CardTitle>Yêu cầu liên kết tài khoản</CardTitle>
         <CardDescription>
-          Phụ huynh có email <strong>{request.profiles?.email}</strong> muốn liên kết với tài khoản của bạn để theo dõi tiến độ học tập.
+          Phụ huynh có email <strong>{Array.isArray(request.profiles) ? request.profiles[0]?.email : request.profiles?.email}</strong> muốn liên kết với tài khoản của bạn để theo dõi tiến độ học tập.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex gap-4 justify-end">
