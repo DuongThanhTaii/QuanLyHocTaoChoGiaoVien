@@ -181,17 +181,24 @@ export default function DashboardLayout({
               <div className={`flex items-center transition-all duration-300 overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[200px] opacity-100 ml-3'}`}>
                 <span className="flex flex-col flex-1 overflow-hidden leading-tight gap-0.5">
                   <span className="truncate font-medium text-foreground">{userName || 'Người dùng'}</span>
-                  <span className="truncate text-[10px] uppercase tracking-wider text-primary font-semibold">
-                    {userRole === 'teacher' ? 'Giáo viên' : userRole === 'parent' ? 'Phụ huynh' : userRole === 'student' ? 'Học sinh' : 'Thành viên'}
-                  </span>
                   <span className="truncate text-xs text-muted-foreground font-normal">{userEmail || 'user@giasupro.vn'}</span>
                 </span>
                 <MoreVertical className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-56 bg-popover border-border">
+            <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-64 bg-popover border-border">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
+                <DropdownMenuLabel className="flex items-center justify-between">
+                  <span>Tài khoản của tôi</span>
+                  <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-md ${
+                    userRole === 'teacher' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                    userRole === 'student' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                    userRole === 'parent' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                    'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'
+                  }`}>
+                    {userRole === 'teacher' ? 'Giáo viên' : userRole === 'parent' ? 'Phụ huynh' : userRole === 'student' ? 'Học sinh' : 'Thành viên'}
+                  </span>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
                 <Link href="/profile" className="cursor-pointer">
                   <DropdownMenuItem className="hover:bg-muted cursor-pointer">Hồ sơ cá nhân</DropdownMenuItem>
