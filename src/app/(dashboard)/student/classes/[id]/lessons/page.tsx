@@ -1,38 +1,10 @@
-export default async function StudentLessonsPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const classId = resolvedParams.id;
-  // In a real app, you would fetch the materials and generate Signed Download URLs for them.
-  const materials = [
-    { id: '1', name: 'Chuong_1_Toan_Hoc_co_ban.pdf', size: '2MB' },
-    { id: '2', name: 'Bai_tap_ve_nha_tuan_1.docx', size: '1MB' }
-  ];
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tài liệu học tập</h1>
-        <p className="text-zinc-500">Xem và tải tài liệu môn học</p>
-      </div>
-      
-      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
-      
-      <div className="space-y-4">
-        {materials.map(m => (
-          <div key={m.id} className="flex justify-between items-center p-4 border rounded hover:bg-gray-50 transition">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">📄</span>
-              <div>
-                <p className="font-semibold text-gray-800">{m.name}</p>
-                <p className="text-sm text-gray-500">{m.size}</p>
-              </div>
-            </div>
-            <button className="bg-blue-100 text-blue-700 px-4 py-2 rounded font-medium hover:bg-blue-200">
-              Tải xuống
-            </button>
-          </div>
-        ))}
-      </div>
-      </div>
-    </div>
-  );
+export default async function StudentLessonsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { createClient } = require('@supabase/supabase-js');
+  const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { data: lessons } = await admin.from('lessons').select('id, title, content, created_at, materials(id, name, file_type, size_bytes)').eq('class_id', id).order('created_at', { ascending: false });
+
+  return <div className="space-y-6"><div><h2 className="text-2xl font-bold tracking-tight text-zinc-900">Bài giảng & Tài liệu</h2><p className="text-zinc-500">Danh sách bài giảng và tài liệu do giáo viên đăng.</p></div><Card><CardHeader><CardTitle>Danh sách bài giảng</CardTitle></CardHeader><CardContent className="space-y-4">{!lessons?.length ? <p className="text-zinc-500">Chưa có bài giảng nào.</p> : lessons.map((lesson: any) => <article key={lesson.id} className="rounded-lg border border-zinc-200 p-5"><h3 className="font-semibold text-zinc-900">{lesson.title}</h3>{lesson.content && <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-600">{lesson.content}</p>}<div className="mt-4"><p className="text-sm font-medium text-zinc-700">Tài liệu đính kèm</p>{lesson.materials?.length ? <ul className="mt-2 space-y-1 text-sm text-zinc-600">{lesson.materials.map((material: any) => <li key={material.id}>📄 {material.name}{material.size_bytes ? ` (${Math.ceil(material.size_bytes / 1024)} KB)` : ''}</li>)}</ul> : <p className="mt-1 text-sm text-zinc-500">Chưa có tài liệu đính kèm.</p>}</div></article>)}</CardContent></Card></div>;
 }
