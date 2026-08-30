@@ -11,10 +11,11 @@ export default async function StudentClassesPage({ searchParams }: { searchParam
   if (!user) return null;
   const { join } = await searchParams;
 
-  // TODO: Fetch real classes the student is enrolled in
-  // Currently, we might need a student_enrollments table.
-  // For now, let's just show a blank state or mock data.
-  const classes: any[] = [];
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { data: student } = await admin.from('students').select('id').eq('user_id', user.id).maybeSingle();
+  const { data: enrollments } = student ? await admin.from('enrollments').select('class_id, status, classes(id, name, subject, description, color)').eq('student_id', student.id).eq('status', 'ACTIVE') : { data: [] };
+  const classes = (enrollments || []).map((item: any) => Array.isArray(item.classes) ? item.classes[0] : item.classes).filter(Boolean);
 
   return (
     <div className="space-y-6">
@@ -41,7 +42,7 @@ export default async function StudentClassesPage({ searchParams }: { searchParam
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {/* Render classes here */}
+              {classes.map((classroom: any) => <Link key={classroom.id} href={`/student/classes/${classroom.id}`}><Card className="border-zinc-200 transition-shadow hover:shadow-md"><CardHeader><div className="h-1 w-12 rounded" style={{ backgroundColor: classroom.color || '#18181b' }} /><CardTitle className="mt-3">{classroom.name}</CardTitle><CardDescription>{classroom.subject || 'Chưa cập nhật môn học'}</CardDescription></CardHeader><CardContent><p className="line-clamp-2 text-sm text-zinc-500">{classroom.description || 'Xem tài liệu và lịch học của lớp.'}</p></CardContent></Card></Link>)}
             </div>
           )}
         </CardContent>
