@@ -76,16 +76,22 @@ export async function respondToLinkRequest(requestId: string, accept: boolean) {
   if (updateError) return { error: updateError.message };
 
   if (accept) {
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     // Find or create student
-    let { data: studentEntity } = await supabase
+    let { data: studentEntity } = await supabaseAdmin
       .from('students')
       .select('id')
       .eq('user_id', user.id)
       .single();
 
     if (!studentEntity) {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      const { data: newStudent } = await supabase
+      const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', user.id).single();
+      const { data: newStudent } = await supabaseAdmin
         .from('students')
         .insert({ user_id: user.id, full_name: profile?.full_name || 'Unknown', email: profile?.email })
         .select('id')
@@ -94,15 +100,15 @@ export async function respondToLinkRequest(requestId: string, accept: boolean) {
     }
 
     // Find or create guardian
-    let { data: guardianEntity } = await supabase
+    let { data: guardianEntity } = await supabaseAdmin
       .from('guardians')
       .select('id')
       .eq('user_id', request.parent_id)
       .single();
 
     if (!guardianEntity) {
-      const { data: parentProfile } = await supabase.from('profiles').select('*').eq('id', request.parent_id).single();
-      const { data: newGuardian } = await supabase
+      const { data: parentProfile } = await supabaseAdmin.from('profiles').select('*').eq('id', request.parent_id).single();
+      const { data: newGuardian } = await supabaseAdmin
         .from('guardians')
         .insert({ user_id: request.parent_id, full_name: parentProfile?.full_name || 'Unknown', email: parentProfile?.email })
         .select('id')
@@ -112,7 +118,7 @@ export async function respondToLinkRequest(requestId: string, accept: boolean) {
 
     // Insert into student_guardians
     if (studentEntity && guardianEntity) {
-      const { error: linkError } = await supabase
+      const { error: linkError } = await supabaseAdmin
         .from('student_guardians')
         .upsert({
           student_id: studentEntity.id,
@@ -124,5 +130,6 @@ export async function respondToLinkRequest(requestId: string, accept: boolean) {
   }
 
   revalidatePath('/student/requests');
+  revalidatePath('/parent/students');
   return { success: true };
 }
