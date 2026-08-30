@@ -19,13 +19,14 @@ export default async function StudentClassesPage({ searchParams }: { searchParam
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Lớp học của tôi</h1>
-        <p className="text-zinc-500">Danh sách các lớp học bạn đang tham gia.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Lớp học của tôi</h1>
+          <p className="text-zinc-500">Danh sách các lớp học bạn đang tham gia.</p>
+        </div>
+        <JoinClassCard />
       </div>
       {join === 'pending' && <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">Gửi yêu cầu tham gia lớp thành công. Vui lòng chờ giáo viên duyệt.</div>}
-      <JoinClassCard />
-
       <Card>
         <CardHeader>
           <CardTitle>Các lớp học</CardTitle>
