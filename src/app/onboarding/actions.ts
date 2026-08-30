@@ -35,7 +35,7 @@ export async function completeTeacherOnboarding(prevState: any, formData: FormDa
   // 1. Update profiles (status = ACTIVE, full_name, role)
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({ full_name: fullName, status: 'ACTIVE', role: 'teacher' })
+    .update({ full_name: fullName, phone: phone, status: 'ACTIVE', role: 'teacher' })
     .eq('id', user.id)
   
   if (profileError) return { error: profileError.message }
@@ -78,7 +78,7 @@ export async function completeStudentOnboarding(prevState: any, formData: FormDa
   // 1. Update profiles (status = ACTIVE, full_name, role)
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({ full_name: fullName, status: 'ACTIVE', role: 'student' })
+    .update({ full_name: fullName, phone: phone, status: 'ACTIVE', role: 'student' })
     .eq('id', user.id)
   
   if (profileError) return { error: profileError.message }
@@ -120,7 +120,7 @@ export async function completeGuardianOnboarding(prevState: any, formData: FormD
   // 1. Update profiles (status = ACTIVE, full_name, role)
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({ full_name: fullName, status: 'ACTIVE', role: 'parent' })
+    .update({ full_name: fullName, phone: phone, status: 'ACTIVE', role: 'parent' })
     .eq('id', user.id)
   
   if (profileError) return { error: profileError.message }
