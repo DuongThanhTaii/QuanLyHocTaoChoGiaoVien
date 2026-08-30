@@ -296,9 +296,11 @@ export async function addStudentManual(prevState: any, formData: FormData) {
 
 const UpdateStudentSchema = z.object({
   studentId: z.string().uuid(),
+  enrollmentId: z.string().uuid(),
   fullName: z.string().min(2),
   phone: z.string().optional().or(z.literal('')),
   email: z.string().email().optional().or(z.literal('')),
+  status: z.enum(['ACTIVE', 'PENDING', 'PAUSED', 'LEFT', 'BLOCKED']),
 });
 
 export async function updateStudent(prevState: any, formData: FormData) {
@@ -311,6 +313,8 @@ export async function updateStudent(prevState: any, formData: FormData) {
     fullName: formData.get('fullName'),
     phone: formData.get('phone'),
     email: formData.get('email'),
+    enrollmentId: formData.get('enrollmentId'),
+    status: formData.get('status'),
   });
 
   if (!parsed.success) return { error: 'Dữ liệu không hợp lệ' };
@@ -332,6 +336,8 @@ export async function updateStudent(prevState: any, formData: FormData) {
       .eq('id', parsed.data.studentId);
 
     if (error) throw new Error(error.message);
+    const { error: enrollmentError } = await supabaseAdmin.from('enrollments').update({ status: parsed.data.status, left_at: parsed.data.status === 'LEFT' ? new Date().toISOString() : null }).eq('id', parsed.data.enrollmentId);
+    if (enrollmentError) throw new Error(enrollmentError.message);
   } catch (err: any) {
     return { error: err.message || 'Lỗi khi cập nhật học sinh' };
   }

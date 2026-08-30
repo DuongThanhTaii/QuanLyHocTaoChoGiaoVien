@@ -53,7 +53,7 @@ export function EnrollStudentForm({ classId }: { classId: string }) {
 
 const initialEditState = { error: '', success: false };
 
-export function EditStudentForm({ classId, student, onSuccess }: { classId: string, student: any, onSuccess?: () => void }) {
+export function EditStudentForm({ classId, student, enrollment, onSuccess }: { classId: string, student: any, enrollment: any, onSuccess?: () => void }) {
   const [state, formAction, isPending] = useActionState(updateStudent as any, initialEditState);
 
   useEffect(() => {
@@ -70,11 +70,13 @@ export function EditStudentForm({ classId, student, onSuccess }: { classId: stri
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="classId" value={classId} />
         <input type="hidden" name="studentId" value={student.id} />
+        <input type="hidden" name="enrollmentId" value={enrollment.id} />
         
         <div className="space-y-2">
           <Label htmlFor={`edit-fullName-${student.id}`}>Họ và tên học sinh <span className="text-red-500">*</span></Label>
           <Input id={`edit-fullName-${student.id}`} name="fullName" defaultValue={student.full_name} required />
         </div>
+        <div className="space-y-2"><Label htmlFor={`edit-status-${student.id}`}>Trạng thái học sinh</Label><select id={`edit-status-${student.id}`} name="status" defaultValue={enrollment.status} className="h-9 w-full rounded-lg border px-3 text-sm"><option value="ACTIVE">Đang học</option><option value="PENDING">Chờ duyệt</option><option value="PAUSED">Tạm dừng</option><option value="LEFT">Đã rời lớp</option><option value="BLOCKED">Đã khóa</option></select></div>
         
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

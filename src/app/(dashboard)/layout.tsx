@@ -31,7 +31,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
     .single();
 
   const role = roleData?.role || 'teacher'; // fallback
-  const userName = profile?.full_name || user?.email?.split('@')[0] || '';
+  const userName = profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user?.email?.split('@')[0] || '';
   const userEmail = user?.email || '';
 
   return (

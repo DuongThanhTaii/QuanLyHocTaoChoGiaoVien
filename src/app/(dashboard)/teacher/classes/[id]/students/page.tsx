@@ -11,6 +11,8 @@ import { Plus, CheckCircle2, HelpCircle, Pencil } from 'lucide-react';
 import { CopyPersonalLinkButton } from './CopyPersonalLinkButton';
 import { EditStudentForm } from './StudentForms';
 
+const enrollmentStatusLabels: Record<string, string> = { ACTIVE: 'Đang học', PENDING: 'Chờ duyệt', PAUSED: 'Tạm dừng', LEFT: 'Đã rời lớp', BLOCKED: 'Đã khóa' };
+
 export default async function ClassStudentsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const classId = params.id;
@@ -25,8 +27,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
   const { data: enrollmentsData } = await supabaseAdmin
     .from('enrollments')
     .select('*')
-    .eq('class_id', classId)
-    .eq('status', 'ACTIVE');
+    .eq('class_id', classId);
 
   const students = await Promise.all(
     (enrollmentsData || []).map(async (enrollment: any) => {
@@ -101,8 +102,8 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                       <TableCell>{studentProfile?.email || '--'}</TableCell>
                       <TableCell>{studentProfile?.phone || '--'}</TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20">
-                          Đang học
+                        <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-zinc-100 text-zinc-700">
+                          {enrollmentStatusLabels[enrollment.status] || enrollment.status}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
@@ -131,7 +132,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                               <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
                                 <div className="p-6 pt-12">
                                   <h2 className="text-lg font-semibold mb-6">Chỉnh sửa thông tin học sinh</h2>
-                                  <EditStudentForm classId={classId} student={studentProfile} />
+                                  <EditStudentForm classId={classId} student={studentProfile} enrollment={enrollment} />
                                 </div>
                               </SheetContent>
                             </Sheet>
