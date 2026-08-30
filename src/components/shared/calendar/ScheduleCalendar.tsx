@@ -138,7 +138,9 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
 
           <Select value={selectedClass} onValueChange={setSelectedClass}>
             <SelectTrigger className="w-[200px] h-9 bg-background">
-              <SelectValue placeholder="Tất cả lớp học" />
+              <SelectValue placeholder="Tất cả lớp học">
+                {selectedClass === 'all' ? 'Tất cả lớp học' : uniqueClasses.find(c => c.id === selectedClass)?.name || 'Tất cả lớp học'}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả lớp học</SelectItem>
@@ -156,8 +158,8 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
           {/* Header Row */}
           <div className="grid grid-cols-7 border-b border-border bg-card sticky top-0 z-10">
             {weekDays.map((day, i) => (
-              <div key={i} className="p-3 text-center border-r border-border last:border-r-0">
-                <div className="text-xs font-medium uppercase text-muted-foreground">
+              <div key={i} className={`p-3 text-center border-r border-border last:border-r-0 ${isSameDay(day, new Date()) ? 'bg-primary/5 dark:bg-primary/10 border-b-2 border-b-primary' : ''}`}>
+                <div className="text-xs font-bold uppercase text-foreground">
                   {format(day, 'EEEE', { locale: vi })}
                 </div>
                 {viewMode === 'week' && (
@@ -176,7 +178,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                 const daySlots = getSlotsForDay(day);
                 const isToday = isSameDay(day, new Date());
                 return (
-                  <div key={i} className={`p-2 border-r border-border last:border-r-0 flex flex-col gap-2 ${isToday ? 'bg-primary/[0.02]' : ''}`}>
+                  <div key={i} className={`p-2 border-r border-border last:border-r-0 flex flex-col gap-2 ${isToday ? 'bg-primary/5 dark:bg-primary/10' : ''}`}>
                     {daySlots.map(slot => (
                       <div 
                         key={slot.id} 
@@ -203,7 +205,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                 const isToday = isSameDay(day, new Date());
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 return (
-                  <div key={i} className={`p-1.5 border-b border-r border-border last:border-r-0 flex flex-col gap-1 ${isToday ? 'bg-primary/[0.02]' : ''} ${!isCurrentMonth ? 'opacity-40 bg-muted/30' : ''}`}>
+                  <div key={i} className={`p-1.5 border-b border-r border-border last:border-r-0 flex flex-col gap-1 ${isToday ? 'bg-primary/5 dark:bg-primary/10 border-primary ring-1 ring-inset ring-primary z-10' : ''} ${!isCurrentMonth ? 'opacity-40 bg-muted/30' : ''}`}>
                     <div className={`text-right text-sm font-medium mb-1 ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
                       {format(day, 'd')}
                     </div>
