@@ -7,8 +7,9 @@ import { createClient } from '@/infrastructure/auth/supabase/server';
 import { getAppUrl } from '@/lib/app-url';
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle2, HelpCircle, Pencil } from 'lucide-react';
 import { CopyPersonalLinkButton } from './CopyPersonalLinkButton';
+import { EditStudentForm } from './StudentForms';
 
 export default async function ClassStudentsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -79,11 +80,11 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Họ tên</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>SĐT</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Hành động</TableHead>
+                    <TableHead className="font-semibold text-zinc-900">Họ tên</TableHead>
+                    <TableHead className="font-semibold text-zinc-900">Email</TableHead>
+                    <TableHead className="font-semibold text-zinc-900">SĐT</TableHead>
+                    <TableHead className="font-semibold text-zinc-900">Trạng thái</TableHead>
+                    <TableHead className="text-right font-semibold text-zinc-900">Hành động</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -105,11 +106,37 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        {studentProfile && !studentProfile.user_id && activeInvitation && (
-                          <div className="flex justify-end">
-                            <CopyPersonalLinkButton url={`${appUrl}/join/${activeInvitation.join_code}?claim=${studentProfile.id}`} />
-                          </div>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {studentProfile?.user_id ? (
+                            <span title="Đã tham gia (Đã liên kết tài khoản)" className="inline-flex items-center justify-center text-green-600 bg-green-50 p-1.5 rounded-md border border-green-200">
+                              <CheckCircle2 className="w-4 h-4" />
+                            </span>
+                          ) : (
+                            <span title="Chưa tham gia" className="inline-flex items-center justify-center text-zinc-400 bg-zinc-50 p-1.5 rounded-md border border-zinc-200">
+                              <HelpCircle className="w-4 h-4" />
+                            </span>
+                          )}
+                          
+                          {studentProfile && !studentProfile.user_id && activeInvitation && (
+                            <div title="Sao chép link tham gia">
+                              <CopyPersonalLinkButton url={`${appUrl}/join/${activeInvitation.join_code}?claim=${studentProfile.id}`} />
+                            </div>
+                          )}
+                          
+                          {studentProfile && (
+                            <Sheet>
+                              <SheetTrigger render={<Button variant="outline" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-900" title="Chỉnh sửa thông tin" />}>
+                                <Pencil className="h-4 w-4" />
+                              </SheetTrigger>
+                              <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+                                <div className="p-6 pt-12">
+                                  <h2 className="text-lg font-semibold mb-6">Chỉnh sửa thông tin học sinh</h2>
+                                  <EditStudentForm classId={classId} student={studentProfile} />
+                                </div>
+                              </SheetContent>
+                            </Sheet>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

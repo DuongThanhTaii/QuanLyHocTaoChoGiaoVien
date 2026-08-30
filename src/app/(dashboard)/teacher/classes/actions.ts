@@ -294,6 +294,58 @@ export async function addStudentManual(prevState: any, formData: FormData) {
   return { success: true };
 }
 
+const UpdateStudentSchema = z.object({
+  studentId: z.string().uuid(),
+  fullName: z.string().min(2),
+  phone: z.string().optional().or(z.literal('')),
+  email: z.string().email().optional().or(z.literal('')),
+});
+
+export async function updateStudent(prevState: any, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'teacher') return { error: 'Unauthorized' };
+
+  const parsed = UpdateStudentSchema.safeParse({
+    studentId: formData.get('studentId'),
+    fullName: formData.get('fullName'),
+    phone: formData.get('phone'),
+    email: formData.get('email'),
+  });
+
+  if (!parsed.success) return { error: 'Dữ liệu không hợp lệ' };
+
+  try {
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Update the student record
+    const { error } = await supabaseAdmin
+      .from('students')
+      .update({
+        full_name: parsed.data.fullName,
+        phone: parsed.data.phone || null,
+        email: parsed.data.email || null,
+      })
+      .eq('id', parsed.data.studentId);
+
+    if (error) throw new Error(error.message);
+  } catch (err: any) {
+    return { error: err.message || 'Lỗi khi cập nhật học sinh' };
+  }
+
+  // We should revalidate the path, but we don't have classId here easily. 
+  // We can just revalidate the general paths or pass classId in formData.
+  const classId = formData.get('classId');
+  if (classId) {
+    revalidatePath(`/teacher/classes/${classId}/students`);
+  }
+  
+  return { success: true };
+}
+
 export async function joinClassByCode(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

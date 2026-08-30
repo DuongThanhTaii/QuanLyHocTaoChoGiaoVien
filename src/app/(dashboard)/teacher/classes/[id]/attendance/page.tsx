@@ -2,6 +2,7 @@ import { markAttendance } from '../../attendance-actions';
 import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
+import { AttendanceManager } from './AttendanceManager';
 
 export default async function AttendancePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -52,53 +53,13 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
-        <h2 className="text-lg font-semibold text-zinc-900">Điểm danh ngày {new Date().toLocaleDateString('vi-VN')}</h2>
-        <div className="bg-gray-50 p-4 rounded mb-6 flex justify-between items-center">
-        <div>
-          <p className="font-semibold text-gray-700">Ngày: {new Date().toLocaleDateString('vi-VN')}</p>
-          <p className="text-sm text-gray-500">Giờ học: {timeRange}</p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        {students.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            Chưa có học sinh nào trong lớp
-          </div>
-        ) : (
-          students.map((student: any) => (
-            <form action={markAttendance as any} key={student.id} className="flex items-center justify-between border-b pb-4">
-              <input type="hidden" name="classId" value={classId} />
-              <input type="hidden" name="studentId" value={student.id} />
-              <input type="hidden" name="slotId" value={slotId} />
-              
-              <div className="font-medium text-gray-800">{student.name}</div>
-              
-              <div className="flex gap-4 items-center">
-                <select name="status" className="border rounded px-2 py-1 text-sm bg-white" defaultValue="present">
-                  <option value="present">Có mặt</option>
-                  <option value="absent">Vắng mặt</option>
-                  <option value="late">Đi trễ</option>
-                  <option value="excused">Có phép</option>
-                </select>
-                
-                <input 
-                  type="text" 
-                  name="note" 
-                  placeholder="Ghi chú..." 
-                  className="border rounded px-2 py-1 text-sm w-32"
-                />
-                
-                <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  Lưu
-                </button>
-              </div>
-            </form>
-          ))
-        )}
-      </div>
-      </div>
+      <AttendanceManager 
+        classId={classId}
+        slotId={slotId}
+        students={students}
+        dateString={new Date().toLocaleDateString('vi-VN')}
+        timeRange={timeRange}
+      />
     </div>
   );
 }
