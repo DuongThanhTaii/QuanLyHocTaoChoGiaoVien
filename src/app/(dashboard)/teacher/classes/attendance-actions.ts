@@ -37,8 +37,11 @@ export async function markAttendance(formData: FormData) {
     return { error: 'Invalid data' };
   }
 
-  const repos = await getRepositories();
-  const attendanceService = new AttendanceService(repos.attendance);
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { SupabaseAttendanceRepository } = await import('@/infrastructure/persistence/supabase/repositories/attendance.repository');
+  const attendanceRepository = new SupabaseAttendanceRepository(supabaseAdmin);
+  const attendanceService = new AttendanceService(attendanceRepository);
   
   const result = await attendanceService.markAttendance(
     parsed.data.slotId,
@@ -59,8 +62,10 @@ export async function markAttendance(formData: FormData) {
     const { data: student } = await supabaseAdmin.from('students').select('full_name').eq('id', parsed.data.studentId).single();
     const { data: classInfo } = await supabaseAdmin.from('classes').select('name').eq('id', parsed.data.classId).single();
     
-    // 2. Lấy danh sách phụ huynh của học sinh này
-    const guardians = await repos.guardians.getGuardiansForStudent(parsed.data.studentId);
+    // 2. Lấy danh sách phụ huynh của học sinh này bằng admin client để bypass RLS
+    const { SupabaseGuardianRepository } = await import('@/infrastructure/persistence/supabase/repositories/guardian.repository');
+    const guardianRepository = new SupabaseGuardianRepository(supabaseAdmin);
+    const guardians = await guardianRepository.getGuardiansForStudent(parsed.data.studentId);
     
     // 3. Chuẩn bị nội dung thông báo
     const statusMap: Record<string, string> = {
