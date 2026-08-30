@@ -62,7 +62,6 @@ function NavItem({ item, pathname, isCollapsed }: { item: SidebarItem, pathname:
   return (
     <Link
       href={item.href}
-      prefetch={true}
       title={isCollapsed ? item.label : undefined}
       className={`relative flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group
         ${isActive 
@@ -197,7 +196,6 @@ export default function DashboardLayout({
         <div className="p-3 border-t border-border bg-card/50 backdrop-blur-sm transition-all duration-300">
           <Link 
             href="/settings" 
-            prefetch={true}
             title={isCollapsed ? 'Cài đặt' : undefined}
             className={`relative flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group mb-2
               ${isSettingsActive 
@@ -245,10 +243,10 @@ export default function DashboardLayout({
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
-                <Link href="/profile" className="cursor-pointer" prefetch={true}>
+                <Link href="/profile" className="cursor-pointer">
                   <DropdownMenuItem className="hover:bg-muted cursor-pointer">Hồ sơ cá nhân</DropdownMenuItem>
                 </Link>
-                <Link href="/pricing" className="cursor-pointer" prefetch={true}>
+                <Link href="/pricing" className="cursor-pointer">
                   <DropdownMenuItem className="hover:bg-muted cursor-pointer">Gói đăng ký (Pro)</DropdownMenuItem>
                 </Link>
               </DropdownMenuGroup>
