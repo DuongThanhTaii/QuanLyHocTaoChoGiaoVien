@@ -12,6 +12,7 @@ import { CopyPersonalLinkButton } from './CopyPersonalLinkButton';
 import { EditStudentForm } from './StudentForms';
 
 const enrollmentStatusLabels: Record<string, string> = { ACTIVE: 'Đang học', PENDING: 'Chờ duyệt', PAUSED: 'Tạm dừng', LEFT: 'Đã rời lớp', BLOCKED: 'Đã khóa' };
+const enrollmentStatusColors: Record<string, string> = { ACTIVE: 'bg-green-50 text-green-700 ring-green-600/20', PENDING: 'bg-amber-50 text-amber-700 ring-amber-600/20', PAUSED: 'bg-blue-50 text-blue-700 ring-blue-600/20', LEFT: 'bg-zinc-100 text-zinc-600 ring-zinc-500/20', BLOCKED: 'bg-red-50 text-red-700 ring-red-600/20' };
 
 export default async function ClassStudentsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -102,7 +103,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                       <TableCell>{studentProfile?.email || '--'}</TableCell>
                       <TableCell>{studentProfile?.phone || '--'}</TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-zinc-100 text-zinc-700">
+                        <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${enrollmentStatusColors[enrollment.status] || 'bg-zinc-100 text-zinc-700 ring-zinc-500/20'}`}>
                           {enrollmentStatusLabels[enrollment.status] || enrollment.status}
                         </span>
                       </TableCell>

@@ -16,6 +16,9 @@ export default async function ProfilePage() {
     .eq('id', user.id)
     .single();
 
+  const { data: teacherProfile } = await supabase.from('teacher_profiles').select('phone').eq('user_id', user.id).maybeSingle();
+  const profileWithPhone = { ...profile, phone: profile?.phone || teacherProfile?.phone || '' };
+
   // Fetch Bank Accounts
   const { data: accounts } = await supabase
     .from('bank_accounts')
@@ -33,7 +36,7 @@ export default async function ProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Column */}
         <div className="space-y-8">
-          <BasicProfileForm profile={profile} />
+          <BasicProfileForm profile={profileWithPhone} />
           
           <div className="pt-4 border-t border-zinc-200">
             <h2 className="text-xl font-semibold mb-4">Cài đặt Thanh toán</h2>
