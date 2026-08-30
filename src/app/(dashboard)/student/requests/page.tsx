@@ -12,7 +12,7 @@ export default async function StudentRequestsPage() {
   // Sử dụng admin client để bypass RLS (ví học sinh không có quyền xem profile của phụ huynh)
   const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
   const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL",
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
