@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { JoinClassCard } from './JoinClassCard';
+import { JoinPendingNotice } from './JoinPendingNotice';
 
 export default async function StudentClassesPage({ searchParams }: { searchParams: Promise<{ join?: string }> }) {
   const supabase = await createClient();
@@ -26,7 +27,7 @@ export default async function StudentClassesPage({ searchParams }: { searchParam
         </div>
         <JoinClassCard />
       </div>
-      {join === 'pending' && <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">Gửi yêu cầu tham gia lớp thành công. Vui lòng chờ giáo viên duyệt.</div>}
+      {join === 'pending' && <JoinPendingNotice />}
       <Card>
         <CardHeader>
           <CardTitle>Các lớp học</CardTitle>
