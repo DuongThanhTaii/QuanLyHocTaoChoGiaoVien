@@ -165,7 +165,6 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                     <div className="flex-1 flex items-center justify-center">
                       {/* Empty state */}
                     </div>
-                  ) : (  </div>
                   ) : (
                     daySlots.map(slot => (
                       <div 
