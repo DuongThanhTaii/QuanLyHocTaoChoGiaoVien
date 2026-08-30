@@ -8,7 +8,14 @@ export async function sendLinkRequest(studentEmail: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Not authenticated' };
 
-  const { data: studentProfile, error: studentError } = await supabase
+  // Dùng admin client để bypass RLS (vì parent không có quyền đọc profile của người khác chưa liên kết)
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: studentProfile, error: studentError } = await supabaseAdmin
     .from('profiles')
     .select('id, role')
     .eq('email', studentEmail)
