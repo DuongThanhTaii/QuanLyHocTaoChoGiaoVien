@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { startOfWeek, addDays, format, subWeeks, addWeeks, isSameDay, startOfMonth, endOfMonth, endOfWeel, isSameMonth, subMonths, addMonths, eachDayOfInterval, getDay } from 'date-fns';
+import { startOfWeek, addDays, format, subWeeks, addWeeks, isSameDay, startOfMonth, endOfMonth, endOfWeek, isSameMonth, subMonths, addMonths, eachDayOfInterval } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -40,7 +40,7 @@ const COLORS = [
 export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedClass, setSelectedClass] = useState<string>('');
+  const [selectedClass, setSelectedClass] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'week'|'month'>('week');
 
   // Extract unique classes for filter
@@ -66,30 +66,25 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
   // Lọc slot theo lớp
   const filteredSlots = useMemo(() => {
     if (!selectedClass || selectedClass === 'all') return slots;
-    return slots.filter(s => s.class_id 
-=== selectedClass);
+    return slots.filter(s => s.class_id === selectedClass);
   }, [slots, selectedClass]);
 
   const handlePrev = () => {
-    if (viewMode 
-=== 'week') setCurrentDate(subWeeks(currentDate, 1));
+    if (viewMode === 'week') setCurrentDate(subWeeks(currentDate, 1));
     else setCurrentDate(subMonths(currentDate, 1));
   };
 
   const handleNext = () => {
-    if (viewMode 
-=== 'week') setCurrentDate(addWeeks(currentDate, 1));
+    if (viewMode === 'week') setCurrentDate(addWeeks(currentDate, 1));
     else setCurrentDate(addMonths(currentDate, 1));
   };
 
   const today = () => setCurrentDate(new Date());
 
   const handleSlotClick = (classId: string) => {
-    if (userRole 
-=== 'teacher') {
+    if (userRole === 'teacher') {
       router.push(`/teacher/classes/${classId}`);
-    } else if (userRole 
-=== 'student') {
+    } else if (userRole === 'student') {
       router.push(`/student/classes/${classId}`);
     } else {
       router.push(`/parent/classes/${classId}`);
@@ -99,8 +94,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
   const getSlotsForDay = (date: Date) => {
     const jsDay = date.getDay();
     return filteredSlots
-      .filter(s => s.day_of_week 
-=== jsDay)
+      .filter(s => s.day_of_week === jsDay)
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
   };
 
@@ -108,11 +102,11 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
     return timeStr.substring(0, 5);
   };
 
-  {/* Calculate week view days */}
+  // Calculate week view days
   const startOfCurrentWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(startOfCurrentWeek, i));
 
-  {/* Calculate month view days */}
+  // Calculate month view days
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const monthStartDay = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -164,21 +158,19 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
             {weekDays.map((day, i) => (
               <div key={i} className="p-3 text-center border-r border-border last:border-r-0">
                 <div className="text-xs font-medium uppercase text-muted-foreground">
-                  {format(day, 'EEEE $� { locale: vi })}
+                  {format(day, 'EEEE', { locale: vi })}
                 </div>
-                {viewMode 
-=== 'week' && (
-                  <div className=x`text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full mx-auto mt-1 ${isSameDay(day, new Date()) ? 'bg-primary text-primary-foreground' : 'text-foreground'}`}>
+                {viewMode === 'week' && (
+                  <div className={`text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full mx-auto mt-1 ${isSameDay(day, new Date()) ? 'bg-primary text-primary-foreground' : 'text-foreground'}`}>
                     {format(day, 'd')}
                   </div>
                 )}
               </div>
-            )i}
+            ))}
           </div>
 
           {/* Slots Grid */}
-          {viewMode 
-=== 'week' ? (
+          {viewMode === 'week' ? (
             <div className="grid grid-cols-7 flex-1 min-h-[400px]">
               {weekDays.map((day, i) => {
                 const daySlots = getSlotsForDay(day);
@@ -189,15 +181,15 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                       <div 
                         key={slot.id} 
                         onClick={() => handleSlotClick(slot.class_id)}
-                        className={`p3 rounded-lg border cursor-pointer hover:shadow-md transition-all group ${classColors.get(slot.class_id)}`}
+                        className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all group ${classColors.get(slot.class_id)}`}
                       >
                         <div className="font-semibold text-sm mb-1 leading-tight group-hover:underline">
-                          {slot.title || slot.classes?.name || 'Buanỗi học'}
+                          {slot.title || slot.classes?.name || 'Buổi học'}
                         </div>
-                        <span className="block flex items-center gap-1.5 text-xs opacity-90 mb-1">
+                        <div className="flex items-center gap-1.5 text-xs opacity-90 mb-1">
                           <Clock className="w-3 h-3" />
-                          {span>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
-                        </span>
+                          <span>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -211,8 +203,8 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                 const isToday = isSameDay(day, new Date());
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 return (
-                  <div key={i} className={`p1.5 border-b border-r border-border last:border-r-0 flex flex-col gap-1 ${isToday ? 'bg-primary/[0.02]' : ''} ${!isCurrentMonth ? 'opacity-40 bg-muted/30' : ''}`}>
-                    <div className=x`text-right text-sm font-medium mb-1 ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                  <div key={i} className={`p-1.5 border-b border-r border-border last:border-r-0 flex flex-col gap-1 ${isToday ? 'bg-primary/[0.02]' : ''} ${!isCurrentMonth ? 'opacity-40 bg-muted/30' : ''}`}>
+                    <div className={`text-right text-sm font-medium mb-1 ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
                       {format(day, 'd')}
                     </div>
                     <div className="flex-1 overflow-y-auto flex flex-col gap-1">
@@ -220,7 +212,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                         <div 
                           key={slot.id} 
                           onClick={() => handleSlotClick(slot.class_id)}
-                          className=x`px-1.5 py-1 rounded border text-[10px] leading-tight cursor-pointer hover:opacity-80 transition-opacity truncate ${classColors.get(slot.class_id)}`}
+                          className={`px-1.5 py-1 rounded border text-[10px] leading-tight cursor-pointer hover:opacity-80 transition-opacity truncate ${classColors.get(slot.class_id)}`}
                         >
                           <span className="font-semibold">{formatTime(slot.start_time)}</span> {slot.title || slot.classes?.name || 'Ca học'}
                         </div>
