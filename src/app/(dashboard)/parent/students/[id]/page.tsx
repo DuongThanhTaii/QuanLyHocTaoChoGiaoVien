@@ -12,13 +12,25 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
 
   if (!user) return null;
 
-  // Verify parent has access to this student
-  const { data: link } = await supabase
-    .from('parent_students')
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  // Find guardian id first
+  const { data: guardianData } = await admin
+    .from('guardians')
     .select('id')
-    .eq('parent_id', user.id)
-    .eq('student_id', studentId)
+    .eq('user_id', user.id)
     .single();
+
+  if (!guardianData) return <div className="p-12 text-center text-zinc-500">Bạn chưa có hồ sơ phụ huynh.</div>;
+
+  // Verify parent has access to this student
+  const { data: link } = await admin
+    .from('student_guardians')
+    .select('student_id')
+    .eq('guardian_id', guardianData.id)
+    .eq('student_id', studentId)
+    .maybeSingle();
 
   if (!link) {
     return (
@@ -28,14 +40,14 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
     );
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: profile } = await admin
+    .from('students')
     .select('full_name')
     .eq('id', studentId)
     .single();
 
   // Fetch attendance
-  const { data: attendanceData } = await supabase
+  const { data: attendanceData } = await admin
     .from('attendance_records')
     .select('*, schedule_slots(*, classes(name))')
     .eq('student_id', studentId)

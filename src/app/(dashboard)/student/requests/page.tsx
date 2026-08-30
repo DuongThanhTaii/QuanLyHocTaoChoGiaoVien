@@ -27,7 +27,7 @@ export default async function StudentRequestsPage() {
     .eq('student_id', user.id)
     .eq('status', 'PENDING');
 
-  const { data: studentData } = await supabase
+  const { data: studentData } = await supabaseAdmin
     .from('students')
     .select('id')
     .eq('user_id', user.id)
@@ -35,7 +35,7 @@ export default async function StudentRequestsPage() {
 
   let linkedGuardians: any[] = [];
   if (studentData) {
-    const { data: sgData } = await supabase
+    const { data: sgData } = await supabaseAdmin
       .from('student_guardians')
       .select(`
         guardian_id,

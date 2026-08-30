@@ -11,7 +11,10 @@ export default async function ParentStudentsPage() {
 
   if (!user) return null;
 
-  const { data: guardianData } = await supabase
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  const { data: guardianData } = await admin
     .from('guardians')
     .select('id')
     .eq('user_id', user.id)
@@ -20,7 +23,7 @@ export default async function ParentStudentsPage() {
   let students: any[] = [];
 
   if (guardianData) {
-    const { data: studentGuardians } = await supabase
+    const { data: studentGuardians } = await admin
       .from('student_guardians')
       .select(`
         student_id,
@@ -38,7 +41,7 @@ export default async function ParentStudentsPage() {
     }
   }
 
-  const { data: pendingRequests } = await supabase
+  const { data: pendingRequests } = await admin
     .from('guardian_student_requests')
     .select('*')
     .eq('parent_id', user.id)
