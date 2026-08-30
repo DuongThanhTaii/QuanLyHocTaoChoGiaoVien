@@ -29,15 +29,18 @@ const statusColors = {
 
 export function AttendanceManager({ classId, slotId, students, dateString, timeRange }: AttendanceManagerProps) {
   const [attendanceState, setAttendanceState] = useState<Record<string, { status: string; note: string }>>(
-    students.reduce((acc, s) => ({ ...acc, [s.id]: { status: 'present', note: '' } }), {})
+    students.reduce((acc, s) => ({ ...acc, [s.id]: { status: '', note: '' } }), {})
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleStatusChange = (studentId: string, status: string) => {
-    setAttendanceState(prev => ({
-      ...prev,
-      [studentId]: { ...prev[studentId], status }
-    }));
+    setAttendanceState(prev => {
+      const isCurrentlySelected = prev[studentId]?.status === status;
+      return {
+        ...prev,
+        [studentId]: { ...prev[studentId], status: isCurrentlySelected ? '' : status }
+      };
+    });
   };
 
   const handleNoteChange = (studentId: string, note: string) => {
@@ -56,10 +59,19 @@ export function AttendanceManager({ classId, slotId, students, dateString, timeR
   };
 
   const handleSaveAll = async () => {
+    const studentsToSave = students.filter(s => attendanceState[s.id]?.status !== '');
+    
+    if (studentsToSave.length === 0) {
+      toast.warning('Chưa chọn học sinh', {
+        description: 'Vui lòng đánh dấu điểm danh cho ít nhất một học sinh trước khi lưu.',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     let successCount = 0;
     
-    for (const student of students) {
+    for (const student of studentsToSave) {
       const data = attendanceState[student.id];
       const formData = new FormData();
       formData.append('classId', classId);
@@ -76,7 +88,7 @@ export function AttendanceManager({ classId, slotId, students, dateString, timeR
     
     setIsSubmitting(false);
     toast.success('Điểm danh hoàn tất', {
-      description: `Đã lưu điểm danh cho ${successCount}/${students.length} học sinh.`,
+      description: `Đã lưu điểm danh cho ${successCount}/${studentsToSave.length} học sinh.`,
     });
   };
 
