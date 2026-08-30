@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Plus, CheckCircle2, HelpCircle, Pencil } from 'lucide-react';
 import { CopyPersonalLinkButton } from './CopyPersonalLinkButton';
 import { EditStudentForm } from './StudentForms';
+import { ApproveEnrollmentButton } from './ApproveEnrollmentButton';
 
 const enrollmentStatusLabels: Record<string, string> = { ACTIVE: 'Đang học', PENDING: 'Chờ duyệt', PAUSED: 'Tạm dừng', LEFT: 'Đã rời lớp', BLOCKED: 'Đã khóa' };
 const enrollmentStatusColors: Record<string, string> = { ACTIVE: 'bg-green-50 text-green-700 ring-green-600/20', PENDING: 'bg-amber-50 text-amber-700 ring-amber-600/20', PAUSED: 'bg-blue-50 text-blue-700 ring-blue-600/20', LEFT: 'bg-zinc-100 text-zinc-600 ring-zinc-500/20', BLOCKED: 'bg-red-50 text-red-700 ring-red-600/20' };
@@ -124,6 +125,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                               <CopyPersonalLinkButton url={`${appUrl}/join/${activeInvitation.join_code}?claim=${studentProfile.id}`} />
                             </div>
                           )}
+                          {enrollment.status === 'PENDING' && <ApproveEnrollmentButton enrollmentId={enrollment.id} classId={classId} />}
                           
                           {studentProfile && (
                             <Sheet>
