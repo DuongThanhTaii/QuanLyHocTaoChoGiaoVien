@@ -138,9 +138,13 @@ export default function DashboardLayout({
       <aside className={`bg-card border-r border-border flex flex-col transition-all duration-300 z-10 ${isCollapsed ? 'w-[72px]' : 'w-64'}`}>
         
         {/* Logo Section */}
-        <div className={`h-16 flex items-center border-b border-border transition-all duration-300 ${isCollapsed ? 'px-2' : 'px-6'} overflow-hidden`}>
-          <div className="flex items-center">
-            <div className="w-14 h-14 flex items-center justify-center shrink-0 relative">
+        <div className={`h-16 flex items-center border-b border-border transition-all duration-300 pl-2 pr-2 overflow-hidden`}>
+          <div 
+            className="flex items-center cursor-pointer group shrink-0"
+            onClick={() => isCollapsed && setIsCollapsed(false)}
+            title={isCollapsed ? "Nhấn để mở rộng bảng điều khiển" : undefined}
+          >
+            <div className="w-14 h-14 flex items-center justify-center shrink-0 relative transition-transform duration-300 group-hover:scale-105">
               {/* Floor shadow */}
               <div className="absolute bottom-1 w-8 h-1.5 bg-black/30 rounded-[50%] blur-[2px] z-0 translate-y-1" />
               
@@ -158,6 +162,15 @@ export default function DashboardLayout({
               </div>
             </div>
           </div>
+
+          <button 
+            onClick={() => setIsCollapsed(true)} 
+            className={`ml-auto p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-300 shrink-0 ${isCollapsed ? 'w-0 opacity-0 p-0 overflow-hidden scale-0' : 'opacity-100 scale-100'}`}
+            title="Thu gọn menu"
+            tabIndex={isCollapsed ? -1 : 0}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Navigation Section */}
@@ -246,13 +259,6 @@ export default function DashboardLayout({
         {/* Top Header */}
         <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-10">
           <div className="flex items-center gap-2 sm:gap-4">
-            <button 
-              onClick={() => setIsCollapsed(!isCollapsed)} 
-              className="p-2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors hidden sm:block"
-              title={isCollapsed ? "Mở rộng menu" : "Thu gọn menu"}
-            >
-              <Menu className="w-5 h-5" />
-            </button>
             <h2 className="text-foreground font-medium text-lg hidden sm:block">
               {greeting}, <span className="font-semibold text-primary">{displayName}</span>
             </h2>
