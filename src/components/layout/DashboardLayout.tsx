@@ -138,8 +138,8 @@ export default function DashboardLayout({
       <aside className={`bg-card border-r border-border flex flex-col transition-all duration-300 z-10 ${isCollapsed ? 'w-[72px]' : 'w-64'}`}>
         
         {/* Logo Section */}
-        <div className={`h-16 flex items-center border-b border-border transition-all duration-300 ${isCollapsed ? 'px-4' : 'px-6'} overflow-hidden`}>
-          <div className="flex items-center gap-1">
+        <div className={`h-16 flex items-center border-b border-border transition-all duration-300 ${isCollapsed ? 'justify-center' : 'px-6'} overflow-hidden`}>
+          <div className="flex items-center">
             <div className="w-14 h-14 flex items-center justify-center shrink-0 relative">
               {/* Floor shadow */}
               <div className="absolute bottom-1 w-8 h-1.5 bg-black/30 rounded-[50%] blur-[2px] z-0 translate-y-1" />
