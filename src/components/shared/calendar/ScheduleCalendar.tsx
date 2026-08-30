@@ -37,7 +37,7 @@ const COLORS = [
   'bg-teal-100 border-teal-200 text-teal-800 dark:bg-teal-900/30 dark:border-teal-800 dark:text-teal-300',
 ];
 
-export function ScheduleCalendar { slots, userRole }: ScheduleCalendarProps) {
+export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedClass, setSelectedClass] = useState<string>('');
