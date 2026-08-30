@@ -4,11 +4,12 @@ import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { JoinClassCard } from './JoinClassCard';
 
-export default async function StudentClassesPage() {
+export default async function StudentClassesPage({ searchParams }: { searchParams: Promise<{ join?: string }> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) return null;
+  const { join } = await searchParams;
 
   // TODO: Fetch real classes the student is enrolled in
   // Currently, we might need a student_enrollments table.
@@ -21,6 +22,7 @@ export default async function StudentClassesPage() {
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Lớp học của tôi</h1>
         <p className="text-zinc-500">Danh sách các lớp học bạn đang tham gia.</p>
       </div>
+      {join === 'pending' && <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">Gửi yêu cầu tham gia lớp thành công. Vui lòng chờ giáo viên duyệt.</div>}
       <JoinClassCard />
 
       <Card>

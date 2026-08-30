@@ -461,7 +461,7 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
   }
 
   revalidatePath('/student/classes');
-  redirect(`/student/classes/${classId}`);
+  redirect('/student/classes?join=pending');
 }
 
 export async function deleteClass(classId: string) {
