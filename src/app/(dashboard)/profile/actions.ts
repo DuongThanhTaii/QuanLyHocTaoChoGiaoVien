@@ -39,7 +39,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
     .from('profiles')
     .update({ 
       full_name: fullName,
-      phone_number: phone
+      phone: phone
     })
     .eq('id', user.id);
 

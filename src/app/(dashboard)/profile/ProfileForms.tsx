@@ -43,7 +43,7 @@ export function BasicProfileForm({ profile }: { profile: any }) {
         <CardDescription>Cập nhật họ tên và số điện thoại liên lạc.</CardDescription>
       </CardHeader>
       <form action={formAction}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label>Email đăng nhập (Không thể thay đổi)</Label>
             <Input disabled value={profile?.email || ''} className="bg-zinc-100" />
@@ -54,10 +54,10 @@ export function BasicProfileForm({ profile }: { profile: any }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Số điện thoại</Label>
-            <Input id="phone" name="phone" defaultValue={profile?.phone_number || ''} />
+            <Input id="phone" name="phone" defaultValue={profile?.phone || ''} />
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="pt-2 border-t border-zinc-100">
           <Button type="submit" disabled={isPending}>
             {isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
           </Button>
