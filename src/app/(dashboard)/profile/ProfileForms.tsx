@@ -27,10 +27,12 @@ const initialState = { error: '', success: false, message: '' };
 
 export function BasicProfileForm({ profile }: { profile: any }) {
   const [state, formAction, isPending] = useActionState(updateProfile as any, initialState);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (state?.success && state?.message) {
       toast.success(state.message);
+      setIsEditing(false);
     } else if (state?.error) {
       toast.error(state.error);
     }
@@ -50,17 +52,15 @@ export function BasicProfileForm({ profile }: { profile: any }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="fullName">Họ và tên</Label>
-            <Input id="fullName" name="fullName" defaultValue={profile?.full_name || ''} required />
+            <Input id="fullName" name="fullName" defaultValue={profile?.full_name || ''} required disabled={!isEditing} className={!isEditing ? 'bg-zinc-50 text-zinc-600' : ''} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Số điện thoại</Label>
-            <Input id="phone" name="phone" defaultValue={profile?.phone || ''} />
+            <Input id="phone" name="phone" defaultValue={profile?.phone || ''} disabled={!isEditing} className={!isEditing ? 'bg-zinc-50 text-zinc-600' : ''} />
           </div>
         </CardContent>
         <CardFooter className="pt-2 border-t border-zinc-100">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </Button>
+          {isEditing ? <div className="flex gap-2"><Button type="submit" disabled={isPending}>{isPending ? 'Đang lưu...' : 'Lưu thay đổi'}</Button><Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isPending}>Hủy</Button></div> : <Button type="button" onClick={() => setIsEditing(true)}>Chỉnh sửa</Button>}
         </CardFooter>
       </form>
     </Card>
