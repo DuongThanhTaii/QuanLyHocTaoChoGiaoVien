@@ -112,34 +112,39 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
   return (
     <div className="space-y-6">
       {/* Header & Thao tác chính */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Quản lý Hóa đơn & Học phí</h1>
-          <p className="text-sm text-zinc-500">Tính toán chính xác, tạo mẫu hóa đơn bắt mắt và theo dõi thu chi học phí.</p>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+            Quản lý Hóa đơn & Học phí
+          </h1>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            Tính toán chính xác, tạo mẫu hóa đơn bắt mắt và theo dõi thu chi học phí.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Cụm nút thao tác gọn gàng, hài hòa */}
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
           <Button
             variant="outline"
             onClick={() => setOpenTemplateModal(true)}
-            className="border-zinc-300 dark:border-zinc-700 text-xs"
+            className="h-9 px-3 text-xs font-medium border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
           >
-            <Palette className="mr-1.5 h-4 w-4 text-purple-600" /> Tùy biến Mẫu HĐ
+            <Palette className="mr-1.5 h-3.5 w-3.5 text-purple-600" /> Tùy biến Mẫu HĐ
           </Button>
 
           <Button
             variant="outline"
             onClick={() => setOpenCustomModal(true)}
-            className="border-zinc-300 dark:border-zinc-700 text-xs"
+            className="h-9 px-3 text-xs font-medium border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
           >
-            <Plus className="mr-1.5 h-4 w-4 text-blue-600" /> Tạo HĐ Theo Yêu Cầu
+            <Plus className="mr-1.5 h-3.5 w-3.5 text-blue-600" /> Tạo HĐ Theo Yêu Cầu
           </Button>
 
           <Button
             onClick={() => setOpenBatchModal(true)}
-            className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs shadow-sm"
+            className="h-9 px-3.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-sm"
           >
-            <Receipt className="mr-1.5 h-4 w-4" /> Sinh Hóa đơn Tự động
+            <Receipt className="mr-1.5 h-3.5 w-3.5" /> Sinh Hóa đơn Tự động
           </Button>
         </div>
       </div>
@@ -209,58 +214,68 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
 
       {/* Bảng Danh sách Hóa đơn & Bộ lọc */}
       <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <CardTitle className="text-lg">Danh sách Hóa đơn</CardTitle>
-              <CardDescription>Các phiếu thu học phí đã phát hành hoặc đang chờ xử lý.</CardDescription>
-            </div>
-
-            {/* Thanh tìm kiếm & Bộ lọc */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative w-full sm:w-56">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-400" />
-                <Input
-                  placeholder="Tìm học sinh, mã HĐ..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 text-xs h-9"
-                />
-              </div>
-
-              <div className="w-40">
-                <Select value={selectedClassFilter} onValueChange={(v) => setSelectedClassFilter(v || 'ALL')}>
-                  <SelectTrigger className="text-xs h-9">
-                    <SelectValue placeholder="Lọc theo lớp" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Tất cả lớp học</SelectItem>
-                    {classes.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="w-36">
-                <Select value={selectedStatusFilter} onValueChange={(v) => setSelectedStatusFilter(v || 'ALL')}>
-                  <SelectTrigger className="text-xs h-9">
-                    <SelectValue placeholder="Trạng thái" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-                    <SelectItem value="paid">Đã thu tiền</SelectItem>
-                    <SelectItem value="sent">Chờ thanh toán</SelectItem>
-                    <SelectItem value="overdue">Quá hạn</SelectItem>
-                    <SelectItem value="draft">Bản nháp</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+        <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+          <div>
+            <CardTitle className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Danh sách Hóa đơn
+            </CardTitle>
+            <CardDescription className="text-xs text-zinc-500 mt-0.5">
+              Các phiếu thu học phí đã phát hành hoặc đang chờ xử lý.
+            </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="pt-4 space-y-4">
+          {/* Thanh tìm kiếm & Bộ lọc riêng biệt bên dưới */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Input
+                placeholder="Tìm theo tên học sinh, mã hóa đơn..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 text-xs h-9 bg-background"
+              />
+            </div>
+
+            <div className="w-full sm:w-52">
+              <Select value={selectedClassFilter} onValueChange={(v) => setSelectedClassFilter(v || 'ALL')}>
+                <SelectTrigger className="text-xs h-9 w-full bg-background">
+                  <SelectValue>
+                    {selectedClassFilter === 'ALL'
+                      ? 'Tất cả lớp học'
+                      : classes.find(c => c.id === selectedClassFilter)?.name || 'Tất cả lớp học'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Tất cả lớp học</SelectItem>
+                  {classes.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full sm:w-44">
+              <Select value={selectedStatusFilter} onValueChange={(v) => setSelectedStatusFilter(v || 'ALL')}>
+                <SelectTrigger className="text-xs h-9 w-full bg-background">
+                  <SelectValue>
+                    {selectedStatusFilter === 'ALL' ? 'Tất cả trạng thái' :
+                     selectedStatusFilter === 'paid' ? 'Đã thu tiền' :
+                     selectedStatusFilter === 'sent' ? 'Chờ thanh toán' :
+                     selectedStatusFilter === 'overdue' ? 'Quá hạn' : 'Bản nháp'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                  <SelectItem value="paid">Đã thu tiền</SelectItem>
+                  <SelectItem value="sent">Chờ thanh toán</SelectItem>
+                  <SelectItem value="overdue">Quá hạn</SelectItem>
+                  <SelectItem value="draft">Bản nháp</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           {filteredInvoices.length === 0 ? (
             <div className="text-center py-12 text-zinc-500 border border-dashed rounded-xl space-y-3">
               <Receipt className="w-10 h-10 mx-auto text-zinc-300" />

@@ -244,7 +244,9 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
           <div className="w-32">
             <Select value={String(selectedYear)} onValueChange={(v) => v && setSelectedYear(Number(v))}>
               <SelectTrigger className="text-xs h-9">
-                <SelectValue placeholder="Chọn năm" />
+                <SelectValue>
+                  {`Năm ${selectedYear}`}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {[currentYear - 1, currentYear, currentYear + 1].map(y => (
@@ -522,7 +524,9 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                   <Label className="text-xs">Ngưỡng doanh thu miễn thuế</Label>
                   <Select value={String(thresholdLimit)} onValueChange={(v) => v && setThresholdLimit(Number(v))}>
                     <SelectTrigger className="text-xs h-9">
-                      <SelectValue />
+                      <SelectValue>
+                        {thresholdLimit === 100000000 ? '100.000.000 đ/năm (Hiện hành)' : '200.000.000 đ/năm (Luật Thuế mới)'}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="100000000">100.000.000 đ/năm (Hiện hành)</SelectItem>
