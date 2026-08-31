@@ -120,6 +120,11 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0 0 0 / 18%) transparent;
+  }
+  .dark * {
+    scrollbar-color: oklch(1 0 0 / 18%) transparent;
   }
   body {
     @apply bg-background text-foreground;
@@ -127,4 +132,36 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Minimalist Modern Scrollbars (X & Y) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0 0 0 / 15%);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0 0 0 / 30%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 15%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: oklch(1 0 0 / 30%);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

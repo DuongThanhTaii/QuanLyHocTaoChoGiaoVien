@@ -157,6 +157,9 @@ export function CreateCustomModal({ isOpen, onClose, onSuccess }: Props) {
   const totalAmount = Math.max(0, subtotal - (Number(discount) || 0) + (Number(extraFee) || 0));
   const totalSessions = lineItems.reduce((acc, item) => acc + (Number(item.quantity) || 0), 0);
 
+  const currentSelectedClass = classes.find(c => c.id === selectedClassId);
+  const currentSelectedStudent = students.find(s => s.studentId === selectedStudentId);
+
   async function handleCreate() {
     if (!selectedClassId) {
       toast.error('Vui lòng chọn lớp học');
@@ -218,36 +221,32 @@ export function CreateCustomModal({ isOpen, onClose, onSuccess }: Props) {
         </DialogHeader>
 
         <div className="space-y-6 py-2">
-          {/* Presets nhanh */}
-          <div className="flex items-center gap-2 flex-wrap bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Gợi ý tình huống nhanh:</span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => applyPreset('half_month')}
-              className="text-xs bg-background hover:bg-muted"
-            >
-              Học nửa tháng rồi dừng
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => applyPreset('extra_tutoring')}
-              className="text-xs bg-background hover:bg-muted"
-            >
-              Học kèm / Phụ đạo riêng
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => applyPreset('materials')}
-              className="text-xs bg-background hover:bg-muted"
-            >
-              Thêm tiền Tài liệu / Đề thi
-            </Button>
+          {/* Presets nhanh - thiết kế gọn đẹp trên 1 dòng */}
+          <div className="flex items-center gap-2 p-2.5 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <span className="text-xs font-semibold text-zinc-500 shrink-0">Gợi ý nhanh:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => applyPreset('half_month')}
+                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-background hover:bg-muted border border-zinc-200 dark:border-zinc-700 transition-colors shadow-2xs"
+              >
+                Học nửa tháng rồi dừng
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('extra_tutoring')}
+                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-background hover:bg-muted border border-zinc-200 dark:border-zinc-700 transition-colors shadow-2xs"
+              >
+                Học kèm / Phụ đạo riêng
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset('materials')}
+                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-background hover:bg-muted border border-zinc-200 dark:border-zinc-700 transition-colors shadow-2xs"
+              >
+                Tiền Tài liệu / Đề thi
+              </button>
+            </div>
           </div>
 
           {/* Chọn Lớp & Học sinh */}
@@ -256,7 +255,9 @@ export function CreateCustomModal({ isOpen, onClose, onSuccess }: Props) {
               <Label className="text-xs font-semibold">Lớp học</Label>
               <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v || '')} disabled={loadingClasses}>
                 <SelectTrigger className="w-full text-xs h-9">
-                  <SelectValue placeholder="Chọn lớp" />
+                  <SelectValue placeholder="Chọn lớp">
+                    {currentSelectedClass?.name}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {classes.map(c => (
@@ -270,7 +271,9 @@ export function CreateCustomModal({ isOpen, onClose, onSuccess }: Props) {
               <Label className="text-xs font-semibold">Học sinh nhận hóa đơn</Label>
               <Select value={selectedStudentId} onValueChange={(v) => setSelectedStudentId(v || '')} disabled={loadingStudents || students.length === 0}>
                 <SelectTrigger className="w-full text-xs h-9">
-                  <SelectValue placeholder={students.length === 0 ? "Không có học sinh" : "Chọn học sinh"} />
+                  <SelectValue placeholder={students.length === 0 ? "Không có học sinh" : "Chọn học sinh"}>
+                    {currentSelectedStudent ? `${currentSelectedStudent.fullName}${currentSelectedStudent.phone ? ` (${currentSelectedStudent.phone})` : ''}` : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {students.map(s => (

@@ -184,7 +184,11 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
                   <Label className="text-xs">Chọn tài khoản nhận học phí</Label>
                   <Select value={selectedBankId} onValueChange={(v) => setSelectedBankId(v || '')}>
                     <SelectTrigger className="w-full text-xs h-9">
-                      <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                      <SelectValue placeholder="Chọn tài khoản ngân hàng">
+                        {bankAccounts.find(b => b.id === selectedBankId)
+                          ? `${bankAccounts.find(b => b.id === selectedBankId)?.bank_name} - ${bankAccounts.find(b => b.id === selectedBankId)?.account_number} (${bankAccounts.find(b => b.id === selectedBankId)?.account_name})`
+                          : undefined}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {bankAccounts.map((b) => (

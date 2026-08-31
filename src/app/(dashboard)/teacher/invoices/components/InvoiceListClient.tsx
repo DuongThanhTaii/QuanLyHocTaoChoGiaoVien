@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,23 +12,21 @@ import {
   Plus, 
   Palette, 
   Search, 
-  Filter, 
   CheckCircle2, 
   Clock, 
   AlertTriangle, 
   Banknote, 
   Share2, 
   Eye, 
-  Trash2, 
-  DollarSign,
-  QrCode,
-  FileSpreadsheet
+  Trash2,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { GenerateBatchModal } from './GenerateBatchModal';
 import { CreateCustomModal } from './CreateCustomModal';
 import { TemplateSettingsModal } from './TemplateSettingsModal';
 import { InvoiceDetailModal } from './InvoiceDetailModal';
 import { RecordPaymentModal } from './RecordPaymentModal';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { deleteInvoiceAction, cancelInvoiceAction } from '../actions';
 import { toast } from 'sonner';
 
@@ -50,36 +48,125 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
   const [paymentInvoice, setPaymentInvoice] = useState<any | null>(null);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
 
+  // Time & Period Filter State
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+  const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+
+  // Selected period: 'current_month' | 'prev_month' | 'ALL' | 'custom' | string (e.g. '2026-06')
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('current_month');
+  
+  // Custom date range state
+  const todayStr = now.toISOString().split('T')[0];
+  const thirtyDaysAgoStr = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const [customStartDate, setCustomStartDate] = useState<string>(thirtyDaysAgoStr);
+  const [customEndDate, setCustomEndDate] = useState<string>(todayStr);
+
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClassFilter, setSelectedClassFilter] = useState('ALL');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
 
-  // Stats calculation
-  const totalPaid = invoices
-    .filter(inv => inv.status === 'paid')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  // Danh sách các tháng gần đây để giáo viên dễ chọn
+  const monthOptions = useMemo(() => {
+    const list = [];
+    // 6 tháng gần nhất
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      const val = `${y}-${String(m).padStart(2, '0')}`;
+      let label = `Tháng ${m}/${y}`;
+      if (i === 0) label = `Tháng này (Thg ${m}/${y})`;
+      else if (i === 1) label = `Tháng trước (Thg ${m}/${y})`;
 
-  const totalPending = invoices
-    .filter(inv => inv.status === 'sent' || inv.status === 'draft')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+      list.push({ value: i === 0 ? 'current_month' : i === 1 ? 'prev_month' : val, label, month: m, year: y });
+    }
+    return list;
+  }, []);
 
-  const totalOverdue = invoices
-    .filter(inv => inv.status === 'overdue')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  // Lọc hóa đơn theo Kỳ/Thời gian đã chọn
+  const periodFilteredInvoices = useMemo(() => {
+    if (selectedPeriod === 'ALL') {
+      return invoices;
+    }
 
-  // Filtered invoices
-  const filteredInvoices = invoices.filter(inv => {
-    const studentName = inv.students?.full_name || inv.profiles?.full_name || '';
-    const invoiceNum = inv.invoice_number || '';
-    const matchesSearch = studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          invoiceNum.toLowerCase().includes(searchQuery.toLowerCase());
+    if (selectedPeriod === 'custom') {
+      const start = new Date(customStartDate);
+      const end = new Date(customEndDate);
+      end.setHours(23, 59, 59, 999);
 
-    const matchesClass = selectedClassFilter === 'ALL' || inv.class_id === selectedClassFilter;
-    const matchesStatus = selectedStatusFilter === 'ALL' || inv.status === selectedStatusFilter;
+      return invoices.filter(inv => {
+        const invDate = new Date(inv.paid_at || inv.period_start || inv.created_at);
+        return invDate >= start && invDate <= end;
+      });
+    }
 
-    return matchesSearch && matchesClass && matchesStatus;
-  });
+    let targetMonth = currentMonth;
+    let targetYear = currentYear;
+
+    if (selectedPeriod === 'current_month') {
+      targetMonth = currentMonth;
+      targetYear = currentYear;
+    } else if (selectedPeriod === 'prev_month') {
+      targetMonth = prevMonth;
+      targetYear = prevYear;
+    } else {
+      const [y, m] = selectedPeriod.split('-');
+      targetMonth = Number(m);
+      targetYear = Number(y);
+    }
+
+    return invoices.filter(inv => {
+      const invDate = new Date(inv.period_start || inv.paid_at || inv.created_at);
+      return invDate.getMonth() + 1 === targetMonth && invDate.getFullYear() === targetYear;
+    });
+  }, [invoices, selectedPeriod, currentMonth, currentYear, prevMonth, prevYear, customStartDate, customEndDate]);
+
+  // Tính toán thống kê nhanh theo kỳ đang chọn
+  const totalPaid = useMemo(() => {
+    return periodFilteredInvoices
+      .filter(inv => inv.status === 'paid')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [periodFilteredInvoices]);
+
+  const totalPending = useMemo(() => {
+    return periodFilteredInvoices
+      .filter(inv => inv.status === 'sent' || inv.status === 'draft')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [periodFilteredInvoices]);
+
+  const totalOverdue = useMemo(() => {
+    return periodFilteredInvoices
+      .filter(inv => inv.status === 'overdue')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [periodFilteredInvoices]);
+
+  // Filtered invoices sau khi áp dụng thêm Tìm kiếm + Lớp + Trạng thái
+  const displayInvoices = useMemo(() => {
+    return periodFilteredInvoices.filter(inv => {
+      const studentName = inv.students?.full_name || inv.profiles?.full_name || '';
+      const invoiceNum = inv.invoice_number || '';
+      const matchesSearch = studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            invoiceNum.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesClass = selectedClassFilter === 'ALL' || inv.class_id === selectedClassFilter;
+      const matchesStatus = selectedStatusFilter === 'ALL' || inv.status === selectedStatusFilter;
+
+      return matchesSearch && matchesClass && matchesStatus;
+    });
+  }, [periodFilteredInvoices, searchQuery, selectedClassFilter, selectedStatusFilter]);
+
+  // Click vào card để lọc nhanh trạng thái
+  function handleCardClick(status: string) {
+    if (selectedStatusFilter === status) {
+      setSelectedStatusFilter('ALL');
+    } else {
+      setSelectedStatusFilter(status);
+    }
+  }
 
   async function handleDelete(invoiceId: string) {
     if (!confirm('Bạn có chắc chắn muốn xóa hóa đơn nháp này?')) return;
@@ -109,18 +196,68 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
     toast.success('Đã sao chép link hóa đơn công khai! Bạn có thể gửi cho phụ huynh qua Zalo/Tin nhắn.');
   }
 
+  // Label hiển thị của bộ chọn kỳ
+  const currentPeriodLabel = useMemo(() => {
+    if (selectedPeriod === 'ALL') return 'Tất cả các kỳ';
+    if (selectedPeriod === 'custom') {
+      return customStartDate && customEndDate
+        ? `${new Date(customStartDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${new Date(customEndDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`
+        : 'Tùy chọn khoảng ngày';
+    }
+    const found = monthOptions.find(o => o.value === selectedPeriod);
+    return found ? found.label : selectedPeriod;
+  }, [selectedPeriod, monthOptions, customStartDate, customEndDate]);
+
   return (
     <div className="space-y-6">
-      {/* Header & Thao tác chính */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Header & Bộ lọc Kỳ / Thời gian & Thao tác chính */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Quản lý Hóa đơn & Học phí
           </h1>
+          <p className="text-xs text-zinc-500 mt-0.5">Theo dõi phiếu thu, phát hành hóa đơn và đối soát công nợ theo từng kỳ học.</p>
         </div>
 
-        {/* Cụm nút thao tác gọn gàng, hài hòa */}
-        <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+        {/* Cụm Bộ chọn Kỳ + Nút thao tác gọn gàng */}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+          
+          {/* Bộ chọn Kỳ / Tháng học phí (Cách 2 trên Header) */}
+          <div className="flex items-center gap-1.5">
+            <Select value={selectedPeriod} onValueChange={(v) => v && setSelectedPeriod(v)}>
+              <SelectTrigger className="text-xs h-9 px-3 gap-1.5 border-zinc-300 dark:border-zinc-700 bg-background font-medium">
+                <SelectValue>
+                  {currentPeriodLabel}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+                <SelectItem value="ALL">Tất cả các kỳ</SelectItem>
+                <SelectItem value="custom">Tùy chọn khoảng ngày...</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Popover Calendar khi chọn chế độ Tùy chọn */}
+            {selectedPeriod === 'custom' && (
+              <DateRangePicker
+                startDate={customStartDate}
+                endDate={customEndDate}
+                onApply={(start, end) => {
+                  setCustomStartDate(start);
+                  setCustomEndDate(end);
+                  setSelectedPeriod('custom');
+                }}
+              />
+            )}
+          </div>
+
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block mx-1" />
+
+          {/* Các nút thao tác */}
           <Button
             variant="outline"
             onClick={() => setOpenTemplateModal(true)}
@@ -139,16 +276,23 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
 
           <Button
             onClick={() => setOpenBatchModal(true)}
-            className="h-9 px-3.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-sm"
+            className="h-9 px-3.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-xs"
           >
             <Receipt className="mr-1.5 h-3.5 w-3.5" /> Sinh Hóa đơn Tự động
           </Button>
         </div>
       </div>
 
-      {/* 4 Thẻ Thống kê nhanh */}
+      {/* 4 Thẻ Thống kê nhanh tương tác (Click để lọc nhanh) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
+        
+        {/* Thẻ 1: Đã thu */}
+        <Card 
+          onClick={() => handleCardClick('paid')}
+          className={`cursor-pointer transition-all border-zinc-200 dark:border-zinc-800 shadow-xs bg-card hover:border-emerald-500/50 ${
+            selectedStatusFilter === 'paid' ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-sm' : ''
+          }`}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
               <span>Đã thu (Thực nhận)</span>
@@ -163,7 +307,13 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
+        {/* Thẻ 2: Chờ thanh toán */}
+        <Card 
+          onClick={() => handleCardClick('sent')}
+          className={`cursor-pointer transition-all border-zinc-200 dark:border-zinc-800 shadow-xs bg-card hover:border-blue-500/50 ${
+            selectedStatusFilter === 'sent' ? 'ring-2 ring-blue-500 border-blue-500 shadow-sm' : ''
+          }`}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
               <span>Chờ thanh toán</span>
@@ -178,7 +328,13 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
+        {/* Thẻ 3: Quá hạn */}
+        <Card 
+          onClick={() => handleCardClick('overdue')}
+          className={`cursor-pointer transition-all border-zinc-200 dark:border-zinc-800 shadow-xs bg-card hover:border-red-500/50 ${
+            selectedStatusFilter === 'overdue' ? 'ring-2 ring-red-500 border-red-500 shadow-sm' : ''
+          }`}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
               <span>Quá hạn</span>
@@ -193,7 +349,13 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
+        {/* Thẻ 4: Tổng số hóa đơn */}
+        <Card 
+          onClick={() => setSelectedStatusFilter('ALL')}
+          className={`cursor-pointer transition-all border-zinc-200 dark:border-zinc-800 shadow-xs bg-card hover:border-zinc-400 ${
+            selectedStatusFilter === 'ALL' ? 'ring-2 ring-primary/40 border-primary shadow-sm' : ''
+          }`}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
               <span>Tổng số hóa đơn</span>
@@ -202,9 +364,9 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              {invoices.length}
+              {periodFilteredInvoices.length} HĐ
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1">Học sinh được quản lý học phí</p>
+            <p className="text-[11px] text-zinc-500 mt-1">Phát hành trong {currentPeriodLabel}</p>
           </CardContent>
         </Card>
       </div>
@@ -214,19 +376,18 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
         <CardHeader className="pb-1">
           <div>
             <CardTitle className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-              Danh sách Hóa đơn
+              Danh sách Hóa đơn ({displayInvoices.length})
             </CardTitle>
             <CardDescription className="text-xs text-zinc-500 mt-0.5">
-              Các phiếu thu học phí đã phát hành hoặc đang chờ xử lý.
+              Các phiếu thu học phí trong <b>{currentPeriodLabel}</b> đã phát hành hoặc đang chờ xử lý.
             </CardDescription>
           </div>
         </CardHeader>
-
-        <CardContent className="pt-2 space-y-4">
-          {/* Thanh tìm kiếm & Bộ lọc riêng biệt bên dưới */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+        <CardContent className="space-y-4 pt-3">
+          {/* Thanh tìm kiếm và bộ lọc */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
               <Input
                 placeholder="Tìm theo tên học sinh, mã hóa đơn..."
                 value={searchQuery}
@@ -235,7 +396,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
               />
             </div>
 
-            <div className="w-full sm:w-52">
+            <div className="w-full sm:w-48">
               <Select value={selectedClassFilter} onValueChange={(v) => setSelectedClassFilter(v || 'ALL')}>
                 <SelectTrigger className="text-xs h-9 w-full bg-background">
                   <SelectValue>
@@ -273,29 +434,30 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
               </Select>
             </div>
           </div>
-          {filteredInvoices.length === 0 ? (
+
+          {displayInvoices.length === 0 ? (
             <div className="text-center py-12 text-zinc-500 border border-dashed rounded-xl space-y-3">
               <Receipt className="w-10 h-10 mx-auto text-zinc-300" />
-              <p className="text-sm font-medium">Chưa có hóa đơn nào phù hợp với bộ lọc.</p>
-              <p className="text-xs text-zinc-400">Bấm nút "Sinh Hóa đơn Tự động" để bắt đầu tính học phí cho học sinh.</p>
+              <p className="text-sm font-medium">Chưa có hóa đơn nào phù hợp trong {currentPeriodLabel}.</p>
+              <p className="text-xs text-zinc-400">Bạn có thể chọn kỳ khác hoặc bấm "Sinh Hóa đơn Tự động" để tạo hóa đơn cho kỳ này.</p>
             </div>
           ) : (
-            <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+            <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-2xs">
               <Table>
                 <TableHeader className="bg-zinc-50/75 dark:bg-zinc-900/75">
                   <TableRow>
-                    <TableHead className="font-semibold text-xs">Mã HĐ</TableHead>
-                    <TableHead className="font-semibold text-xs">Học sinh</TableHead>
-                    <TableHead className="font-semibold text-xs">Lớp học</TableHead>
-                    <TableHead className="font-semibold text-xs text-center">Số buổi</TableHead>
-                    <TableHead className="font-semibold text-xs">Kỳ học</TableHead>
-                    <TableHead className="font-semibold text-xs text-right">Tổng tiền</TableHead>
-                    <TableHead className="font-semibold text-xs text-center">Trạng thái</TableHead>
-                    <TableHead className="font-semibold text-xs text-right">Thao tác</TableHead>
+                    <TableHead className="w-28 text-xs font-semibold">Mã HĐ</TableHead>
+                    <TableHead className="text-xs font-semibold">Học sinh</TableHead>
+                    <TableHead className="text-xs font-semibold">Lớp học</TableHead>
+                    <TableHead className="text-xs font-semibold text-center">Số buổi</TableHead>
+                    <TableHead className="text-xs font-semibold">Kỳ học</TableHead>
+                    <TableHead className="text-xs font-semibold text-right">Tổng tiền</TableHead>
+                    <TableHead className="text-xs font-semibold text-center">Trạng thái</TableHead>
+                    <TableHead className="text-xs font-semibold text-right">Thao tác</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredInvoices.map((inv) => {
+                  {displayInvoices.map((inv) => {
                     const studentName = inv.students?.full_name || inv.profiles?.full_name || 'Học sinh';
                     const className = inv.classes?.name || 'Lớp học';
                     const isPaid = inv.status === 'paid';

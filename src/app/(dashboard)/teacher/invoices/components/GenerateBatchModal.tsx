@@ -182,7 +182,11 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
               <Label className="text-xs font-semibold">Lớp học</Label>
               <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v || '')} disabled={loadingClasses || previewLoading}>
                 <SelectTrigger className="w-full text-xs h-9">
-                  <SelectValue placeholder="Chọn lớp học" />
+                  <SelectValue placeholder="Chọn lớp học">
+                    {classes.find(cls => cls.id === selectedClassId)
+                      ? `${classes.find(cls => cls.id === selectedClassId)?.name} (${Number(classes.find(cls => cls.id === selectedClassId)?.fee_per_session).toLocaleString('vi-VN')} đ/buổi)`
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {classes.map((cls) => (
@@ -198,7 +202,9 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
               <Label className="text-xs font-semibold">Tháng</Label>
               <Select value={String(month)} onValueChange={(v) => v && setMonth(Number(v))} disabled={previewLoading}>
                 <SelectTrigger className="w-full text-xs h-9">
-                  <SelectValue placeholder="Chọn tháng" />
+                  <SelectValue placeholder="Chọn tháng">
+                    {`Tháng ${month}`}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -214,7 +220,9 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
               <Label className="text-xs font-semibold">Năm</Label>
               <Select value={String(year)} onValueChange={(v) => v && setYear(Number(v))} disabled={previewLoading}>
                 <SelectTrigger className="w-full text-xs h-9">
-                  <SelectValue placeholder="Chọn năm" />
+                  <SelectValue placeholder="Chọn năm">
+                    {`Năm ${year}`}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {[year - 1, year, year + 1].map((y) => (
