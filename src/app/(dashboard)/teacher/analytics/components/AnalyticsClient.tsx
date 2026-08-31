@@ -25,7 +25,11 @@ import {
   Download,
   Calendar,
   Save,
-  Loader2
+  Loader2,
+  BarChart3,
+  Scale,
+  Banknote,
+  CreditCard
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -268,12 +272,18 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
 
       {/* Tabs Chuyển đổi Báo cáo Tài chính & Công cụ Thuế */}
       <Tabs defaultValue="financial" className="space-y-6">
-        <TabsList className="grid w-full sm:w-[400px] grid-cols-2">
-          <TabsTrigger value="financial" className="text-xs font-semibold">
-            📊 Thống kê Thu - Chi
+        <TabsList className="grid w-full grid-cols-2 h-11 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <TabsTrigger 
+            value="financial" 
+            className="text-xs font-semibold flex items-center justify-center gap-2 h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+          >
+            <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Thống kê Thu - Chi
           </TabsTrigger>
-          <TabsTrigger value="tax" className="text-xs font-semibold">
-            ⚖️ Công cụ Kê khai Thuế
+          <TabsTrigger 
+            value="tax" 
+            className="text-xs font-semibold flex items-center justify-center gap-2 h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+          >
+            <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Công cụ Kê khai Thuế
           </TabsTrigger>
         </TabsList>
 
@@ -292,10 +302,14 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                 <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {totalPaidRevenue.toLocaleString('vi-VN')} đ
                 </div>
-                <div className="text-[11px] text-zinc-500 mt-1 flex gap-2">
-                  <span>💳 CK: {bankPaid.toLocaleString('vi-VN')}đ</span>
+                <div className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-2 flex-wrap">
+                  <span className="flex items-center gap-1">
+                    <CreditCard className="w-3 h-3 text-blue-500" /> CK: {bankPaid.toLocaleString('vi-VN')} đ
+                  </span>
                   <span>•</span>
-                  <span>💵 TM: {cashPaid.toLocaleString('vi-VN')}đ</span>
+                  <span className="flex items-center gap-1">
+                    <Banknote className="w-3 h-3 text-emerald-500" /> TM: {cashPaid.toLocaleString('vi-VN')} đ
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -356,14 +370,26 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
               <CardContent>
                 <div className="h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
                       <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} />
                       <YAxis
                         fontSize={11}
                         tickLine={false}
                         axisLine={false}
-                        tickFormatter={(v) => `${v / 1000000}M`}
+                        allowDecimals={false}
+                        tickFormatter={(v) => {
+                          if (!v || v === 0) return '0';
+                          const m = v / 1000000;
+                          if (m >= 1) {
+                            return Number.isInteger(m) ? `${m}M` : `${m.toFixed(1).replace(/\.0$/, '')}M`;
+                          }
+                          const k = v / 1000;
+                          if (k >= 1) {
+                            return Number.isInteger(k) ? `${k}k` : `${k.toFixed(1).replace(/\.0$/, '')}k`;
+                          }
+                          return `${v}`;
+                        }}
                       />
                       <Tooltip
                         formatter={(value: any) => [`${Number(value).toLocaleString('vi-VN')} đ`]}
@@ -665,7 +691,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                     2
                   </div>
                   <h4 className="font-bold text-zinc-900 dark:text-zinc-100">Chọn Kê khai Thuế</h4>
-                  <p className="text-zinc-500">Vào mục <i>"Kê khai thuế"</i> $\rightarrow$ Chọn tờ khai <b>01/CNKD</b> (Cá nhân kinh doanh / Dịch vụ giáo dục).</p>
+                  <p className="text-zinc-500">Vào mục <i>"Kê khai thuế"</i> → Chọn tờ khai <b>01/CNKD</b> (Cá nhân kinh doanh / Dịch vụ giáo dục).</p>
                 </div>
 
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2">
@@ -681,7 +707,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                     4
                   </div>
                   <h4 className="font-bold text-zinc-900 dark:text-zinc-100">Nộp thuế online</h4>
-                  <p className="text-zinc-500">Chọn <i>"Nộp thuế"</i> $\rightarrow$ Thanh toán trực tiếp qua tài khoản ngân hàng liên kết trong app là hoàn tất.</p>
+                  <p className="text-zinc-500">Chọn <i>"Nộp thuế"</i> → Thanh toán trực tiếp qua tài khoản ngân hàng liên kết trong app là hoàn tất.</p>
                 </div>
               </div>
             </CardContent>
