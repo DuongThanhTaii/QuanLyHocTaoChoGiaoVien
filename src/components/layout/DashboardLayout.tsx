@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/(auth)/actions';
-import { ReactNode, useEffect, useState, useRef } from 'react';
+import { getUnreadChatCount } from '@/app/actions/chat-actions';
+import { createBrowserClient } from '@supabase/ssr';
+import { ReactNode, useEffect, useState, useRef, useMemo } from 'react';
 import { useTheme } from 'next-themes';
 import { useThemeColor } from '../providers/theme-color-provider';
 import {
@@ -56,16 +58,28 @@ const studentNav: SidebarItem[] = [
   { icon: Users, label: 'Yêu cầu liên kết', href: '/student/requests' },
 ];
 
-function NavItem({ item, pathname, isCollapsed }: { item: SidebarItem, pathname: string, isCollapsed: boolean }) {
+function NavItem({ 
+  item, 
+  pathname, 
+  isCollapsed,
+  badge 
+}: { 
+  item: SidebarItem, 
+  pathname: string, 
+  isCollapsed: boolean,
+  badge?: number 
+}) {
   // Logic to determine active state
   const isActive = item.href === '/teacher' || item.href === '/parent' || item.href === '/student' 
     ? pathname === item.href 
     : pathname.startsWith(item.href);
 
+  const hasBadge = typeof badge === 'number' && badge > 0;
+
   return (
     <Link
       href={item.href}
-      title={isCollapsed ? item.label : undefined}
+      title={isCollapsed ? `${item.label}${hasBadge ? ` (${badge})` : ''}` : undefined}
       className={`relative flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group
         ${isActive 
           ? "text-primary bg-primary/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]" 
@@ -73,10 +87,22 @@ function NavItem({ item, pathname, isCollapsed }: { item: SidebarItem, pathname:
         }
       `}
     >
-      <item.icon className={`w-5 h-5 shrink-0 transition-colors duration-300 ${isActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`} />
+      <div className="relative shrink-0">
+        <item.icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`} />
+        {hasBadge && isCollapsed && (
+          <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-pulse">
+            {badge > 9 ? '9+' : badge}
+          </span>
+        )}
+      </div>
       
-      <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden flex items-center ${isCollapsed ? 'max-w-0 opacity-0' : 'max-w-[200px] opacity-100 ml-3'}`}>
+      <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden flex items-center justify-between flex-1 ${isCollapsed ? 'max-w-0 opacity-0' : 'max-w-[200px] opacity-100 ml-3'}`}>
         <span className="z-10">{item.label}</span>
+        {hasBadge && (
+          <span className="z-10 font-bold text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20 shadow-2xs ml-1.5">
+            ({badge})
+          </span>
+        )}
       </div>
       
       {/* Subtle hover/active gradient background */}
@@ -117,6 +143,43 @@ export default function DashboardLayout({
       sessionStorage.setItem('theme_synced', 'true');
     }
   }, [uiSettings, setTheme, setThemeColor]);
+
+  const [unreadChatCount, setUnreadChatCount] = useState<number>(0);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await getUnreadChatCount();
+      if (typeof res?.unreadCount === 'number') {
+        setUnreadChatCount(res.unreadCount);
+      }
+    } catch (e) {
+      console.error("Error fetching unread chat count:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
+
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const channel = supabase
+      .channel('global-unread-messages')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -204,7 +267,13 @@ export default function DashboardLayout({
         {/* Navigation Section */}
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {navItems.map((item, index) => (
-            <NavItem key={index} item={item} pathname={pathname} isCollapsed={isCollapsed} />
+            <NavItem 
+              key={index} 
+              item={item} 
+              pathname={pathname} 
+              isCollapsed={isCollapsed} 
+              badge={item.label === 'Tin nhắn' ? unreadChatCount : undefined}
+            />
           ))}
         </div>
 

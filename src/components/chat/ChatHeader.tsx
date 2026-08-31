@@ -7,7 +7,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { GroupMembersModal } from './GroupMembersModal';
-import { leaveConversation } from '@/app/actions/chat-actions';
+import { leaveConversation, disbandGroupConversation } from '@/app/actions/chat-actions';
 import { toast } from 'sonner';
 
 interface ChatHeaderProps {
@@ -33,19 +33,20 @@ export function ChatHeader({
   onTitleUpdated
 }: ChatHeaderProps) {
   const [membersModalOpen, setMembersModalOpen] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!conversation) return null;
 
   const isGroup = conversation.type === 'group';
   const partner = conversation.partnerInfo;
+  const isAdmin = conversation.myRole === 'admin' || conversation.createdBy === currentUserId;
 
   const handleLeaveGroup = async () => {
     if (!confirm('Bạn có chắc chắn muốn rời khỏi nhóm chat này không?')) return;
 
-    setIsLeaving(true);
+    setIsProcessing(true);
     const res = await leaveConversation(conversation.id);
-    setIsLeaving(false);
+    setIsProcessing(false);
 
     if (res?.error) {
       toast.error(res.error);
@@ -55,12 +56,27 @@ export function ChatHeader({
     }
   };
 
+  const handleDisbandGroup = async () => {
+    if (!confirm('CẢNH BÁO: Bạn có chắc chắn muốn giải tán nhóm chat này không? Tất cả tin nhắn và thành viên sẽ bị xóa vĩnh viễn.')) return;
+
+    setIsProcessing(true);
+    const res = await disbandGroupConversation(conversation.id);
+    setIsProcessing(false);
+
+    if (res?.error) {
+      toast.error(res.error);
+    } else {
+      toast.success('Đã giải tán nhóm chat.');
+      if (onLeaveOrDelete) onLeaveOrDelete();
+    }
+  };
+
   const handleDeleteDirect = async () => {
     if (!confirm('Bạn có chắc muốn xóa đoạn chat này khỏi danh sách không?')) return;
 
-    setIsLeaving(true);
+    setIsProcessing(true);
     const res = await leaveConversation(conversation.id);
-    setIsLeaving(false);
+    setIsProcessing(false);
 
     if (res?.error) {
       toast.error(res.error);
@@ -114,27 +130,15 @@ export function ChatHeader({
 
         {/* Action Menu */}
         <div className="flex items-center gap-1">
-          {isGroup && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMembersModalOpen(true)}
-              className="hidden sm:flex text-xs text-zinc-600 gap-1.5 h-8"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>Thành viên</span>
-            </Button>
-          )}
-
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-900">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-900" disabled={isProcessing}>
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               }
             />
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-52">
               {isGroup ? (
                 <>
                   <DropdownMenuItem onClick={() => setMembersModalOpen(true)}>
@@ -142,14 +146,20 @@ export function ChatHeader({
                     <span>Thông tin & Thành viên</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLeaveGroup} className="text-red-600 focus:text-red-600">
+                  <DropdownMenuItem onClick={handleLeaveGroup} className="text-amber-600 focus:text-amber-600 cursor-pointer">
                     <LogOut className="w-4 h-4 mr-2" />
                     <span>Rời khỏi nhóm</span>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={handleDisbandGroup} className="text-red-600 focus:text-red-600 font-medium cursor-pointer">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      <span>Giải tán nhóm</span>
+                    </DropdownMenuItem>
+                  )}
                 </>
               ) : (
                 <>
-                  <DropdownMenuItem onClick={handleDeleteDirect} className="text-red-600 focus:text-red-600">
+                  <DropdownMenuItem onClick={handleDeleteDirect} className="text-red-600 focus:text-red-600 cursor-pointer">
                     <Trash2 className="w-4 h-4 mr-2" />
                     <span>Xóa đoạn chat</span>
                   </DropdownMenuItem>

@@ -272,6 +272,10 @@ export async function getUserConversations() {
       lastMessageAt: conv.last_message_at || conv.created_at,
       lastMessageText: conv.last_message_text || 'Chưa có tin nhắn',
       lastReadAt: myPart?.last_read_at || null,
+      isUnread: Boolean(
+        conv.last_message_text && 
+        (!myPart?.last_read_at || new Date(conv.last_message_at || 0) > new Date(myPart.last_read_at))
+      ),
       myRole: myPart?.role || 'member',
       memberCount: participants.length,
       partnerInfo,
@@ -387,7 +391,26 @@ export async function sendMessage(conversationId: string, content: string, type 
     .eq('conversation_id', conversationId)
     .eq('user_id', user.id);
 
-  return { success: true, message: newMsg };
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('full_name, avatar_url, role')
+    .eq('id', user.id)
+    .single();
+
+  const formattedMsg = {
+    id: newMsg.id,
+    conversationId: newMsg.conversation_id,
+    senderId: newMsg.sender_id,
+    content: newMsg.content,
+    type: newMsg.type,
+    metadata: newMsg.metadata,
+    createdAt: newMsg.created_at,
+    senderName: profile?.full_name || 'Người dùng',
+    senderAvatar: profile?.avatar_url || null,
+    senderRole: profile?.role || 'student'
+  };
+
+  return { success: true, message: formattedMsg };
 }
 
 // 7. Đánh dấu đã đọc
@@ -491,4 +514,124 @@ export async function getTeacherClassesForChat() {
   }));
 
   return { classes: formatted };
+}
+
+// 11. Giải tán nhóm chat (Chỉ trưởng nhóm / giáo viên tạo nhóm)
+export async function disbandGroupConversation(conversationId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Chưa đăng nhập' };
+
+  const admin = getAdminClient();
+
+  const { data: conv, error: convError } = await admin
+    .from('conversations')
+    .select('id, type, created_by')
+    .eq('id', conversationId)
+    .single();
+
+  if (convError || !conv || conv.type !== 'group') {
+    return { error: 'Không tìm thấy nhóm chat' };
+  }
+
+  const { data: myPart } = await admin
+    .from('conversation_participants')
+    .select('role')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (conv.created_by !== user.id && myPart?.role !== 'admin') {
+    return { error: 'Chỉ trưởng nhóm mới có quyền giải tán nhóm' };
+  }
+
+  // Xóa toàn bộ tin nhắn, thành viên, và nhóm chat
+  await admin.from('messages').delete().eq('conversation_id', conversationId);
+  await admin.from('conversation_participants').delete().eq('conversation_id', conversationId);
+  const { error: deleteError } = await admin.from('conversations').delete().eq('id', conversationId);
+
+  if (deleteError) {
+    return { error: deleteError.message };
+  }
+
+  return { success: true };
+}
+
+// 12. Xóa thành viên khỏi nhóm chat
+export async function kickGroupMember(conversationId: string, targetUserId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Chưa đăng nhập' };
+
+  const admin = getAdminClient();
+
+  const { data: conv } = await admin
+    .from('conversations')
+    .select('id, created_by')
+    .eq('id', conversationId)
+    .single();
+
+  const { data: myPart } = await admin
+    .from('conversation_participants')
+    .select('role')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (conv?.created_by !== user.id && myPart?.role !== 'admin') {
+    return { error: 'Bạn không có quyền xóa thành viên này' };
+  }
+
+  const { error } = await admin
+    .from('conversation_participants')
+    .delete()
+    .eq('conversation_id', conversationId)
+    .eq('user_id', targetUserId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+// 13. Lấy số lượng tin nhắn / đoạn chat chưa đọc
+export async function getUnreadChatCount() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { unreadCount: 0 };
+
+  const admin = getAdminClient();
+
+  // Lấy danh sách conversation_participants của user
+  const { data: myParts } = await admin
+    .from('conversation_participants')
+    .select('conversation_id, last_read_at')
+    .eq('user_id', user.id);
+
+  if (!myParts || myParts.length === 0) {
+    return { unreadCount: 0 };
+  }
+
+  const convIds = myParts.map(p => p.conversation_id);
+  const partMap = new Map(myParts.map(p => [p.conversation_id, p.last_read_at]));
+
+  // Lấy các cuộc trò chuyện có tin nhắn
+  const { data: convs } = await admin
+    .from('conversations')
+    .select('id, last_message_at, last_message_text')
+    .in('id', convIds);
+
+  let unreadCount = 0;
+  (convs || []).forEach(conv => {
+    if (!conv.last_message_text) return;
+    const lastRead = partMap.get(conv.id);
+    if (!lastRead) {
+      if (conv.last_message_at) unreadCount++;
+    } else if (conv.last_message_at && new Date(conv.last_message_at) > new Date(lastRead)) {
+      unreadCount++;
+    }
+  });
+
+  return { unreadCount };
 }

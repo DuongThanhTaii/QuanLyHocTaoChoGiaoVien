@@ -61,3 +61,17 @@ BEGIN
   END IF;
 END
 $$;
+
+-- Kích hoạt Realtime cho bảng messages trên Supabase PostgreSQL
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+  END IF;
+END
+$$;
+
+ALTER TABLE public.messages REPLICA IDENTITY FULL;

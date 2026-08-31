@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 
 export interface ChatMessage {
@@ -33,10 +33,13 @@ export function useSupabaseRealtime(
   const isTypingRef = useRef<boolean>(false);
   const stopTypingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  // Singleton browser client qua useMemo để không bao giờ bị re-instantiate trong lifecycle
+  const supabase = useMemo(() => {
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }, []);
 
   // Cập nhật messages khi initialMessages thay đổi (ví dụ đổi conversation)
   useEffect(() => {
@@ -47,16 +50,16 @@ export function useSupabaseRealtime(
   useEffect(() => {
     if (!conversationId) return;
 
-    // Tạo Realtime Channel cho conversation này
+    // Tạo Realtime Channel duy nhất cho conversation này
     const channel = supabase.channel(`chat-room:${conversationId}`, {
       config: {
-        broadcast: { ack: false }
+        broadcast: { ack: false, self: false }
       }
     });
 
     channelRef.current = channel;
 
-    // 1. Lắng nghe tin nhắn mới từ PostgreSQL Database
+    // 1. Lắng nghe tin nhắn mới từ PostgreSQL Database Changes
     channel.on(
       'postgres_changes',
       {
@@ -67,13 +70,14 @@ export function useSupabaseRealtime(
       },
       async (payload) => {
         const newMsg = payload.new as any;
-        
-        // Tránh trùng lặp nếu tin nhắn đã được thêm lạc quan
+        if (!newMsg) return;
+
         setMessages((prev) => {
+          // Tránh trùng lặp nếu đã nhận qua broadcast hoặc optimistic
           if (prev.some((m) => m.id === newMsg.id)) {
             return prev;
           }
-          
+
           return [
             ...prev,
             {
@@ -91,17 +95,35 @@ export function useSupabaseRealtime(
       }
     );
 
-    // 2. Lắng nghe sự kiện gõ phím "..." qua Broadcast WebSocket (0 byte DB)
+    // 2. Lắng nghe tin nhắn mới qua WebSocket Broadcast (nhận ngay lập tức < 10ms giữa 2 client)
+    channel.on('broadcast', { event: 'new_message' }, ({ payload }) => {
+      const { message } = payload;
+      if (!message || message.senderId === currentUserId) return;
+
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === message.id)) {
+          return prev;
+        }
+        return [...prev, message];
+      });
+
+      // Khi người kia gửi tin nhắn, lập tức xóa trạng thái typing của họ
+      if (message.senderId) {
+        setTypingUsers((prev) => prev.filter((u) => u.userId !== message.senderId));
+      }
+    });
+
+    // 3. Lắng nghe sự kiện gõ phím "..." qua Broadcast WebSocket (0 byte DB)
     channel.on('broadcast', { event: 'typing' }, ({ payload }) => {
       const { userId, userName } = payload;
-      if (userId === currentUserId) return; // Bỏ qua chính mình
+      if (!userId || userId === currentUserId) return; // Bỏ qua chính mình
 
       // Xóa timeout cũ nếu có
       if (typingTimeoutsRef.current[userId]) {
         clearTimeout(typingTimeoutsRef.current[userId]);
       }
 
-      // Thêm vào danh sách typing nếu chưa có
+      // Thêm vào danh sách typing
       setTypingUsers((prev) => {
         if (!prev.some((u) => u.userId === userId)) {
           return [...prev, { userId, userName }];
@@ -116,10 +138,10 @@ export function useSupabaseRealtime(
       }, 2500);
     });
 
-    // 3. Lắng nghe sự kiện dừng gõ phím
+    // 4. Lắng nghe sự kiện dừng gõ phím
     channel.on('broadcast', { event: 'stop_typing' }, ({ payload }) => {
       const { userId } = payload;
-      if (userId === currentUserId) return;
+      if (!userId || userId === currentUserId) return;
 
       if (typingTimeoutsRef.current[userId]) {
         clearTimeout(typingTimeoutsRef.current[userId]);
@@ -130,11 +152,16 @@ export function useSupabaseRealtime(
     });
 
     // Subscribe channel
-    channel.subscribe();
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        // Channel sẵn sàng nhận gửi realtime
+      }
+    });
 
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
       Object.values(typingTimeoutsRef.current).forEach((t) => clearTimeout(t));
       typingTimeoutsRef.current = {};
@@ -191,6 +218,19 @@ export function useSupabaseRealtime(
     });
   }, [conversationId, currentUserId]);
 
+  // Hàm broadcast tin nhắn mới tức thì cho các thành viên trong room
+  const broadcastNewMessage = useCallback(
+    (message: ChatMessage) => {
+      if (!channelRef.current || !conversationId) return;
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'new_message',
+        payload: { message }
+      });
+    },
+    [conversationId]
+  );
+
   const addOptimisticMessage = useCallback((message: ChatMessage) => {
     setMessages((prev) => [...prev, message]);
   }, []);
@@ -200,6 +240,7 @@ export function useSupabaseRealtime(
     typingUsers,
     sendTypingSignal,
     sendStopTypingSignal,
+    broadcastNewMessage,
     addOptimisticMessage
   };
 }

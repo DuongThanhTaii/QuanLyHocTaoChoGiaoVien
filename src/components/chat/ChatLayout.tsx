@@ -46,6 +46,7 @@ export function ChatLayout({
     typingUsers,
     sendTypingSignal,
     sendStopTypingSignal,
+    broadcastNewMessage,
     addOptimisticMessage
   } = useSupabaseRealtime(activeConversationId, currentUserId, initialMessages);
 
@@ -106,7 +107,7 @@ export function ChatLayout({
 
     // Thêm tin nhắn lạc quan (Optimistic update)
     const tempId = `temp-${Date.now()}`;
-    addOptimisticMessage({
+    const optimisticMsg = {
       id: tempId,
       conversationId: activeConversationId,
       senderId: currentUserId,
@@ -114,7 +115,8 @@ export function ChatLayout({
       type: 'text',
       createdAt: new Date().toISOString(),
       senderName: 'Bạn'
-    });
+    };
+    addOptimisticMessage(optimisticMsg);
 
     setIsSending(true);
     const res = await sendMessage(activeConversationId, text);
@@ -122,8 +124,10 @@ export function ChatLayout({
 
     if (res?.error) {
       toast.error(res.error);
-    } else {
-      // Cập nhật lại danh sách hội thoại để cập nhật tin nhắn cuối
+    } else if (res?.message) {
+      // Broadcast ngay lập tức cho partner qua WebSocket
+      broadcastNewMessage(res.message);
+      // Cập nhật lại danh sách hội thoại để cập nhật preview tin nhắn cuối
       loadConversations(false);
     }
   };
@@ -158,6 +162,7 @@ export function ChatLayout({
           onSelectConversation={(id) => setActiveConversationId(id)}
           onNewConversation={handleConversationCreatedOrSelected}
           currentUserRole={currentUserRole}
+          isLoading={isLoadingConversations}
         />
       </div>
 
@@ -167,7 +172,40 @@ export function ChatLayout({
           !activeConversationId ? 'hidden md:flex' : 'flex'
         }`}
       >
-        {activeConversation ? (
+        {isLoadingConversations ? (
+          <div className="flex-1 flex flex-col h-full bg-white animate-pulse">
+            {/* Header skeleton */}
+            <div className="h-16 px-4 border-b border-zinc-200 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </div>
+            </div>
+            {/* Messages feed skeleton */}
+            <div className="flex-1 p-4 space-y-4 bg-zinc-50/30">
+              <div className="flex items-start gap-2 max-w-[70%]">
+                <Skeleton className="h-8 w-8 rounded-full shrink-0 mt-1" />
+                <div className="space-y-1">
+                  <Skeleton className="h-10 w-48 rounded-2xl rounded-tl-none" />
+                </div>
+              </div>
+              <div className="flex items-start justify-end gap-2 ml-auto max-w-[70%]">
+                <div className="space-y-1 flex flex-col items-end">
+                  <Skeleton className="h-12 w-56 rounded-2xl rounded-tr-none bg-primary/20" />
+                </div>
+              </div>
+              <div className="flex items-start gap-2 max-w-[70%]">
+                <Skeleton className="h-8 w-8 rounded-full shrink-0 mt-1" />
+                <div className="space-y-1">
+                  <Skeleton className="h-8 w-36 rounded-2xl rounded-tl-none" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : activeConversation ? (
           <>
             {/* Header */}
             <ChatHeader
@@ -226,7 +264,7 @@ export function ChatLayout({
                   type="submit"
                   size="icon"
                   disabled={!inputText.trim() || isSending}
-                  className="rounded-full w-10 h-10 shrink-0 shadow-xs"
+                  className="rounded-full w-10 h-10 shrink-0 shadow-xs cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                 </Button>

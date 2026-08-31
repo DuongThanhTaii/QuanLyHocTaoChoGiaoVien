@@ -15,6 +15,7 @@ interface ConversationListProps {
   onSelectConversation: (id: string) => void;
   onNewConversation: (id: string) => void;
   currentUserRole?: string;
+  isLoading?: boolean;
 }
 
 function formatRelativeTime(dateString: string) {
@@ -44,7 +45,8 @@ export function ConversationList({
   activeConversationId,
   onSelectConversation,
   onNewConversation,
-  currentUserRole
+  currentUserRole,
+  isLoading = false
 }: ConversationListProps) {
   const [searchFilter, setSearchFilter] = useState('');
 
@@ -86,7 +88,22 @@ export function ConversationList({
 
       {/* List */}
       <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
-        {filteredConversations.length === 0 ? (
+        {isLoading ? (
+          <div className="divide-y divide-zinc-100 animate-pulse">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="p-3.5 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-zinc-200 shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="h-3.5 bg-zinc-200 rounded w-28" />
+                    <div className="h-2.5 bg-zinc-100 rounded w-8" />
+                  </div>
+                  <div className="h-3 bg-zinc-100 rounded w-40" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredConversations.length === 0 ? (
           <div className="p-8 text-center flex flex-col items-center justify-center">
             <div className="relative mb-2 flex flex-col items-center">
               <Image
@@ -132,23 +149,36 @@ export function ConversationList({
                   <div className="flex items-center justify-between gap-1 mb-0.5">
                     <h4
                       className={`text-sm truncate ${
-                        isActive ? 'font-bold text-blue-950' : 'font-semibold text-zinc-900'
+                        isActive 
+                          ? 'font-bold text-blue-950' 
+                          : conv.isUnread
+                          ? 'font-bold text-zinc-950'
+                          : 'font-medium text-zinc-800'
                       }`}
                     >
                       {conv.title}
                     </h4>
-                    <span className="text-[10px] text-zinc-400 shrink-0 font-normal">
+                    <span className={`text-[10px] shrink-0 ${conv.isUnread ? 'font-semibold text-primary' : 'text-zinc-400 font-normal'}`}>
                       {formatRelativeTime(conv.lastMessageAt)}
                     </span>
                   </div>
 
-                  <p
-                    className={`text-xs truncate ${
-                      isActive ? 'text-blue-900/80' : 'text-zinc-500'
-                    }`}
-                  >
-                    {conv.lastMessageText || 'Bắt đầu cuộc trò chuyện'}
-                  </p>
+                  <div className="flex items-center justify-between gap-1">
+                    <p
+                      className={`text-xs truncate ${
+                        isActive 
+                          ? 'text-blue-900/80 font-medium' 
+                          : conv.isUnread
+                          ? 'text-zinc-900 font-semibold'
+                          : 'text-zinc-500 font-normal'
+                      }`}
+                    >
+                      {conv.lastMessageText || 'Bắt đầu cuộc trò chuyện'}
+                    </p>
+                    {conv.isUnread && (
+                      <span className="w-2 h-2 rounded-full bg-primary shrink-0 shadow-2xs" />
+                    )}
+                  </div>
                 </div>
               </div>
             );
