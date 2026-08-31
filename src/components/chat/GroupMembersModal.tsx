@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { updateGroupTitle } from '@/app/actions/chat-actions';
 import { toast } from 'sonner';
 
@@ -128,12 +129,7 @@ export function GroupMembersModal({
                   className="flex items-center justify-between p-2.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Avatar className="w-8 h-8 border border-zinc-200">
-                      <AvatarImage src={member.avatarUrl} />
-                      <AvatarFallback className="bg-zinc-100 text-zinc-700 text-xs font-semibold">
-                        {member.fullName?.charAt(0)?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar name={member.fullName} email={member.email} size="sm" className="w-8 h-8 text-xs shrink-0" />
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-medium text-xs text-zinc-900">

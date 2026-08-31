@@ -21,6 +21,7 @@ import {
   Menu
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { UserAvatar } from '../ui/UserAvatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from '../ui/dropdown-menu';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 
@@ -232,10 +233,7 @@ export default function DashboardLayout({
           
           <DropdownMenu>
             <DropdownMenuTrigger className={`outline-none w-full flex items-center px-1.5 py-1.5 text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-300 cursor-pointer text-left border border-transparent hover:border-border overflow-hidden`}>
-              <Avatar className="h-9 w-9 border border-border shrink-0 transition-all duration-300">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">GV</AvatarFallback>
-              </Avatar>
+              <UserAvatar name={userName} email={userEmail} size="md" className="shrink-0" />
               <div className={`flex items-center transition-all duration-300 overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[200px] opacity-100 ml-3'}`}>
                 <span className="flex flex-col flex-1 overflow-hidden leading-tight gap-0.5">
                   <span className="truncate font-medium text-foreground">{userName || 'Người dùng'}</span>

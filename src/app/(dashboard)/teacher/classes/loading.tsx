@@ -1,5 +1,5 @@
 import { CardGridSkeleton } from "@/components/skeletons/CardGridSkeleton";
 
-export default function DashboardLoading() {
+export default function TeacherClassesLoading() {
   return <CardGridSkeleton count={6} />;
 }

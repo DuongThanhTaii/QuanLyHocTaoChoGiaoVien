@@ -22,6 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Trash2 } from 'lucide-react';
 import { VIETNAM_BANKS } from '@/lib/banks';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 const initialState = { error: '', success: false, message: '' };
 
@@ -41,8 +42,13 @@ export function BasicProfileForm({ profile }: { profile: any }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Thông tin cá nhân</CardTitle>
-        <CardDescription>Cập nhật họ tên và số điện thoại liên lạc.</CardDescription>
+        <div className="flex items-center gap-4">
+          <UserAvatar name={profile?.full_name} email={profile?.email} size="xl" className="shadow-xs" />
+          <div>
+            <CardTitle>Thông tin cá nhân</CardTitle>
+            <CardDescription>Cập nhật họ tên và số điện thoại liên lạc.</CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <form action={formAction}>
         <CardContent className="space-y-4 pb-4">

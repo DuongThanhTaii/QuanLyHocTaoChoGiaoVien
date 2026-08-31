@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Search, Users, MessageSquare, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { NewChatModal } from './NewChatModal';
 import { CreateClassGroupModal } from './CreateClassGroupModal';
 
@@ -118,20 +119,13 @@ export function ConversationList({
                 }`}
               >
                 <div className="relative shrink-0">
-                  <Avatar className="w-11 h-11 border border-zinc-200">
-                    {isGroup ? (
-                      <AvatarFallback className="bg-purple-100 text-purple-700 font-bold text-sm">
-                        <Users className="w-5 h-5" />
-                      </AvatarFallback>
-                    ) : (
-                      <>
-                        <AvatarImage src={partner?.avatarUrl} />
-                        <AvatarFallback className="bg-zinc-100 text-zinc-700 font-semibold text-sm">
-                          {conv.title?.charAt(0)?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </>
-                    )}
-                  </Avatar>
+                  {isGroup ? (
+                    <div className="w-11 h-11 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold ring-1 ring-purple-200 dark:ring-purple-800">
+                      <Users className="w-5 h-5" />
+                    </div>
+                  ) : (
+                    <UserAvatar name={partner?.fullName || conv.title} email={partner?.email} size="lg" className="w-11 h-11 text-sm" />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">

@@ -13,6 +13,7 @@ import { EditStudentForm } from './StudentForms';
 import { ApproveEnrollmentButton } from './ApproveEnrollmentButton';
 import { ParentContactPopover } from './ParentContactPopover';
 import { StudentProgressLedger, StudentLedgerItem } from '../components/StudentProgressLedger';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 const enrollmentStatusLabels: Record<string, string> = { 
   ACTIVE: 'Đang học', 
@@ -80,7 +81,7 @@ export function ClassStudentsView({
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5 text-primary" />
-            <span>Tiến độ & Tổng hợp 360°</span>
+            <span>Tiến độ</span>
           </button>
         </div>
 
@@ -138,7 +139,10 @@ export function ClassStudentsView({
                   {students.map(({ enrollment, studentProfile, guardians }) => (
                     <TableRow key={enrollment.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50">
                       <TableCell className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
-                        {studentProfile?.full_name || 'Không rõ'}
+                        <div className="flex items-center gap-2.5">
+                          <UserAvatar name={studentProfile?.full_name} email={studentProfile?.email} size="sm" />
+                          <span>{studentProfile?.full_name || 'Không rõ'}</span>
+                        </div>
                       </TableCell>
                       <TableCell className="text-xs text-zinc-500">{studentProfile?.email || '--'}</TableCell>
                       <TableCell className="text-xs text-zinc-500">{studentProfile?.phone || '--'}</TableCell>

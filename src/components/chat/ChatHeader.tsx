@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Users, MoreVertical, LogOut, Trash2, Info, ChevronLeft, UserCheck, Shield } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { GroupMembersModal } from './GroupMembersModal';
@@ -84,20 +85,13 @@ export function ChatHeader({
             </Button>
           )}
 
-          <Avatar className="w-10 h-10 border border-zinc-200">
-            {isGroup ? (
-              <AvatarFallback className="bg-purple-100 text-purple-700 font-bold text-sm">
-                <Users className="w-5 h-5" />
-              </AvatarFallback>
-            ) : (
-              <>
-                <AvatarImage src={partner?.avatarUrl} />
-                <AvatarFallback className="bg-zinc-100 text-zinc-700 font-semibold text-sm">
-                  {conversation.title?.charAt(0)?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </>
-            )}
-          </Avatar>
+          {isGroup ? (
+            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold ring-1 ring-purple-200 dark:ring-purple-800 shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
+          ) : (
+            <UserAvatar name={partner?.fullName || conversation.title} email={partner?.email} size="lg" className="shrink-0" />
+          )}
 
           <div>
             <h3 className="font-semibold text-sm text-zinc-900 leading-tight line-clamp-1">

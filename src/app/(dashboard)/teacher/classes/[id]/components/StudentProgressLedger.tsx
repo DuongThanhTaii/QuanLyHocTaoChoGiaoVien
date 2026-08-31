@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Search, Star, MessageSquare, ExternalLink, Users, CheckCircle, Clock, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
@@ -96,9 +97,7 @@ export function StudentProgressLedger({ classId, students }: Props) {
                       {/* Cột 1: Thông tin học sinh */}
                       <TableCell>
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-                            {s.fullName.slice(-1).toUpperCase()}
-                          </div>
+                          <UserAvatar name={s.fullName} email={s.email} size="sm" />
                           <div>
                             <div className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">{s.fullName}</div>
                             <div className="text-[11px] text-zinc-400">{s.phone || 'Chưa có SĐT'}</div>

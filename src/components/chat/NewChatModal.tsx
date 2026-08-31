@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { searchUserByPhoneOrEmail, getOrCreateDirectConversation } from '@/app/actions/chat-actions';
 import { toast } from 'sonner';
 
@@ -113,12 +114,7 @@ export function NewChatModal({ onConversationCreated }: NewChatModalProps) {
               className="flex items-center justify-between p-3 rounded-lg border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 cursor-pointer transition-all"
             >
               <div className="flex items-center gap-3">
-                <Avatar className="w-10 h-10 border border-zinc-200">
-                  <AvatarImage src={user.avatar_url} />
-                  <AvatarFallback className="bg-zinc-100 text-zinc-700 font-semibold text-xs">
-                    {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar name={user.full_name} email={user.email} size="lg" className="shrink-0" />
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-zinc-900">{user.full_name}</span>

@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { InitialCatLoader } from "@/components/shared/InitialCatLoader";
+
 export const metadata: Metadata = {
   title: "Gia Sư Pro",
   description: "Hệ thống quản lý gia sư",
@@ -34,6 +36,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ThemeColorProvider>
             <TooltipProvider>
+              <InitialCatLoader />
               {children}
               <Toaster />
             </TooltipProvider>

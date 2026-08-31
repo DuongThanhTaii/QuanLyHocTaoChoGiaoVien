@@ -48,17 +48,9 @@ export function ClassFeedList({ classId, items }: { classId: string; items: Feed
   return (
     <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card overflow-hidden">
       <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-            Bảng tin & Hoạt động gần đây
-          </CardTitle>
-          <Link
-            href={`/teacher/classes/${classId}/lessons`}
-            className="text-xs text-primary hover:underline font-medium"
-          >
-            Xem tất cả bài giảng &rarr;
-          </Link>
-        </div>
+        <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+          Bảng tin & Hoạt động gần đây
+        </CardTitle>
       </CardHeader>
 
       {/* Khung nhập thông báo tích hợp ngay đầu Bảng tin */}
@@ -70,15 +62,12 @@ export function ClassFeedList({ classId, items }: { classId: string; items: Feed
           onChange={(e) => setContent(e.target.value)}
           className="text-xs resize-none bg-background focus-visible:ring-1"
         />
-        <div className="flex justify-between items-center pt-0.5">
-          <span className="text-[11px] text-zinc-400">
-            Thông báo sẽ hiển thị trên bảng tin lớp học và gửi tới học sinh.
-          </span>
+        <div className="flex justify-end pt-0.5">
           <Button
             size="sm"
             onClick={handlePost}
             disabled={isPosting || !content.trim()}
-            className="h-8 px-3 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-2xs"
+            className="h-8 px-3.5 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-2xs"
           >
             {isPosting ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Send className="w-3.5 h-3.5 mr-1.5" />}
             Đăng thông báo
@@ -89,8 +78,15 @@ export function ClassFeedList({ classId, items }: { classId: string; items: Feed
       {/* Danh sách các bài giảng & thông báo */}
       <CardContent className="divide-y divide-zinc-100 dark:divide-zinc-800/80 p-0">
         {items.length === 0 ? (
-          <div className="text-center py-8 text-zinc-400 text-xs">
-            Chưa có bài giảng, tài liệu hoặc thông báo nào trước đó.
+          <div className="text-center py-10 px-4 flex flex-col items-center justify-center space-y-3">
+            <img
+              src="/images/empty_states/empty.png"
+              alt="Chưa có thông báo"
+              className="w-24 h-24 object-contain mx-auto"
+            />
+            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+              Chưa có bài giảng, tài liệu hoặc thông báo nào trước đó.
+            </p>
           </div>
         ) : (
           items.map((item) => {

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { TypingIndicator } from './TypingIndicator';
 import { ChatMessage, TypingUser } from '@/infrastructure/realtime/use-supabase-realtime';
 
@@ -68,12 +69,7 @@ export function ChatMessages({
               {!isMe && isGroup && (
                 <div className="w-7 shrink-0">
                   {isLastFromSender ? (
-                    <Avatar className="w-7 h-7 border border-zinc-200">
-                      <AvatarImage src={msg.senderAvatar || undefined} />
-                      <AvatarFallback className="bg-zinc-200 text-zinc-700 text-[10px] font-semibold">
-                        {msg.senderName?.charAt(0)?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar name={msg.senderName} size="sm" className="w-7 h-7 text-[10px]" />
                   ) : null}
                 </div>
               )}

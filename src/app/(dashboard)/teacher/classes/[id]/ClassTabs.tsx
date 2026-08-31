@@ -24,7 +24,7 @@ export function ClassTabs({ classId }: { classId: string }) {
       isDropdown: true,
       subItems: [
         { name: 'Danh sách lớp (Hồ sơ)', href: `/teacher/classes/${classId}/students` },
-        { name: 'Tiến độ & Tổng hợp 360°', href: `/teacher/classes/${classId}/students?view=progress` }
+        { name: 'Tiến độ', href: `/teacher/classes/${classId}/students?view=progress` }
       ]
     },
     { name: 'Lịch học', href: `/teacher/classes/${classId}/schedule` },
@@ -79,7 +79,7 @@ export function ClassTabs({ classId }: { classId: string }) {
                       }
                     >
                       <TrendingUp className="w-3.5 h-3.5 text-primary" />
-                      <span>Tiến độ & Tổng hợp 360°</span>
+                      <span>Tiến độ</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

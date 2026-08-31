@@ -13,7 +13,8 @@ import {
   markConversationAsRead
 } from '@/app/actions/chat-actions';
 import { Button } from '@/components/ui/button';
-import { Send, MessageSquare, Loader2 } from 'lucide-react';
+import { Send, MessageSquare } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 interface ChatLayoutProps {
@@ -179,8 +180,27 @@ export function ChatLayout({
 
             {/* Messages Feed */}
             {isLoadingMessages ? (
-              <div className="flex-1 flex items-center justify-center bg-zinc-50/50">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+              <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-zinc-50/30">
+                <div className="flex items-start gap-2 max-w-[70%]">
+                  <Skeleton className="h-8 w-8 rounded-full shrink-0 mt-1" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-10 w-48 rounded-2xl rounded-tl-none bg-muted" />
+                    <Skeleton className="h-2.5 w-12 ml-1" />
+                  </div>
+                </div>
+                <div className="flex items-start justify-end gap-2 ml-auto max-w-[70%]">
+                  <div className="space-y-1 flex flex-col items-end">
+                    <Skeleton className="h-14 w-60 rounded-2xl rounded-tr-none bg-primary/20" />
+                    <Skeleton className="h-2.5 w-12 mr-1" />
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 max-w-[70%]">
+                  <Skeleton className="h-8 w-8 rounded-full shrink-0 mt-1" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-8 w-36 rounded-2xl rounded-tl-none bg-muted" />
+                    <Skeleton className="h-2.5 w-12 ml-1" />
+                  </div>
+                </div>
               </div>
             ) : (
               <ChatMessages
