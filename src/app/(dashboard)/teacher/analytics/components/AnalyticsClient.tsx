@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,22 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import { 
   FileSpreadsheet, 
   TrendingUp, 
-  DollarSign, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
+  TrendingDown,
   Building2, 
-  HelpCircle, 
-  ExternalLink,
   ShieldCheck,
   BookOpen,
-  PieChart as PieIcon,
   Download,
-  Calendar,
   Save,
   Loader2,
-  BarChart3,
-  Scale,
   Banknote,
   CreditCard
 } from 'lucide-react';
@@ -61,6 +52,15 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [thresholdLimit, setThresholdLimit] = useState<number>(100000000); // 100tr/năm (TT40) hoặc 200tr/năm (2026)
 
+  // Bộ lọc thời gian cho biểu đồ: '7d' | '30d' | '12m' | 'custom'
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '12m' | 'custom'>('12m');
+  
+  // Khoảng ngày tùy chọn
+  const todayStr = new Date().toISOString().split('T')[0];
+  const thirtyDaysAgoStr = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const [customStartDate, setCustomStartDate] = useState<string>(thirtyDaysAgoStr);
+  const [customEndDate, setCustomEndDate] = useState<string>(todayStr);
+
   // Profile Tax Settings
   const [taxCode, setTaxCode] = useState<string>(profile?.tax_code || '');
   const [taxAuthority, setTaxAuthority] = useState<string>(profile?.tax_authority || 'Chi cục Thuế khu vực');
@@ -68,113 +68,250 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
   const [savingTax, setSavingTax] = useState(false);
 
   // Lọc hóa đơn theo năm đã chọn
-  const yearInvoices = invoices.filter(inv => {
-    const invDate = new Date(inv.paid_at || inv.period_start || inv.created_at);
-    return invDate.getFullYear() === selectedYear;
-  });
+  const yearInvoices = useMemo(() => {
+    return invoices.filter(inv => {
+      const invDate = new Date(inv.paid_at || inv.period_start || inv.created_at);
+      return invDate.getFullYear() === selectedYear;
+    });
+  }, [invoices, selectedYear]);
 
-  // Tính toán doanh thu
-  const totalPaidRevenue = yearInvoices
-    .filter(inv => inv.status === 'paid')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  // Tính toán doanh thu năm
+  const totalPaidRevenue = useMemo(() => {
+    return yearInvoices
+      .filter(inv => inv.status === 'paid')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [yearInvoices]);
 
-  const totalInvoiced = yearInvoices
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  const totalInvoiced = useMemo(() => {
+    return yearInvoices
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [yearInvoices]);
 
-  const totalPending = yearInvoices
-    .filter(inv => inv.status === 'sent' || inv.status === 'draft')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  const totalPending = useMemo(() => {
+    return yearInvoices
+      .filter(inv => inv.status === 'sent' || inv.status === 'draft')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [yearInvoices]);
 
-  const totalOverdue = yearInvoices
-    .filter(inv => inv.status === 'overdue')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  const totalOverdue = useMemo(() => {
+    return yearInvoices
+      .filter(inv => inv.status === 'overdue')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [yearInvoices]);
 
   // Phân tích Tiền mặt vs Chuyển khoản
-  const cashPaid = yearInvoices
-    .filter(inv => inv.status === 'paid' && inv.payment_method === 'cash')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  const cashPaid = useMemo(() => {
+    return yearInvoices
+      .filter(inv => inv.status === 'paid' && inv.payment_method === 'cash')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [yearInvoices]);
 
-  const bankPaid = yearInvoices
-    .filter(inv => inv.status === 'paid' && inv.payment_method !== 'cash')
-    .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  const bankPaid = useMemo(() => {
+    return yearInvoices
+      .filter(inv => inv.status === 'paid' && inv.payment_method !== 'cash')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [yearInvoices]);
 
-  // Doanh thu theo 12 tháng
-  const monthlyData = Array.from({ length: 12 }, (_, i) => {
-    const monthNum = i + 1;
-    const monthInvoices = yearInvoices.filter(inv => {
-      const d = new Date(inv.paid_at || inv.period_start || inv.created_at);
-      return d.getMonth() + 1 === monthNum;
+  // Tính toán % tăng trưởng thực tế so với tháng trước
+  const now = new Date();
+  const currentMonthNum = now.getMonth() + 1;
+  const prevMonthNum = currentMonthNum === 1 ? 12 : currentMonthNum - 1;
+  const prevMonthYear = currentMonthNum === 1 ? selectedYear - 1 : selectedYear;
+
+  const thisMonthPaid = useMemo(() => {
+    return invoices
+      .filter(inv => {
+        const d = new Date(inv.paid_at || inv.created_at);
+        return d.getMonth() + 1 === currentMonthNum && d.getFullYear() === selectedYear && inv.status === 'paid';
+      })
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [invoices, currentMonthNum, selectedYear]);
+
+  const prevMonthPaid = useMemo(() => {
+    return invoices
+      .filter(inv => {
+        const d = new Date(inv.paid_at || inv.created_at);
+        return d.getMonth() + 1 === prevMonthNum && d.getFullYear() === prevMonthYear && inv.status === 'paid';
+      })
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [invoices, prevMonthNum, prevMonthYear]);
+
+  const paidGrowthPercent = useMemo(() => {
+    if (prevMonthPaid === 0) return thisMonthPaid > 0 ? 100 : 0;
+    return Number((((thisMonthPaid - prevMonthPaid) / prevMonthPaid) * 100).toFixed(1));
+  }, [thisMonthPaid, prevMonthPaid]);
+
+  const collectionRate = totalInvoiced > 0 ? Math.round((totalPaidRevenue / totalInvoiced) * 100) : 0;
+
+  // Tính toán dữ liệu biểu đồ linh hoạt theo khoảng thời gian
+  const chartData = useMemo(() => {
+    if (timeRange === '7d') {
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const dateStr = d.toISOString().split('T')[0];
+        const label = `${d.getDate()}/${d.getMonth() + 1}`;
+
+        const dayInvoices = invoices.filter(inv => {
+          const invD = (inv.paid_at || inv.created_at || '').split('T')[0];
+          return invD === dateStr;
+        });
+
+        const paid = dayInvoices
+          .filter(inv => inv.status === 'paid')
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+        const pending = dayInvoices
+          .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+        return { label, paid, pending };
+      });
+    }
+
+    if (timeRange === '30d') {
+      return Array.from({ length: 6 }, (_, i) => {
+        const endD = new Date();
+        endD.setDate(endD.getDate() - (5 - i) * 5);
+        const startD = new Date(endD);
+        startD.setDate(startD.getDate() - 4);
+
+        const label = `${startD.getDate()}/${startD.getMonth() + 1} - ${endD.getDate()}/${endD.getMonth() + 1}`;
+
+        const periodInvoices = invoices.filter(inv => {
+          const invDate = new Date(inv.paid_at || inv.created_at);
+          return invDate >= startD && invDate <= endD;
+        });
+
+        const paid = periodInvoices
+          .filter(inv => inv.status === 'paid')
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+        const pending = periodInvoices
+          .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+        return { label, paid, pending };
+      });
+    }
+
+    if (timeRange === 'custom') {
+      const start = new Date(customStartDate);
+      const end = new Date(customEndDate);
+      const diffDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+      const step = Math.max(1, Math.ceil(diffDays / 8));
+
+      const points = [];
+      for (let i = 0; i <= diffDays; i += step) {
+        const cur = new Date(start);
+        cur.setDate(cur.getDate() + i);
+        const nextCur = new Date(cur);
+        nextCur.setDate(nextCur.getDate() + step - 1);
+        if (nextCur > end) nextCur.setTime(end.getTime());
+
+        const label = `${cur.getDate()}/${cur.getMonth() + 1}`;
+
+        const rangeInvoices = invoices.filter(inv => {
+          const invDate = new Date(inv.paid_at || inv.created_at);
+          return invDate >= cur && invDate <= nextCur;
+        });
+
+        const paid = rangeInvoices
+          .filter(inv => inv.status === 'paid')
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+        const pending = rangeInvoices
+          .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+        points.push({ label, paid, pending });
+      }
+      return points;
+    }
+
+    // Default '12m'
+    return Array.from({ length: 12 }, (_, i) => {
+      const monthNum = i + 1;
+      const monthInvoices = yearInvoices.filter(inv => {
+        const d = new Date(inv.paid_at || inv.period_start || inv.created_at);
+        return d.getMonth() + 1 === monthNum;
+      });
+
+      const paid = monthInvoices
+        .filter(inv => inv.status === 'paid')
+        .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+      const pending = monthInvoices
+        .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
+        .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+      return {
+        label: `Thg ${monthNum}`,
+        paid,
+        pending
+      };
     });
-
-    const paid = monthInvoices
-      .filter(inv => inv.status === 'paid')
-      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
-
-    const pending = monthInvoices
-      .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
-      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
-
-    return {
-      month: `Thg ${monthNum}`,
-      paid,
-      pending
-    };
-  });
+  }, [timeRange, invoices, yearInvoices, customStartDate, customEndDate]);
 
   // Doanh thu theo Quý
-  const quarters = [
-    { name: 'Quý 1 (Thg 1 - 3)', months: [1, 2, 3] },
-    { name: 'Quý 2 (Thg 4 - 6)', months: [4, 5, 6] },
-    { name: 'Quý 3 (Thg 7 - 9)', months: [7, 8, 9] },
-    { name: 'Quý 4 (Thg 10 - 12)', months: [10, 11, 12] },
-  ].map(q => {
-    const qInvoices = yearInvoices.filter(inv => {
-      const d = new Date(inv.paid_at || inv.period_start || inv.created_at);
-      return q.months.includes(d.getMonth() + 1);
+  const quarters = useMemo(() => {
+    return [
+      { name: 'Quý 1 (Thg 1 - 3)', months: [1, 2, 3] },
+      { name: 'Quý 2 (Thg 4 - 6)', months: [4, 5, 6] },
+      { name: 'Quý 3 (Thg 7 - 9)', months: [7, 8, 9] },
+      { name: 'Quý 4 (Thg 10 - 12)', months: [10, 11, 12] },
+    ].map(q => {
+      const qInvoices = yearInvoices.filter(inv => {
+        const d = new Date(inv.paid_at || inv.period_start || inv.created_at);
+        return q.months.includes(d.getMonth() + 1);
+      });
+
+      const rev = qInvoices
+        .filter(inv => inv.status === 'paid')
+        .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+
+      return {
+        quarter: q.name,
+        revenue: rev,
+        taxTncn: totalPaidRevenue > thresholdLimit ? rev * 0.02 : 0,
+        taxGtgt: 0
+      };
     });
-
-    const rev = qInvoices
-      .filter(inv => inv.status === 'paid')
-      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
-
-    return {
-      quarter: q.name,
-      revenue: rev,
-      taxTncn: totalPaidRevenue > thresholdLimit ? rev * 0.02 : 0,
-      taxGtgt: 0 // Dịch vụ giáo dục không chịu thuế GTGT
-    };
-  });
+  }, [yearInvoices, totalPaidRevenue, thresholdLimit]);
 
   // Thuế TNCN (2% theo TT 40/2021/TT-BTC)
   const isTaxable = totalPaidRevenue > thresholdLimit;
   const estimatedTaxTncn = isTaxable ? totalPaidRevenue * 0.02 : 0;
-  const estimatedTaxGtgt = 0; // Hoạt động giáo dục KHÔNG chịu thuế GTGT (0%)
 
   // Phân tích theo Lớp
-  const classBreakdown = classes.map(cls => {
-    const clsInvoices = yearInvoices.filter(inv => inv.class_id === cls.id);
-    const paid = clsInvoices
-      .filter(inv => inv.status === 'paid')
-      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
-    const pending = clsInvoices
-      .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
-      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
-    const totalCount = clsInvoices.length;
+  const classBreakdown = useMemo(() => {
+    return classes.map(cls => {
+      const clsInvoices = yearInvoices.filter(inv => inv.class_id === cls.id);
+      const paid = clsInvoices
+        .filter(inv => inv.status === 'paid')
+        .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+      const pending = clsInvoices
+        .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
+        .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+      const totalCount = clsInvoices.length;
 
-    return {
-      id: cls.id,
-      name: cls.name,
-      paid,
-      pending,
-      totalCount
-    };
-  });
+      return {
+        id: cls.id,
+        name: cls.name,
+        paid,
+        pending,
+        totalCount
+      };
+    });
+  }, [classes, yearInvoices]);
 
   // Dữ liệu tròn phân bổ phương thức
-  const paymentMethodPieData = [
-    { name: 'Chuyển khoản / VietQR', value: bankPaid },
-    { name: 'Tiền mặt', value: cashPaid }
-  ].filter(d => d.value > 0);
+  const paymentMethodPieData = useMemo(() => {
+    return [
+      { name: 'Chuyển khoản / VietQR', value: bankPaid },
+      { name: 'Tiền mặt', value: cashPaid }
+    ].filter(d => d.value > 0);
+  }, [bankPaid, cashPaid]);
 
   // Xuất file Excel báo cáo thu chi
   function handleExportExcel() {
@@ -270,39 +407,50 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
         </div>
       </div>
 
-      {/* Tabs Chuyển đổi Báo cáo Tài chính & Công cụ Thuế */}
-      <Tabs defaultValue="financial" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 h-11 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
+      {/* Tabs Chuyển đổi Báo cáo Tài chính & Công cụ Thuế (Full Width, No Emojis/Icons, Font Size Thích Hợp) */}
+      <Tabs defaultValue="financial" className="space-y-6 w-full">
+        <TabsList className="w-full grid grid-cols-2 h-11 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
           <TabsTrigger 
             value="financial" 
-            className="text-xs font-semibold flex items-center justify-center gap-2 h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
           >
-            <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Thống kê Thu - Chi
+            Thống kê Thu - Chi
           </TabsTrigger>
           <TabsTrigger 
             value="tax" 
-            className="text-xs font-semibold flex items-center justify-center gap-2 h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
           >
-            <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Công cụ Kê khai Thuế
+            Công cụ Kê khai Thuế
           </TabsTrigger>
         </TabsList>
 
         {/* ================= TAB 1: THỐNG KÊ THU - CHI & THỰC NHẬN ================= */}
         <TabsContent value="financial" className="space-y-6">
-          {/* 4 Thẻ chỉ số chính */}
+          {/* 4 Thẻ chỉ số chính theo Style Shadcn với Tag % Tăng/Giảm ở góc phải */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
+            
+            {/* Thẻ 1: Thực nhận đã thu */}
+            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex justify-between">
-                  <span>Thực nhận đã thu</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Thực nhận đã thu
+                  </span>
+                  <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                    paidGrowthPercent >= 0 
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                      : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+                  }`}>
+                    {paidGrowthPercent >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    <span>{paidGrowthPercent >= 0 ? `+${paidGrowthPercent}%` : `${paidGrowthPercent}%`}</span>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              <CardContent className="space-y-2">
+                <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                   {totalPaidRevenue.toLocaleString('vi-VN')} đ
                 </div>
-                <div className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-2 flex-wrap">
+                <div className="text-[11px] text-zinc-500 flex items-center gap-2 flex-wrap">
                   <span className="flex items-center gap-1">
                     <CreditCard className="w-3 h-3 text-blue-500" /> CK: {bankPaid.toLocaleString('vi-VN')} đ
                   </span>
@@ -314,65 +462,152 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
+            {/* Thẻ 2: Học phí chờ thu */}
+            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex justify-between">
-                  <span>Học phí chờ thu</span>
-                  <Clock className="w-4 h-4 text-blue-600" />
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Học phí chờ thu
+                  </span>
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                    <span>{yearInvoices.filter(i => i.status === 'sent').length} phiếu</span>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <CardContent className="space-y-2">
+                <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
                   {totalPending.toLocaleString('vi-VN')} đ
                 </div>
-                <p className="text-[11px] text-zinc-500 mt-1">Đang chờ phụ huynh chuyển khoản</p>
+                <p className="text-[11px] text-zinc-500">Đang chờ phụ huynh chuyển khoản</p>
               </CardContent>
             </Card>
 
-            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
+            {/* Thẻ 3: Tổng phát hành */}
+            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex justify-between">
-                  <span>Tổng phát hành</span>
-                  <DollarSign className="w-4 h-4 text-zinc-500" />
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Tổng phát hành
+                  </span>
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border border-zinc-500/20">
+                    <span>{yearInvoices.length} HĐ</span>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              <CardContent className="space-y-2">
+                <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                   {totalInvoiced.toLocaleString('vi-VN')} đ
                 </div>
-                <p className="text-[11px] text-zinc-500 mt-1">Tổng học phí đã lập hóa đơn</p>
+                <p className="text-[11px] text-zinc-500">Tổng học phí đã lập hóa đơn</p>
               </CardContent>
             </Card>
 
-            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
+            {/* Thẻ 4: Tỷ lệ thu thành công */}
+            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex justify-between">
-                  <span>Tỷ lệ thu thành công</span>
-                  <TrendingUp className="w-4 h-4 text-purple-600" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {totalInvoiced > 0 ? Math.round((totalPaidRevenue / totalInvoiced) * 100) : 0}%
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Tỷ lệ hoàn thành
+                  </span>
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                    <TrendingUp className="w-3 h-3" />
+                    <span>{collectionRate}%</span>
+                  </div>
                 </div>
-                <p className="text-[11px] text-zinc-500 mt-1">Tỷ lệ phụ huynh nộp đúng hạn</p>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
+                  {collectionRate}%
+                </div>
+                <p className="text-[11px] text-zinc-500">Tỷ lệ phụ huynh nộp đúng hạn</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Biểu đồ Doanh thu theo tháng & Cơ cấu thanh toán */}
+          {/* Biểu đồ Doanh thu theo ngày/tháng/năm & Cơ cấu thanh toán */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2 border-zinc-200 dark:border-zinc-800 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-bold">Biểu đồ Doanh thu 12 Tháng ({selectedYear})</CardTitle>
-                <CardDescription>Theo dõi dòng tiền thực nhận và công nợ phát sinh qua từng tháng.</CardDescription>
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-base font-bold">Biểu đồ Doanh thu</CardTitle>
+                    <CardDescription className="text-xs">Theo dõi dòng tiền thực nhận và công nợ phát sinh.</CardDescription>
+                  </div>
+                  
+                  {/* Bộ lọc khoảng thời gian trực quan tối giản (Shadcn style) */}
+                  <div className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 p-0.5 text-xs font-medium border border-zinc-200 dark:border-zinc-700 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setTimeRange('7d')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        timeRange === '7d' 
+                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      7 ngày
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeRange('30d')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        timeRange === '30d' 
+                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      30 ngày
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeRange('12m')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        timeRange === '12m' 
+                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      12 tháng
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeRange('custom')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        timeRange === 'custom' 
+                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Tùy chọn
+                    </button>
+                  </div>
+                </div>
+
+                {/* Date Picker khi chọn chế độ Tùy chọn */}
+                {timeRange === 'custom' && (
+                  <div className="flex items-center gap-2 pt-3">
+                    <Input 
+                      type="date" 
+                      value={customStartDate} 
+                      onChange={(e) => setCustomStartDate(e.target.value)} 
+                      className="h-8 text-xs w-36 bg-background" 
+                    />
+                    <span className="text-xs text-muted-foreground">đến</span>
+                    <Input 
+                      type="date" 
+                      value={customEndDate} 
+                      onChange={(e) => setCustomEndDate(e.target.value)} 
+                      className="h-8 text-xs w-36 bg-background" 
+                    />
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
-                      <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} />
+                      <XAxis dataKey="label" fontSize={11} tickLine={false} axisLine={false} />
                       <YAxis
                         fontSize={11}
                         tickLine={false}
