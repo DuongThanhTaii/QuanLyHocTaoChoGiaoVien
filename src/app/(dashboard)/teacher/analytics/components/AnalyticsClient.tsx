@@ -20,8 +20,10 @@ import {
   Save,
   Loader2,
   Banknote,
-  CreditCard
+  CreditCard,
+  Calendar as CalendarIcon
 } from 'lucide-react';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   ResponsiveContainer,
   BarChart,
@@ -409,7 +411,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
 
       {/* Tabs Chuyển đổi Báo cáo Tài chính & Công cụ Thuế (Full Width, No Emojis/Icons, Font Size Thích Hợp) */}
       <Tabs defaultValue="financial" className="space-y-6 w-full">
-        <TabsList className="w-full grid grid-cols-2 h-11 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <TabsList className="w-full grid grid-cols-2 h-11 p-1 pb-[1px] bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
           <TabsTrigger 
             value="financial" 
             className="text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
@@ -535,72 +537,72 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                   </div>
                   
                   {/* Bộ lọc khoảng thời gian trực quan tối giản (Shadcn style) */}
-                  <div className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 p-0.5 text-xs font-medium border border-zinc-200 dark:border-zinc-700 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setTimeRange('7d')}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
-                        timeRange === '7d' 
-                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      7 ngày
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTimeRange('30d')}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
-                        timeRange === '30d' 
-                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      30 ngày
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTimeRange('12m')}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
-                        timeRange === '12m' 
-                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      12 tháng
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTimeRange('custom')}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
-                        timeRange === 'custom' 
-                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Tùy chọn
-                    </button>
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <div className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 p-0.5 text-xs font-medium border border-zinc-200 dark:border-zinc-700 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setTimeRange('7d')}
+                        className={`px-2.5 py-1 rounded-md transition-all ${
+                          timeRange === '7d' 
+                            ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        7 ngày
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTimeRange('30d')}
+                        className={`px-2.5 py-1 rounded-md transition-all ${
+                          timeRange === '30d' 
+                            ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        30 ngày
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTimeRange('12m')}
+                        className={`px-2.5 py-1 rounded-md transition-all ${
+                          timeRange === '12m' 
+                            ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        12 tháng
+                      </button>
+                    </div>
+
+                    {/* Popover Calendar Tùy chọn Khoảng ngày chuẩn Shadcn ở bên phải */}
+                    <DateRangePicker
+                      startDate={customStartDate}
+                      endDate={customEndDate}
+                      onApply={(start, end) => {
+                        setCustomStartDate(start);
+                        setCustomEndDate(end);
+                        setTimeRange('custom');
+                      }}
+                      triggerButton={
+                        <button
+                          type="button"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                            timeRange === 'custom'
+                              ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold border-zinc-300 dark:border-zinc-700 shadow-xs ring-1 ring-primary/20'
+                              : 'bg-zinc-100 dark:bg-zinc-800/80 text-muted-foreground border-zinc-200 dark:border-zinc-700 hover:text-foreground'
+                          }`}
+                        >
+                          <CalendarIcon className="w-3.5 h-3.5" />
+                          <span>
+                            {timeRange === 'custom' && customStartDate && customEndDate
+                              ? `${new Date(customStartDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${new Date(customEndDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`
+                              : 'Tùy chọn'}
+                          </span>
+                        </button>
+                      }
+                    />
                   </div>
                 </div>
-
-                {/* Date Picker khi chọn chế độ Tùy chọn */}
-                {timeRange === 'custom' && (
-                  <div className="flex items-center gap-2 pt-3">
-                    <Input 
-                      type="date" 
-                      value={customStartDate} 
-                      onChange={(e) => setCustomStartDate(e.target.value)} 
-                      className="h-8 text-xs w-36 bg-background" 
-                    />
-                    <span className="text-xs text-muted-foreground">đến</span>
-                    <Input 
-                      type="date" 
-                      value={customEndDate} 
-                      onChange={(e) => setCustomEndDate(e.target.value)} 
-                      className="h-8 text-xs w-36 bg-background" 
-                    />
-                  </div>
-                )}
               </CardHeader>
               <CardContent>
                 <div className="h-72 w-full">
