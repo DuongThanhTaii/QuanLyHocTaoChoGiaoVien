@@ -237,17 +237,21 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
 
   return (
     <div className="space-y-6">
-      {/* Header & Tiêu đề nằm ngang liền mạch với Bộ chọn Kỳ */}
-      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-        
-        {/* Tiêu đề và Bộ chọn Kỳ nằm ngang hàng liền nhau */}
-        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 whitespace-nowrap shrink-0">
-            Quản lý Hóa đơn & Học phí
-          </h1>
+      {/* Header & Tiêu đề + Bộ chọn kỳ + Hàng nút thao tác bên dưới */}
+      <div className="space-y-4">
+        {/* Hàng 1: Tiêu đề trang bên trái & Bộ lọc kỳ bên phải */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Quản lý Hóa đơn & Học phí
+            </h1>
+            <p className="text-xs text-zinc-500 mt-1">
+              Theo dõi phiếu thu, phát hành hóa đơn và đối soát công nợ theo từng kỳ học.
+            </p>
+          </div>
 
           {/* Bộ chọn Kỳ / Tháng học phí */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <Select value={selectedPeriod} onValueChange={(v) => v && setSelectedPeriod(v)}>
               <SelectTrigger className="text-xs h-9 px-3 gap-1.5 border-zinc-200 dark:border-zinc-800 bg-background font-medium">
                 <SelectValue>
@@ -280,8 +284,8 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           </div>
         </div>
 
-        {/* Cụm 3 nút thao tác */}
-        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+        {/* Hàng 2: Cụm 3 nút thao tác được đưa xuống dưới tiêu đề */}
+        <div className="flex items-center gap-2.5 flex-wrap">
           <Button
             variant="outline"
             onClick={() => setOpenTemplateModal(true)}
@@ -318,17 +322,17 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 truncate">
                 Đã thu (Thực nhận)
               </span>
-              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap shrink-0 ${
                 paidGrowthPercent >= 0 
                   ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
                   : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
               }`}>
-                {paidGrowthPercent >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                <span>{paidGrowthPercent >= 0 ? `+${paidGrowthPercent}%` : `${paidGrowthPercent}%`}</span>
+                {paidGrowthPercent >= 0 ? <TrendingUp className="w-3 h-3 shrink-0" /> : <TrendingDown className="w-3 h-3 shrink-0" />}
+                <span className="whitespace-nowrap">{paidGrowthPercent >= 0 ? `+${paidGrowthPercent}%` : `${paidGrowthPercent}%`}</span>
               </div>
             </div>
           </CardHeader>
@@ -348,12 +352,12 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 truncate">
                 Chờ thanh toán
               </span>
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                <span>{pendingCount} phiếu</span>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 whitespace-nowrap shrink-0">
+                <span className="whitespace-nowrap">{pendingCount} phiếu</span>
               </div>
             </div>
           </CardHeader>
@@ -373,16 +377,16 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 truncate">
                 Quá hạn
               </span>
-              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap shrink-0 ${
                 overdueCount > 0 
                   ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' 
                   : 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20'
               }`}>
-                <span>{overdueCount} phiếu</span>
+                <span className="whitespace-nowrap">{overdueCount} phiếu</span>
               </div>
             </div>
           </CardHeader>
@@ -402,13 +406,13 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 truncate">
                 Tổng số hóa đơn
               </span>
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                <TrendingUp className="w-3 h-3" />
-                <span>{completionRate}% thu</span>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 whitespace-nowrap shrink-0">
+                <TrendingUp className="w-3 h-3 shrink-0" />
+                <span className="whitespace-nowrap">{completionRate}%</span>
               </div>
             </div>
           </CardHeader>
