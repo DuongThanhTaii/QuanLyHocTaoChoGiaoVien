@@ -112,14 +112,11 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
   return (
     <div className="space-y-6">
       {/* Header & Thao tác chính */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Quản lý Hóa đơn & Học phí
           </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
-            Tính toán chính xác, tạo mẫu hóa đơn bắt mắt và theo dõi thu chi học phí.
-          </p>
         </div>
 
         {/* Cụm nút thao tác gọn gàng, hài hòa */}
@@ -214,7 +211,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
 
       {/* Bảng Danh sách Hóa đơn & Bộ lọc */}
       <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
-        <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+        <CardHeader className="pb-1">
           <div>
             <CardTitle className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               Danh sách Hóa đơn
@@ -225,7 +222,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           </div>
         </CardHeader>
 
-        <CardContent className="pt-4 space-y-4">
+        <CardContent className="pt-2 space-y-4">
           {/* Thanh tìm kiếm & Bộ lọc riêng biệt bên dưới */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1">
