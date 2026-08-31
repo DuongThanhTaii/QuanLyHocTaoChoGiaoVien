@@ -12,14 +12,12 @@ import {
   Plus, 
   Palette, 
   Search, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
+  TrendingUp,
+  TrendingDown,
   Banknote, 
   Share2, 
   Eye, 
-  Trash2,
-  Calendar as CalendarIcon
+  Trash2
 } from 'lucide-react';
 import { GenerateBatchModal } from './GenerateBatchModal';
 import { CreateCustomModal } from './CreateCustomModal';
@@ -144,6 +142,35 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
       .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
   }, [periodFilteredInvoices]);
 
+  // Tính % tăng trưởng so với kỳ trước
+  const prevPeriodPaid = useMemo(() => {
+    return invoices
+      .filter(inv => {
+        const d = new Date(inv.paid_at || inv.period_start || inv.created_at);
+        return d.getMonth() + 1 === prevMonth && d.getFullYear() === prevYear && inv.status === 'paid';
+      })
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+  }, [invoices, prevMonth, prevYear]);
+
+  const paidGrowthPercent = useMemo(() => {
+    if (prevPeriodPaid === 0) return totalPaid > 0 ? 100 : 0;
+    return Number((((totalPaid - prevPeriodPaid) / prevPeriodPaid) * 100).toFixed(1));
+  }, [totalPaid, prevPeriodPaid]);
+
+  const pendingCount = useMemo(() => {
+    return periodFilteredInvoices.filter(i => i.status === 'sent' || i.status === 'draft').length;
+  }, [periodFilteredInvoices]);
+
+  const overdueCount = useMemo(() => {
+    return periodFilteredInvoices.filter(i => i.status === 'overdue').length;
+  }, [periodFilteredInvoices]);
+
+  const completionRate = useMemo(() => {
+    if (periodFilteredInvoices.length === 0) return 0;
+    const paidCount = periodFilteredInvoices.filter(i => i.status === 'paid').length;
+    return Math.round((paidCount / periodFilteredInvoices.length) * 100);
+  }, [periodFilteredInvoices]);
+
   // Filtered invoices sau khi áp dụng thêm Tìm kiếm + Lớp + Trạng thái
   const displayInvoices = useMemo(() => {
     return periodFilteredInvoices.filter(inv => {
@@ -210,22 +237,19 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
 
   return (
     <div className="space-y-6">
-      {/* Header & Bộ lọc Kỳ / Thời gian & Thao tác chính */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+      {/* Header & Tiêu đề nằm ngang liền mạch với Bộ chọn Kỳ */}
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+        
+        {/* Tiêu đề và Bộ chọn Kỳ nằm ngang hàng liền nhau */}
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 whitespace-nowrap shrink-0">
             Quản lý Hóa đơn & Học phí
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Theo dõi phiếu thu, phát hành hóa đơn và đối soát công nợ theo từng kỳ học.</p>
-        </div>
 
-        {/* Cụm Bộ chọn Kỳ + Nút thao tác gọn gàng */}
-        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
-          
-          {/* Bộ chọn Kỳ / Tháng học phí (Cách 2 trên Header) */}
-          <div className="flex items-center gap-1.5">
+          {/* Bộ chọn Kỳ / Tháng học phí */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <Select value={selectedPeriod} onValueChange={(v) => v && setSelectedPeriod(v)}>
-              <SelectTrigger className="text-xs h-9 px-3 gap-1.5 border-zinc-300 dark:border-zinc-700 bg-background font-medium">
+              <SelectTrigger className="text-xs h-9 px-3 gap-1.5 border-zinc-200 dark:border-zinc-800 bg-background font-medium">
                 <SelectValue>
                   {currentPeriodLabel}
                 </SelectValue>
@@ -254,10 +278,10 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
               />
             )}
           </div>
+        </div>
 
-          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block mx-1" />
-
-          {/* Các nút thao tác */}
+        {/* Cụm 3 nút thao tác */}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
           <Button
             variant="outline"
             onClick={() => setOpenTemplateModal(true)}
@@ -283,10 +307,10 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
         </div>
       </div>
 
-      {/* 4 Thẻ Thống kê nhanh tương tác (Click để lọc nhanh) */}
+      {/* 4 Thẻ Thống kê nhanh với Badge Tag % Tỷ Lệ chuẩn Shadcn (Click để lọc nhanh) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* Thẻ 1: Đã thu */}
+        {/* Thẻ 1: Đã thu (Thực nhận) */}
         <Card 
           onClick={() => handleCardClick('paid')}
           className={`cursor-pointer transition-all border-zinc-200 dark:border-zinc-800 shadow-xs bg-card hover:border-emerald-500/50 ${
@@ -294,10 +318,19 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
-              <span>Đã thu (Thực nhận)</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                Đã thu (Thực nhận)
+              </span>
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                paidGrowthPercent >= 0 
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                  : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+              }`}>
+                {paidGrowthPercent >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                <span>{paidGrowthPercent >= 0 ? `+${paidGrowthPercent}%` : `${paidGrowthPercent}%`}</span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
@@ -315,10 +348,14 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
-              <span>Chờ thanh toán</span>
-              <Clock className="w-4 h-4 text-blue-500" />
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                Chờ thanh toán
+              </span>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                <span>{pendingCount} phiếu</span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -336,10 +373,18 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
-              <span>Quá hạn</span>
-              <AlertTriangle className="w-4 h-4 text-red-500" />
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                Quá hạn
+              </span>
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                overdueCount > 0 
+                  ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' 
+                  : 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20'
+              }`}>
+                <span>{overdueCount} phiếu</span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600 dark:text-red-400">
@@ -357,10 +402,15 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
           }`}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
-              <span>Tổng số hóa đơn</span>
-              <Receipt className="w-4 h-4 text-zinc-500" />
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                Tổng số hóa đơn
+              </span>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                <TrendingUp className="w-3 h-3" />
+                <span>{completionRate}% thu</span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
