@@ -48,16 +48,20 @@ export default async function TodaySchedule() {
       </CardHeader>
       <CardContent>
         {todaySlots.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-6 text-zinc-500">
-            <div className="relative w-72 h-48 -mt-8 -mb-4 flex items-center justify-center pointer-events-none">
+          <div className="flex flex-col items-center justify-center pt-4 pb-6 text-zinc-500">
+            <div className="relative w-80 h-52 -mt-4 mb-1 flex items-center justify-center pointer-events-none">
               <img 
-                src="/images/empty_states/empty_cat.jpg" 
+                src="/images/empty_states/empty_cat.png" 
                 alt="No classes today" 
-                className="w-full h-full object-contain mix-blend-multiply scale-[1.3]"
+                className="w-full h-full object-contain scale-[1.08]"
               />
             </div>
-            <p className="text-base font-medium text-zinc-600 relative z-10 mt-1">Bạn không có lịch dạy nào hôm nay.</p>
-            <p className="text-sm text-zinc-400 mt-1 relative z-10">Hãy dành thời gian nghỉ ngơi hoặc chuẩn bị giáo án nhé!</p>
+            <p className="text-base font-medium text-zinc-600 relative z-10 mt-2">
+              Bạn không có lịch dạy nào hôm nay.
+            </p>
+            <p className="text-sm text-zinc-400 mt-1 relative z-10">
+              Hãy dành thời gian nghỉ ngơi hoặc chuẩn bị giáo án nhé!
+            </p>
           </div>
         ) : (
           <div className="space-y-4">

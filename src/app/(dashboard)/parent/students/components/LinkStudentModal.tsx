@@ -37,8 +37,8 @@ export function LinkStudentModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button><Plus className="w-4 h-4 mr-2" /> Liên kết học sinh</Button>
+      <DialogTrigger render={<Button />}>
+        <Plus className="w-4 h-4 mr-2" /> Liên kết học sinh
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={onSubmit}>

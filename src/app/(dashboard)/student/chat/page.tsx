@@ -2,7 +2,7 @@ import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
 import { ChatLayout } from '@/components/chat/ChatLayout';
 
-export default async function TeacherChatPage() {
+export default async function StudentChatPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -20,13 +20,13 @@ export default async function TeacherChatPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tin nhắn</h1>
-        <p className="text-zinc-500 text-sm">Trò chuyện trực tiếp với phụ huynh, học sinh và các nhóm lớp học.</p>
+        <p className="text-zinc-500 text-sm">Trao đổi bài học với giáo viên và các bạn trong nhóm lớp.</p>
       </div>
 
       <ChatLayout
         currentUserId={user.id}
-        currentUserName={profile?.full_name || 'Giáo viên'}
-        currentUserRole="teacher"
+        currentUserName={profile?.full_name || 'Học sinh'}
+        currentUserRole="student"
       />
     </div>
   );

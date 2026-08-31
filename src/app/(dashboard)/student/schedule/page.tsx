@@ -24,7 +24,7 @@ export default async function StudentSchedulePage() {
       .eq('status', 'ACTIVE');
 
     if (enrollments && enrollments.length > 0) {
-      const classIds = enrollments.map(e => e.class_id);
+      const classIds = enrollments.map((e: any) => e.class_id);
       const { data: classes } = await admin
         .from('classes')
         .select('id, name')
@@ -36,8 +36,8 @@ export default async function StudentSchedulePage() {
         .in('class_id', classIds);
 
       if (scheduleSlots && classes) {
-        slots = scheduleSlots.map(slot => {
-          const cls = classes.find(c => c.id === slot.class_id);
+        slots = scheduleSlots.map((slot: any) => {
+          const cls = classes.find((c: any) => c.id === slot.class_id);
           return {
             ...slot,
             classes: cls ? { id: cls.id, name: cls.name || '' } : null

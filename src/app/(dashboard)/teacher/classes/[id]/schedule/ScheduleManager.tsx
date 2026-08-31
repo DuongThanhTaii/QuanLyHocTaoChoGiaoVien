@@ -41,7 +41,7 @@ function TimePicker({ name, required }: { name: string, required?: boolean }) {
   return (
     <div className="flex gap-1 items-center w-full">
       <input type="hidden" name={name} value={`${hour}:${minute}`} />
-      <Select value={hour} onValueChange={setHour} required={required}>
+      <Select value={hour} onValueChange={(val) => val && setHour(val)} required={required}>
         <SelectTrigger className="w-[70px] px-2 text-sm border-input bg-transparent rounded-md shadow-sm" style={{ height: '40px' }}>
           <span className="flex items-center gap-2 font-semibold">{hour}</span>
         </SelectTrigger>
@@ -53,7 +53,7 @@ function TimePicker({ name, required }: { name: string, required?: boolean }) {
         </SelectContent>
       </Select>
       <span className="text-zinc-500 font-medium">:</span>
-      <Select value={minute} onValueChange={setMinute} required={required}>
+      <Select value={minute} onValueChange={(val) => val && setMinute(val)} required={required}>
         <SelectTrigger className="w-[70px] px-2 text-sm border-input bg-transparent rounded-md shadow-sm" style={{ height: '40px' }}>
           <span className="flex items-center gap-2 font-semibold">{minute}</span>
         </SelectTrigger>
@@ -174,7 +174,7 @@ export function ScheduleManager({ classId, slots, className }: { classId: string
             <div className="space-y-2 w-full md:flex-1">
               <Label>Thứ trong tuần</Label>
               <div>
-                <Select value={selectedDay} onValueChange={setSelectedDay} required>
+                <Select value={selectedDay} onValueChange={(val) => val && setSelectedDay(val)} required>
                   <SelectTrigger className="w-full text-sm border-input bg-transparent rounded-md shadow-sm" style={{ height: '40px' }}>
                     <span className="flex items-center gap-2 font-semibold">{selectedDayLabel}</span>
                   </SelectTrigger>

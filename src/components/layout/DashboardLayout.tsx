@@ -44,12 +44,14 @@ const teacherNav: SidebarItem[] = [
 const parentNav: SidebarItem[] = [
   { icon: Users, label: 'Con của tôi', href: '/parent/students' },
   { icon: CreditCard, label: 'Hóa đơn học phí', href: '/parent/invoices' },
+  { icon: MessageSquare, label: 'Tin nhắn', href: '/parent/chat' },
 ];
 
 const studentNav: SidebarItem[] = [
   { icon: BookOpen, label: 'Lớp học của tôi', href: '/student/classes' },
   { icon: Calendar, label: 'Thời khóa biểu', href: '/student/schedule' },
   { icon: CreditCard, label: 'Học phí', href: '/student/invoices' },
+  { icon: MessageSquare, label: 'Tin nhắn', href: '/student/chat' },
   { icon: Users, label: 'Yêu cầu liên kết', href: '/student/requests' },
 ];
 
@@ -132,6 +134,19 @@ export default function DashboardLayout({
   };
   const greeting = getGreeting();
   const displayName = userName || (userEmail ? userEmail.split('@')[0] : 'bạn');
+
+  const [currentDateStr, setCurrentDateStr] = useState('');
+  useEffect(() => {
+    const now = new Date();
+    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const dayName = days[now.getDay()];
+    const dateFormatted = now.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    setCurrentDateStr(`${dayName}, ${dateFormatted}`);
+  }, []);
 
   return (
     <TooltipProvider>
@@ -275,6 +290,13 @@ export default function DashboardLayout({
               {greeting}, <span className="font-semibold text-primary">{displayName}</span>
             </h2>
           </div>
+
+          {currentDateStr && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 shadow-2xs">
+              <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span>{currentDateStr}</span>
+            </div>
+          )}
         </header>
 
         {/* Page Content */}

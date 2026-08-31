@@ -1,34 +1,43 @@
-'use client'
+'use client';
 
 import { useState } from 'react';
 import { useSupabaseRealtime } from '@/infrastructure/realtime/use-supabase-realtime';
+import { sendMessage } from '@/app/actions/chat-actions';
 
-export default function ChatWindow({ conversationId, currentUserId }: { conversationId: string, currentUserId: string }) {
-  const { messages } = useSupabaseRealtime(conversationId);
+export default function ChatWindow({
+  conversationId,
+  currentUserId
+}: {
+  conversationId: string;
+  currentUserId: string;
+}) {
+  const { messages } = useSupabaseRealtime(conversationId, currentUserId);
   const [inputText, setInputText] = useState('');
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    // Server Action would be called here to save message
-    // await sendTextMessage(conversationId, inputText);
-    
+    await sendMessage(conversationId, inputText);
     setInputText('');
   };
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border bg-white">
       <div className="bg-gray-100 p-4 border-b font-semibold text-gray-800">
-        Chat Nhóm
+        Cuộc trò chuyện
       </div>
-      
+
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         {messages.map((msg, idx) => {
-          const isMe = msg.sender_id === currentUserId;
+          const isMe = msg.senderId === currentUserId;
           return (
             <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[70%] rounded-lg p-3 ${isMe ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}>
+              <div
+                className={`max-w-[70%] rounded-lg p-3 ${
+                  isMe ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'
+                }`}
+              >
                 {msg.type === 'invoice_link' && (
                   <div className="flex items-center gap-2">
                     <span>🧾</span> <strong>Hóa đơn học phí</strong>
@@ -42,14 +51,17 @@ export default function ChatWindow({ conversationId, currentUserId }: { conversa
       </div>
 
       <form onSubmit={handleSend} className="p-3 bg-gray-50 border-t flex gap-2">
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={inputText}
-          onChange={e => setInputText(e.target.value)}
+          onChange={(e) => setInputText(e.target.value)}
           className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
           placeholder="Nhập tin nhắn..."
         />
-        <button type="submit" className="bg-blue-600 text-white px-4 rounded-full font-semibold hover:bg-blue-700">
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 rounded-full font-semibold hover:bg-blue-700"
+        >
           Gửi
         </button>
       </form>

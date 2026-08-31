@@ -136,7 +136,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
             </TabsList>
           </Tabs>
 
-          <Select value={selectedClass} onValueChange={setSelectedClass}>
+          <Select value={selectedClass} onValueChange={(val) => val && setSelectedClass(val)}>
             <SelectTrigger className="w-[200px] h-9 bg-background">
               <SelectValue placeholder="Tất cả lớp học">
                 {selectedClass === 'all' ? 'Tất cả lớp học' : uniqueClasses.find(c => c.id === selectedClass)?.name || 'Tất cả lớp học'}

@@ -1,0 +1,166 @@
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { Search, Users, MessageSquare, Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { NewChatModal } from './NewChatModal';
+import { CreateClassGroupModal } from './CreateClassGroupModal';
+
+interface ConversationListProps {
+  conversations: any[];
+  activeConversationId: string | null;
+  onSelectConversation: (id: string) => void;
+  onNewConversation: (id: string) => void;
+  currentUserRole?: string;
+}
+
+function formatRelativeTime(dateString: string) {
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+    if (diffDays === 1) {
+      return 'Hôm qua';
+    }
+    if (diffDays < 7) {
+      return `${diffDays} ngày trước`;
+    }
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+export function ConversationList({
+  conversations,
+  activeConversationId,
+  onSelectConversation,
+  onNewConversation,
+  currentUserRole
+}: ConversationListProps) {
+  const [searchFilter, setSearchFilter] = useState('');
+
+  const filteredConversations = (conversations || []).filter((conv) => {
+    if (!searchFilter.trim()) return true;
+    const query = searchFilter.toLowerCase();
+    const titleMatch = conv.title?.toLowerCase().includes(query);
+    const msgMatch = conv.lastMessageText?.toLowerCase().includes(query);
+    return titleMatch || msgMatch;
+  });
+
+  return (
+    <div className="flex flex-col h-full bg-white border-r border-zinc-200">
+      {/* Header & Actions */}
+      <div className="p-4 border-b border-zinc-200 space-y-3 shrink-0">
+        <div className="flex items-center gap-2">
+          {currentUserRole === 'teacher' && (
+            <div className="flex-1">
+              <CreateClassGroupModal onGroupCreated={onNewConversation} />
+            </div>
+          )}
+          <div className="flex-1">
+            <NewChatModal onConversationCreated={onNewConversation} />
+          </div>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Input
+            type="text"
+            placeholder="Tìm kiếm cuộc trò chuyện..."
+            value={searchFilter}
+            onChange={(e) => setSearchFilter(e.target.value)}
+            className="pl-9 h-9 text-xs bg-zinc-50 border-zinc-200 focus:bg-white"
+          />
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+        {filteredConversations.length === 0 ? (
+          <div className="p-8 text-center flex flex-col items-center justify-center">
+            <div className="relative mb-2 flex flex-col items-center">
+              <Image
+                src="/images/empty_states/empty.png"
+                alt="Chưa có cuộc trò chuyện nào"
+                width={140}
+                height={140}
+                className="w-28 h-28 object-contain relative z-10"
+              />
+              <div className="w-24 h-2 bg-zinc-400/40 rounded-[50%] blur-[2px] -mt-[22px] z-0" />
+            </div>
+            <p className="text-zinc-500 text-xs font-medium">
+              {searchFilter ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có cuộc trò chuyện nào'}
+            </p>
+          </div>
+        ) : (
+          filteredConversations.map((conv) => {
+            const isActive = conv.id === activeConversationId;
+            const isGroup = conv.type === 'group';
+            const partner = conv.partnerInfo;
+
+            return (
+              <div
+                key={conv.id}
+                onClick={() => onSelectConversation(conv.id)}
+                className={`p-3.5 flex items-center gap-3 cursor-pointer transition-colors ${
+                  isActive
+                    ? 'bg-blue-50/80 border-l-4 border-l-blue-600'
+                    : 'hover:bg-zinc-50'
+                }`}
+              >
+                <div className="relative shrink-0">
+                  <Avatar className="w-11 h-11 border border-zinc-200">
+                    {isGroup ? (
+                      <AvatarFallback className="bg-purple-100 text-purple-700 font-bold text-sm">
+                        <Users className="w-5 h-5" />
+                      </AvatarFallback>
+                    ) : (
+                      <>
+                        <AvatarImage src={partner?.avatarUrl} />
+                        <AvatarFallback className="bg-zinc-100 text-zinc-700 font-semibold text-sm">
+                          {conv.title?.charAt(0)?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </>
+                    )}
+                  </Avatar>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <h4
+                      className={`text-sm truncate ${
+                        isActive ? 'font-bold text-blue-950' : 'font-semibold text-zinc-900'
+                      }`}
+                    >
+                      {conv.title}
+                    </h4>
+                    <span className="text-[10px] text-zinc-400 shrink-0 font-normal">
+                      {formatRelativeTime(conv.lastMessageAt)}
+                    </span>
+                  </div>
+
+                  <p
+                    className={`text-xs truncate ${
+                      isActive ? 'text-blue-900/80' : 'text-zinc-500'
+                    }`}
+                  >
+                    {conv.lastMessageText || 'Bắt đầu cuộc trò chuyện'}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
