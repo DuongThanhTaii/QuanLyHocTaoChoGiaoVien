@@ -11,6 +11,7 @@ import { Plus, CheckCircle2, HelpCircle, Pencil } from 'lucide-react';
 import { CopyPersonalLinkButton } from './CopyPersonalLinkButton';
 import { EditStudentForm } from './StudentForms';
 import { ApproveEnrollmentButton } from './ApproveEnrollmentButton';
+import { ParentContactPopover } from './ParentContactPopover';
 
 const enrollmentStatusLabels: Record<string, string> = { ACTIVE: 'Đang học', PENDING: 'Chờ duyệt', PAUSED: 'Tạm dừng', LEFT: 'Đã rời lớp', BLOCKED: 'Đã khóa' };
 const enrollmentStatusColors: Record<string, string> = { ACTIVE: 'bg-green-50 text-green-700 ring-green-600/20', PENDING: 'bg-amber-50 text-amber-700 ring-amber-600/20', PAUSED: 'bg-blue-50 text-blue-700 ring-blue-600/20', LEFT: 'bg-zinc-100 text-zinc-600 ring-zinc-500/20', BLOCKED: 'bg-red-50 text-red-700 ring-red-600/20' };
@@ -39,6 +40,55 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
         .eq('id', enrollment.student_id)
         .single();
         
+      // Fetch linked guardians
+      const { data: studentGuardians } = await supabaseAdmin
+        .from('student_guardians')
+        .select(`
+          relationship,
+          guardians:guardian_id (
+            id,
+            user_id,
+            full_name,
+            phone,
+            email
+          )
+        `)
+        .eq('student_id', enrollment.student_id);
+
+      const rawGuardians = (studentGuardians || []).map((sg: any) => {
+        const g = Array.isArray(sg.guardians) ? sg.guardians[0] : sg.guardians;
+        return {
+          relationship: sg.relationship || 'GUARDIAN',
+          id: g?.id,
+          userId: g?.user_id,
+          fullName: g?.full_name,
+          phone: g?.phone,
+          email: g?.email
+        };
+      }).filter((g: any) => g && (g.fullName || g.phone || g.email));
+
+      // If phone/email/fullName is missing on guardian entity but userId is present, fallback to profiles
+      const guardians = await Promise.all(
+        rawGuardians.map(async (g: any) => {
+          if (g.userId && (!g.phone || !g.email || !g.fullName)) {
+            const { data: profile } = await supabaseAdmin
+              .from('profiles')
+              .select('full_name, phone, email')
+              .eq('id', g.userId)
+              .maybeSingle();
+            if (profile) {
+              return {
+                ...g,
+                fullName: g.fullName || profile.full_name,
+                phone: g.phone || profile.phone,
+                email: g.email || profile.email
+              };
+            }
+          }
+          return g;
+        })
+      );
+
       return {
         enrollment: {
           id: enrollment.id,
@@ -46,7 +96,8 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
           classId: enrollment.class_id,
           status: enrollment.status
         },
-        studentProfile
+        studentProfile,
+        guardians
       };
     })
   );
@@ -98,7 +149,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                       </TableCell>
                     </TableRow>
                   )}
-                  {students.map(({ enrollment, studentProfile }) => (
+                  {students.map(({ enrollment, studentProfile, guardians }) => (
                     <TableRow key={enrollment.id}>
                       <TableCell className="font-medium">{studentProfile?.full_name || 'Không rõ'}</TableCell>
                       <TableCell>{studentProfile?.email || '--'}</TableCell>
@@ -127,6 +178,12 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
                           )}
                           {enrollment.status === 'PENDING' && <ApproveEnrollmentButton enrollmentId={enrollment.id} classId={classId} />}
                           
+                          {/* Nút xem thông tin phụ huynh khi hover */}
+                          <ParentContactPopover
+                            studentName={studentProfile?.full_name || 'Học sinh'}
+                            guardians={guardians || []}
+                          />
+
                           {studentProfile && (
                             <Sheet>
                               <SheetTrigger render={<Button variant="outline" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-900" title="Chỉnh sửa thông tin" />}>

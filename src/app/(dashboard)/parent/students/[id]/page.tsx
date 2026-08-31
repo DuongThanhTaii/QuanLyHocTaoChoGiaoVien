@@ -3,6 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Sparkles, Smile, AlertCircle, AlertTriangle, MessageSquareQuote } from 'lucide-react';
+
+const ratingBadgeMap: Record<string, { label: string; badge: string; icon: any }> = {
+  EXCELLENT: { label: 'Xuất sắc', badge: 'bg-purple-50 text-purple-700 ring-purple-600/20', icon: Sparkles },
+  GOOD: { label: 'Tốt', badge: 'bg-green-50 text-green-700 ring-green-600/20', icon: Smile },
+  AVERAGE: { label: 'Cần cố gắng', badge: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20', icon: AlertCircle },
+  POOR: { label: 'Chưa tập trung', badge: 'bg-red-50 text-red-700 ring-red-600/20', icon: AlertTriangle }
+};
 
 export default async function ParentStudentDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -46,6 +54,15 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
     .eq('id', studentId)
     .single();
 
+  // Fetch evaluations
+  const { data: evaluationsData } = await admin
+    .from('session_evaluations')
+    .select('*, class_sessions(*, classes(name)), profiles:marked_by(full_name)')
+    .eq('student_id', studentId)
+    .order('marked_at', { ascending: false });
+
+  const evaluations = evaluationsData || [];
+
   // Fetch attendance
   const { data: attendanceData } = await admin
     .from('attendance_records')
@@ -56,22 +73,99 @@ export default async function ParentStudentDetailPage(props: { params: Promise<{
   const attendance = attendanceData || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
             Tiến độ học tập: {profile?.full_name || 'Học sinh'}
           </h1>
-          <p className="text-zinc-500">Chi tiết điểm danh và lịch sử học.</p>
+          <p className="text-zinc-500">Chi tiết nhận xét của giáo viên và lịch sử điểm danh.</p>
         </div>
         <Link href="/parent/students">
           <Button variant="outline">Quay lại</Button>
         </Link>
       </div>
 
+      {/* Card 1: Nhận xét & Đánh giá buổi học */}
+      <Card className="border-purple-100 shadow-sm">
+        <CardHeader className="bg-gradient-to-r from-purple-50/70 to-white border-b border-purple-100/70 pb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-purple-600 text-white rounded-md">
+              <MessageSquareQuote className="w-4 h-4" />
+            </div>
+            <div>
+              <CardTitle className="text-lg text-zinc-900">Đánh giá & Nhận xét sau buổi học</CardTitle>
+              <CardDescription>Nhận xét trực tiếp từ giáo viên về thái độ và kết quả từng buổi học</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[120px]">Ngày</TableHead>
+                <TableHead>Lớp / Ca học</TableHead>
+                <TableHead className="w-[140px]">Đánh giá</TableHead>
+                <TableHead>Lời dặn của giáo viên</TableHead>
+                <TableHead className="w-[140px]">Giáo viên</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {evaluations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-zinc-500">
+                    Chưa có nhận xét hoặc đánh giá nào từ giáo viên.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                evaluations.map((item: any) => {
+                  const session = Array.isArray(item.class_sessions) ? item.class_sessions[0] : item.class_sessions;
+                  const classes = Array.isArray(session?.classes) ? session?.classes[0] : session?.classes;
+                  const teacherProfile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
+                  const ratingInfo = ratingBadgeMap[item.rating] || { label: item.rating, badge: 'bg-zinc-100 text-zinc-700', icon: Smile };
+                  const RatingIcon = ratingInfo.icon;
+
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium text-zinc-800">
+                        {session?.session_date ? new Date(session.session_date).toLocaleDateString('vi-VN') : new Date(item.marked_at).toLocaleDateString('vi-VN')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-semibold text-zinc-900">{classes?.name || 'Lớp học'}</div>
+                        <div className="text-xs text-zinc-500">{session?.start_time} - {session?.end_time}</div>
+                      </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${ratingInfo.badge}`}>
+                          <RatingIcon className="w-3.5 h-3.5" />
+                          {ratingInfo.label}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-zinc-700 leading-relaxed">
+                        {item.feedback ? (
+                          <div className="bg-zinc-50 p-2.5 rounded-lg border border-zinc-200/70 text-sm">
+                            {item.feedback}
+                          </div>
+                        ) : (
+                          <span className="text-zinc-400 italic">Không có ghi chú thêm</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-xs text-zinc-600 font-medium">
+                        {teacherProfile?.full_name || 'Giáo viên'}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Card 2: Lịch sử điểm danh */}
       <Card>
         <CardHeader>
           <CardTitle>Lịch sử điểm danh</CardTitle>
+          <CardDescription>Theo dõi tình trạng chuyên cần và đi học đúng giờ</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>

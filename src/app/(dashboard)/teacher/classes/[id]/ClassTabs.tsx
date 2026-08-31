@@ -12,6 +12,7 @@ export function ClassTabs({ classId }: { classId: string }) {
     { name: 'Học sinh', href: `/teacher/classes/${classId}/students` },
     { name: 'Lịch học', href: `/teacher/classes/${classId}/schedule` },
     { name: 'Điểm danh', href: `/teacher/classes/${classId}/attendance` },
+    { name: 'Đánh giá', href: `/teacher/classes/${classId}/evaluations` },
     { name: 'Bài giảng', href: `/teacher/classes/${classId}/lessons` },
     { name: 'Cài đặt', href: `/teacher/classes/${classId}/settings` },
   ];
