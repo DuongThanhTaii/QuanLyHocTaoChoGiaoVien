@@ -50,7 +50,6 @@ export function StudentProgressLedger({ classId, students }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
               <span>Bảng Tổng Hợp Theo Dõi Học Viên 360°</span>
               <Badge variant="secondary" className="text-xs font-normal">
                 {students.length} học sinh

@@ -1,9 +1,7 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Calendar, Banknote, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { ClassAnnouncementBox } from './components/ClassAnnouncementBox';
+import { Users, Calendar, Banknote } from 'lucide-react';
 import { ClassFeedList, FeedItem } from './components/ClassFeedList';
-import { StudentProgressLedger, StudentLedgerItem } from './components/StudentProgressLedger';
 
 export default async function ClassOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -49,8 +47,8 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
     const isToday = s.session_date === todayStr;
 
     const timeRange = `${s.start_time.substring(0, 5)} - ${s.end_time.substring(0, 5)}`;
-    nextSessionText = isToday ? `Hôm nay (${timeRange})` : `${dayOfWeek}, ${dateFormatted}`;
-    nextSessionSubtext = isToday ? 'Đang / Sắp diễn ra hôm nay' : `${timeRange}${s.room ? ` • Phòng ${s.room}` : ''}`;
+    nextSessionText = isToday ? 'Hôm nay' : `${dayOfWeek}, ${dateFormatted}`;
+    nextSessionSubtext = `${timeRange}${s.room ? ` • Phòng ${s.room}` : ''}`;
   } else {
     // Ưu tiên 2: Tính toán từ lịch học định kỳ (schedule_slots)
     const { data: slots } = await supabaseAdmin
@@ -74,7 +72,9 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
       targetDate.setDate(now.getDate() + (daysUntil === 0 ? 7 : daysUntil));
 
       const timeRange = `${nextSlot.start_time.substring(0, 5)} - ${nextSlot.end_time.substring(0, 5)}`;
-      nextSessionText = `${dayNames[nextSlot.day_of_week]}, ${targetDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
+      nextSessionText = daysUntil === 0 
+        ? 'Hôm nay' 
+        : `${dayNames[nextSlot.day_of_week]}, ${targetDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
       nextSessionSubtext = `${timeRange}${nextSlot.room ? ` • Phòng ${nextSlot.room}` : ''}`;
     }
   }
@@ -117,74 +117,6 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
       sizeBytes: m.size_bytes || 0
     }))
   }));
-
-  // 5. Bảng Tổng Hợp Học Viên 360° (Student Progress Matrix)
-  const studentIds = studentList.map((s: any) => s.id);
-
-  // Lấy tổng số buổi đã điểm danh của lớp
-  const { data: sessionsCount } = await supabaseAdmin
-    .from('class_sessions')
-    .select('id', { count: 'exact', head: true })
-    .eq('class_id', id);
-
-  const totalClassSessions = sessionsCount || 0;
-
-  // Lấy lịch sử điểm danh của học sinh
-  const { data: attendanceRecords } = await supabaseAdmin
-    .from('attendance_records')
-    .select('student_id, status')
-    .eq('class_id', id);
-
-  // Lấy đánh giá học lực gần nhất của từng học sinh
-  const { data: evaluations } = await supabaseAdmin
-    .from('session_evaluations')
-    .select('student_id, rating, feedback, marked_at')
-    .eq('class_id', id)
-    .order('marked_at', { ascending: false });
-
-  // Xây dựng dữ liệu StudentLedgerItem
-  const ledgerStudents: StudentLedgerItem[] = studentList.map((stud: any) => {
-    // Điểm danh
-    const studAttendance = (attendanceRecords || []).filter((r: any) => r.student_id === stud.id);
-    const attendedCount = studAttendance.filter((r: any) => r.status === 'present' || r.status === 'late').length;
-    const absentCount = studAttendance.filter((r: any) => r.status === 'absent').length;
-    const effectiveSessions = Math.max(totalClassSessions, studAttendance.length);
-    const percentage = effectiveSessions > 0 ? Math.round((attendedCount / effectiveSessions) * 100) : 0;
-
-    // Học phí
-    const studInvoices = (classInvoices || [])
-      .filter((i: any) => i.student_id === stud.id)
-      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    const latestInvoice = studInvoices[0];
-    const tuitionStatus = latestInvoice ? (latestInvoice.status as 'paid' | 'sent' | 'overdue') : 'not_created';
-    const invoiceAmount = latestInvoice ? Number(latestInvoice.total_amount || 0) : 0;
-
-    // Đánh giá gần nhất
-    const studEval = (evaluations || []).find((e: any) => e.student_id === stud.id);
-
-    return {
-      id: stud.id,
-      fullName: stud.full_name,
-      phone: stud.phone || null,
-      email: stud.email || null,
-      attendance: {
-        attendedCount,
-        totalSessions: effectiveSessions,
-        absentCount,
-        percentage
-      },
-      tuition: {
-        status: tuitionStatus,
-        amount: invoiceAmount,
-        invoiceNumber: latestInvoice ? latestInvoice.invoice_number : null
-      },
-      evaluation: {
-        rating: studEval ? studEval.rating : null,
-        feedback: studEval ? studEval.feedback : null
-      }
-    };
-  });
 
   return (
     <div className="space-y-6">
@@ -240,14 +172,8 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
         </Card>
       </div>
 
-      {/* Ô Đăng thông báo nhanh cho Lớp học */}
-      <ClassAnnouncementBox classId={id} />
-
-      {/* Bảng Tin & Hoạt động gần đây (Chỉ giữ Bài giảng, Tài liệu và Thông báo) */}
+      {/* Bảng Tin & Hoạt động gần đây (Tích hợp luôn ô đăng thông báo) */}
       <ClassFeedList classId={id} items={feedItems} />
-
-      {/* Bảng Tổng Hợp Theo Dõi Học Viên 360° (Chuyên cần, Học phí, Đánh giá) */}
-      <StudentProgressLedger classId={id} students={ledgerStudents} />
     </div>
   );
 }
