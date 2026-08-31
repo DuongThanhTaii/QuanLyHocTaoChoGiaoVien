@@ -383,10 +383,10 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
           <p className="text-sm text-zinc-500">Báo cáo doanh thu thực nhận, đối soát công nợ và công cụ tính thuế chuẩn luật Việt Nam.</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="w-32">
+        <div className="flex items-center gap-1.5">
+          <div className="w-auto">
             <Select value={String(selectedYear)} onValueChange={(v) => v && setSelectedYear(Number(v))}>
-              <SelectTrigger className="text-xs h-9">
+              <SelectTrigger className="text-xs h-9 px-3 gap-1.5 border-zinc-300 dark:border-zinc-700 bg-background">
                 <SelectValue>
                   {`Năm ${selectedYear}`}
                 </SelectValue>
@@ -402,7 +402,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
           <Button
             variant="outline"
             onClick={handleExportExcel}
-            className="text-xs border-zinc-300 dark:border-zinc-700"
+            className="text-xs h-9 px-3 border-zinc-300 dark:border-zinc-700 bg-background"
           >
             <FileSpreadsheet className="mr-1.5 h-4 w-4 text-emerald-600" /> Xuất Excel
           </Button>
@@ -411,16 +411,16 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
 
       {/* Tabs Chuyển đổi Báo cáo Tài chính & Công cụ Thuế (Full Width, No Emojis/Icons, Font Size Thích Hợp) */}
       <Tabs defaultValue="financial" className="space-y-6 w-full">
-        <TabsList className="w-full grid grid-cols-2 h-11 p-1 pb-[1px] bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <TabsList className="w-full grid grid-cols-2 h-11 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
           <TabsTrigger 
             value="financial" 
-            className="text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="w-full text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
           >
             Thống kê Thu - Chi
           </TabsTrigger>
           <TabsTrigger 
             value="tax" 
-            className="text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="w-full text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
           >
             Công cụ Kê khai Thuế
           </TabsTrigger>
@@ -536,45 +536,43 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                     <CardDescription className="text-xs">Theo dõi dòng tiền thực nhận và công nợ phát sinh.</CardDescription>
                   </div>
                   
-                  {/* Bộ lọc khoảng thời gian trực quan tối giản (Shadcn style) */}
-                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                    <div className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 p-0.5 text-xs font-medium border border-zinc-200 dark:border-zinc-700 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setTimeRange('7d')}
-                        className={`px-2.5 py-1 rounded-md transition-all ${
-                          timeRange === '7d' 
-                            ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        7 ngày
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setTimeRange('30d')}
-                        className={`px-2.5 py-1 rounded-md transition-all ${
-                          timeRange === '30d' 
-                            ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        30 ngày
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setTimeRange('12m')}
-                        className={`px-2.5 py-1 rounded-md transition-all ${
-                          timeRange === '12m' 
-                            ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        12 tháng
-                      </button>
-                    </div>
+                  {/* Bộ lọc khoảng thời gian trực quan tối giản hợp nhất thành 1 cụm duy nhất (Shadcn style) */}
+                  <div className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 p-0.5 text-xs font-medium border border-zinc-200 dark:border-zinc-700 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setTimeRange('7d')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        timeRange === '7d' 
+                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      7 ngày
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeRange('30d')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        timeRange === '30d' 
+                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      30 ngày
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeRange('12m')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        timeRange === '12m' 
+                          ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      12 tháng
+                    </button>
 
-                    {/* Popover Calendar Tùy chọn Khoảng ngày chuẩn Shadcn ở bên phải */}
+                    {/* Popover Calendar Tùy chọn gộp chung vào cụm */}
                     <DateRangePicker
                       startDate={customStartDate}
                       endDate={customEndDate}
@@ -586,18 +584,15 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                       triggerButton={
                         <button
                           type="button"
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                          className={`px-2.5 py-1 rounded-md transition-all ${
                             timeRange === 'custom'
-                              ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold border-zinc-300 dark:border-zinc-700 shadow-xs ring-1 ring-primary/20'
-                              : 'bg-zinc-100 dark:bg-zinc-800/80 text-muted-foreground border-zinc-200 dark:border-zinc-700 hover:text-foreground'
+                              ? 'bg-white dark:bg-zinc-900 text-foreground font-semibold shadow-xs'
+                              : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
-                          <CalendarIcon className="w-3.5 h-3.5" />
-                          <span>
-                            {timeRange === 'custom' && customStartDate && customEndDate
-                              ? `${new Date(customStartDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${new Date(customEndDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`
-                              : 'Tùy chọn'}
-                          </span>
+                          {timeRange === 'custom' && customStartDate && customEndDate
+                            ? `${new Date(customStartDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${new Date(customEndDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`
+                            : 'Tùy chọn'}
                         </button>
                       }
                     />
@@ -756,9 +751,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
           {/* Cấu hình Thông tin Thuế của Giáo viên */}
           <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
             <CardHeader className="pb-4">
-              <CardTitle className="text-base font-bold flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-blue-600" /> Cấu hình Thông tin Kê khai Thuế
-              </CardTitle>
+              <CardTitle className="text-base font-bold">Cấu hình Thông tin Kê khai Thuế</CardTitle>
               <CardDescription>Nhập Mã số thuế cá nhân hoặc CCCD để hệ thống tự động điền sẵn tờ khai.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -769,7 +762,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                     placeholder="VD: 8012345678 hoặc 079..."
                     value={taxCode}
                     onChange={(e) => setTaxCode(e.target.value)}
-                    className="text-xs h-9 font-mono"
+                    className="text-xs h-9 font-mono w-full"
                   />
                 </div>
 
@@ -779,14 +772,14 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                     placeholder="VD: Chi cục Thuế Quận 1, TP.HCM..."
                     value={taxAuthority}
                     onChange={(e) => setTaxAuthority(e.target.value)}
-                    className="text-xs h-9"
+                    className="text-xs h-9 w-full"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-xs">Ngưỡng doanh thu miễn thuế</Label>
                   <Select value={String(thresholdLimit)} onValueChange={(v) => v && setThresholdLimit(Number(v))}>
-                    <SelectTrigger className="text-xs h-9">
+                    <SelectTrigger className="w-full text-xs h-9">
                       <SelectValue>
                         {thresholdLimit === 100000000 ? '100.000.000 đ/năm (Hiện hành)' : '200.000.000 đ/năm (Luật Thuế mới)'}
                       </SelectValue>

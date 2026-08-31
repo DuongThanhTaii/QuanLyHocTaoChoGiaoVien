@@ -16,7 +16,7 @@ function Tabs({
       data-slot="tabs"
       data-orientation={orientation}
       className={cn(
-        "flex gap-2 data-horizontal:flex-col",
+        "group/tabs flex gap-2 data-horizontal:flex-col",
         className
       )}
       {...props}
@@ -25,7 +25,7 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "inline-flex items-center justify-center rounded-xl bg-muted p-1 pb-[1px] text-muted-foreground",
+  "inline-flex items-center justify-center rounded-xl bg-muted p-1 text-muted-foreground",
   {
     variants: {
       variant: {
@@ -59,7 +59,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-2 pb-[9px] text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 hover:text-foreground text-muted-foreground data-active:bg-background data-active:text-foreground data-active:shadow-sm",
+        "inline-flex w-full flex-1 items-center justify-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 hover:text-foreground text-muted-foreground data-active:bg-background data-active:text-foreground data-active:shadow-sm cursor-pointer",
         className
       )}
       {...props}

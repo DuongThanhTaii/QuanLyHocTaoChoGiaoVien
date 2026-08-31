@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getTeacherClassesAction, getMonthlyBillingPreviewAction, generateBatchInvoicesAction } from '../actions';
 import { toast } from 'sonner';
-import { Receipt, Calendar, Users, Loader2, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -165,10 +165,9 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pr-6">
+          <DialogTitle className="text-xl font-bold">
             Sinh Hóa đơn Tự động theo Lớp
           </DialogTitle>
           <DialogDescription>
@@ -180,9 +179,9 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
           {/* Bộ chọn Lớp & Kỳ học */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
             <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><Users className="w-4 h-4 text-blue-500" /> Lớp học</Label>
+              <Label className="text-xs font-semibold">Lớp học</Label>
               <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v || '')} disabled={loadingClasses || previewLoading}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full text-xs h-9">
                   <SelectValue placeholder="Chọn lớp học" />
                 </SelectTrigger>
                 <SelectContent>
@@ -196,9 +195,9 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-emerald-500" /> Tháng</Label>
+              <Label className="text-xs font-semibold">Tháng</Label>
               <Select value={String(month)} onValueChange={(v) => v && setMonth(Number(v))} disabled={previewLoading}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full text-xs h-9">
                   <SelectValue placeholder="Chọn tháng" />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,13 +211,13 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-purple-500" /> Năm</Label>
+              <Label className="text-xs font-semibold">Năm</Label>
               <Select value={String(year)} onValueChange={(v) => v && setYear(Number(v))} disabled={previewLoading}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full text-xs h-9">
                   <SelectValue placeholder="Chọn năm" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[currentDate.getFullYear() - 1, currentDate.getFullYear(), currentDate.getFullYear() + 1].map((y) => (
+                  {[year - 1, year, year + 1].map((y) => (
                     <SelectItem key={y} value={String(y)}>
                       Năm {y}
                     </SelectItem>
@@ -228,121 +227,128 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
             </div>
           </div>
 
-          {/* Bảng Preview tính toán */}
+          {/* Bảng Preview Tính Toán Tự Động Từ Điểm Danh */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                  Bảng Tính toán Học phí Dự kiến ({previewItems.length} học sinh)
-                </h4>
-                {selectedClass && (
-                  <Badge variant="outline" className="text-xs">
-                    Đơn giá chuẩn: {Number(selectedClass.fee_per_session).toLocaleString('vi-VN')} đ/buổi
-                  </Badge>
-                )}
+                <Checkbox
+                  id="selectAll"
+                  checked={previewItems.length > 0 && selectedStudentIds.size === previewItems.length}
+                  onCheckedChange={handleToggleAll}
+                />
+                <label htmlFor="selectAll" className="text-xs font-semibold cursor-pointer">
+                  Chọn tất cả ({selectedStudentIds.size}/{previewItems.length} học sinh)
+                </label>
               </div>
 
-              {previewItems.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={handleToggleAll} className="text-xs">
-                  {selectedStudentIds.size === previewItems.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
-                </Button>
+              {selectedClass && (
+                <div className="text-xs text-zinc-500">
+                  Học phí gốc: <span className="font-semibold text-zinc-900 dark:text-zinc-100">{Number(selectedClass.fee_per_session).toLocaleString('vi-VN')} đ/buổi</span>
+                </div>
               )}
             </div>
 
             {previewLoading ? (
-              <div className="flex flex-col items-center justify-center py-12 text-zinc-500 space-y-2 border rounded-xl">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <p className="text-sm">Đang quét điểm danh và tính toán học phí...</p>
+              <div className="flex flex-col items-center justify-center py-12 space-y-3 text-zinc-500">
+                <Loader2 className="w-7 h-7 animate-spin" />
+                <span className="text-xs">Đang quét điểm danh và tính toán học phí...</span>
               </div>
             ) : previewItems.length === 0 ? (
-              <div className="text-center py-10 border rounded-xl text-zinc-500">
-                Không có học sinh nào trong lớp học này.
+              <div className="text-center py-12 border border-dashed rounded-xl text-zinc-400 text-xs">
+                Không tìm thấy học sinh nào trong lớp này.
               </div>
             ) : (
-              <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+              <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-xs">
                 <Table>
                   <TableHeader className="bg-zinc-50/75 dark:bg-zinc-900/75">
                     <TableRow>
-                      <TableHead className="w-[40px] text-center">
-                        <Checkbox
-                          checked={selectedStudentIds.size === previewItems.length && previewItems.length > 0}
-                          onCheckedChange={handleToggleAll}
-                        />
-                      </TableHead>
-                      <TableHead>Học sinh</TableHead>
-                      <TableHead className="text-center">Điểm danh (Có mặt / Trễ / Tổng)</TableHead>
-                      <TableHead className="text-center w-[90px]">Số buổi tính</TableHead>
-                      <TableHead className="text-right w-[110px]">Đơn giá</TableHead>
-                      <TableHead className="text-right w-[95px]">Giảm trừ</TableHead>
-                      <TableHead className="text-right">Thành tiền</TableHead>
-                      <TableHead className="w-[80px]">Trạng thái</TableHead>
+                      <TableHead className="w-10 text-center"></TableHead>
+                      <TableHead className="text-xs font-semibold">Học sinh</TableHead>
+                      <TableHead className="text-xs font-semibold text-center">Điểm danh (Có mặt / Phép / Vắng)</TableHead>
+                      <TableHead className="text-xs font-semibold text-center">Số buổi tính phí</TableHead>
+                      <TableHead className="text-xs font-semibold text-right">Đơn giá</TableHead>
+                      <TableHead className="text-xs font-semibold text-right">Miễn giảm</TableHead>
+                      <TableHead className="text-xs font-semibold text-right">Tổng học phí</TableHead>
+                      <TableHead className="text-xs font-semibold text-center">Trạng thái</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {previewItems.map((item) => {
                       const isSelected = selectedStudentIds.has(item.studentId);
+                      const hasInvoice = item.hasExistingInvoice;
+
                       return (
-                        <TableRow key={item.studentId} className={isSelected ? 'bg-blue-50/30 dark:bg-blue-950/20' : ''}>
+                        <TableRow key={item.studentId} className={`text-xs ${hasInvoice ? 'opacity-60 bg-zinc-50/40 dark:bg-zinc-900/40' : ''}`}>
                           <TableCell className="text-center">
                             <Checkbox
                               checked={isSelected}
+                              disabled={hasInvoice}
                               onCheckedChange={() => handleToggleStudent(item.studentId)}
                             />
                           </TableCell>
                           <TableCell>
-                            <div className="font-medium text-zinc-900 dark:text-zinc-100">{item.studentName}</div>
-                            {item.phone && <div className="text-xs text-zinc-500">{item.phone}</div>}
+                            <div className="font-semibold text-zinc-900 dark:text-zinc-100">{item.fullName}</div>
+                            {item.phone && <div className="text-[10px] text-zinc-400">{item.phone}</div>}
                           </TableCell>
                           <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-1.5 text-xs">
-                              <span className="text-emerald-600 font-semibold">{item.presentCount} có mặt</span>
-                              <span>•</span>
-                              <span className="text-amber-600">{item.lateCount} trễ</span>
-                              <span>•</span>
-                              <span className="text-zinc-500">{item.totalSessionsInMonth} tổng</span>
+                            <div className="flex items-center justify-center gap-1.5">
+                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 text-[10px] px-1.5 py-0">
+                                {item.presentCount} Có mặt
+                              </Badge>
+                              {item.excusedCount > 0 && (
+                                <Badge variant="outline" className="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 text-[10px] px-1.5 py-0">
+                                  {item.excusedCount} Phép
+                                </Badge>
+                              )}
+                              {item.absentCount > 0 && (
+                                <Badge variant="outline" className="bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 border-red-200 text-[10px] px-1.5 py-0">
+                                  {item.absentCount} Vắng
+                                </Badge>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
                             <Input
                               type="number"
                               min="0"
-                              className="h-8 text-center text-xs font-semibold"
                               value={item.effectiveSessions}
+                              disabled={hasInvoice || !isSelected}
                               onChange={(e) => handleItemChange(item.studentId, 'effectiveSessions', Number(e.target.value))}
+                              className="w-16 text-center text-xs h-7 mx-auto font-mono"
                             />
                           </TableCell>
                           <TableCell className="text-right">
                             <Input
                               type="number"
-                              min="0"
-                              step="5000"
-                              className="h-8 text-right text-xs"
+                              step="10000"
                               value={item.unitPrice}
+                              disabled={hasInvoice || !isSelected}
                               onChange={(e) => handleItemChange(item.studentId, 'unitPrice', Number(e.target.value))}
+                              className="w-24 text-right text-xs h-7 ml-auto font-mono"
                             />
                           </TableCell>
                           <TableCell className="text-right">
                             <Input
                               type="number"
-                              min="0"
-                              step="5000"
-                              className="h-8 text-right text-xs text-red-600"
-                              placeholder="0"
+                              step="10000"
                               value={item.discount || ''}
+                              placeholder="0"
+                              disabled={hasInvoice || !isSelected}
                               onChange={(e) => handleItemChange(item.studentId, 'discount', Number(e.target.value))}
+                              className="w-20 text-right text-xs h-7 ml-auto font-mono"
                             />
                           </TableCell>
-                          <TableCell className="text-right font-bold text-zinc-900 dark:text-zinc-100">
-                            {Number(item.totalAmount).toLocaleString('vi-VN')} đ
+                          <TableCell className="text-right font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+                            {Number(item.totalAmount || 0).toLocaleString('vi-VN')} đ
                           </TableCell>
-                          <TableCell>
-                            {item.hasExistingInvoice ? (
-                              <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">
+                          <TableCell className="text-center">
+                            {hasInvoice ? (
+                              <Badge variant="secondary" className="text-[10px]">
                                 Đã có HĐ
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300">
-                                Mới
+                              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 text-[10px]">
+                                Sẵn sàng tạo
                               </Badge>
                             )}
                           </TableCell>
@@ -355,34 +361,31 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
             )}
           </div>
 
-          {/* Thống kê nhanh thanh toán */}
-          {selectedStudentIds.size > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
-                  Đang chọn <b>{selectedStudentIds.size}</b> học sinh
-                </span>
-              </div>
-              <div className="text-base font-bold text-emerald-700 dark:text-emerald-300 mt-2 sm:mt-0">
-                Tổng phát hành: {totalSelectedAmount.toLocaleString('vi-VN')} đ
-              </div>
+          {/* Tổng tiền dự kiến */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 gap-3">
+            <div className="text-xs text-zinc-500">
+              Đã chọn <b className="text-zinc-900 dark:text-zinc-100">{selectedStudentIds.size}</b> học sinh để xuất hóa đơn tháng {month}/{year}.
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tổng doanh thu dự kiến:</span>
+              <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
+                {totalSelectedAmount.toLocaleString('vi-VN')} đ
+              </span>
+            </div>
+          </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={onClose} disabled={generating}>
-            Đóng
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={onClose} disabled={generating} className="text-xs h-9">
+            Hủy
           </Button>
           <Button
             onClick={handleGenerate}
             disabled={generating || previewLoading || selectedStudentIds.size === 0}
-            className="bg-zinc-900 hover:bg-zinc-800 text-white"
+            className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs h-9"
           >
-            {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Receipt className="mr-2 h-4 w-4" />
-            Sinh & Gửi Hóa Đơn ({selectedStudentIds.size})
+            {generating && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+            Sinh {selectedStudentIds.size} Hóa đơn & Gửi phụ huynh
           </Button>
         </DialogFooter>
       </DialogContent>

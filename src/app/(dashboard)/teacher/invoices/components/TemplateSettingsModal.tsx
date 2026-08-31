@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { getInvoiceTemplateAction, saveInvoiceTemplateAction } from '../actions';
 import { toast } from 'sonner';
-import { Palette, Building, Phone, Mail, MessageSquare, CreditCard, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -100,10 +100,9 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-            <Palette className="w-5 h-5 text-primary" />
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pr-6">
+          <DialogTitle className="text-xl font-bold">
             Tùy biến Mẫu Hóa đơn Học phí
           </DialogTitle>
           <DialogDescription>
@@ -118,68 +117,73 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
         ) : (
           <div className="space-y-6 py-2">
             {/* Thông tin thương hiệu */}
-            <div className="space-y-4 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
-              <h4 className="text-sm font-semibold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                <Building className="w-4 h-4 text-blue-500" /> Thông tin Giáo viên / Lớp học
+            <div className="space-y-4 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Thông tin Giáo viên / Lớp học
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Tên Giáo viên / Trung tâm <span className="text-red-500">*</span></Label>
+                  <Label className="text-xs">Tên Giáo viên / Trung tâm <span className="text-red-500">*</span></Label>
                   <Input
                     placeholder="VD: Thầy Tài Toán 11, CLB Gia Sư..."
                     value={brandName}
                     onChange={(e) => setBrandName(e.target.value)}
+                    className="text-xs h-9"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Link Logo / Ảnh đại diện (URL)</Label>
+                  <Label className="text-xs">Link Logo / Ảnh đại diện (URL)</Label>
                   <Input
                     placeholder="https://... hoặc để trống"
                     value={logoUrl}
                     onChange={(e) => setLogoUrl(e.target.value)}
+                    className="text-xs h-9"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Số điện thoại liên hệ</Label>
+                  <Label className="text-xs">Số điện thoại liên hệ</Label>
                   <Input
                     placeholder="VD: 0912345678"
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
+                    className="text-xs h-9"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> Email liên hệ</Label>
+                  <Label className="text-xs">Email liên hệ</Label>
                   <Input
                     placeholder="VD: giaovien@gmail.com"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
+                    className="text-xs h-9"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Địa chỉ / Khu vực dạy</Label>
+                <Label className="text-xs">Địa chỉ / Khu vực dạy</Label>
                 <Input
                   placeholder="VD: Quận 1, TP. Hồ Chí Minh hoặc Lớp học Online"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
+                  className="text-xs h-9"
                 />
               </div>
             </div>
 
             {/* Tài khoản nhận tiền cho mã VietQR */}
-            <div className="space-y-4 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
-              <h4 className="text-sm font-semibold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                <CreditCard className="w-4 h-4 text-emerald-500" /> Tài khoản Nhận tiền (Tự động tạo VietQR)
+            <div className="space-y-4 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Tài khoản Nhận tiền (Tự động tạo VietQR)
               </h4>
               {bankAccounts.length === 0 ? (
-                <div className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/40 p-3 rounded-lg">
+                <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/40 p-3 rounded-lg border border-amber-200">
                   Bạn chưa thêm số tài khoản ngân hàng. Hãy vào mục <b>Hồ sơ cá nhân</b> để thêm tài khoản ngân hàng giúp hệ thống tự động sinh mã VietQR quét trả học phí!
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label>Chọn tài khoản nhận học phí</Label>
+                  <Label className="text-xs">Chọn tài khoản nhận học phí</Label>
                   <Select value={selectedBankId} onValueChange={(v) => setSelectedBankId(v || '')}>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full text-xs h-9">
                       <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                     </SelectTrigger>
                     <SelectContent>
@@ -190,32 +194,32 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-zinc-500">Mã VietQR chuẩn NAPAS 247 sẽ tự động điền đúng STK này và số tiền của hóa đơn.</p>
+                  <p className="text-[11px] text-zinc-500">Mã VietQR chuẩn NAPAS 247 sẽ tự động điền đúng STK này và số tiền của hóa đơn.</p>
                 </div>
               )}
             </div>
 
             {/* Tùy chỉnh màu sắc & Lời nhắn */}
-            <div className="space-y-4 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
-              <h4 className="text-sm font-semibold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                <Palette className="w-4 h-4 text-purple-500" /> Màu sắc & Lời nhắn
+            <div className="space-y-4 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+              <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Màu sắc & Lời nhắn
               </h4>
 
               <div className="space-y-2">
-                <Label>Màu sắc chủ đạo của hóa đơn</Label>
-                <div className="flex flex-wrap gap-3">
+                <Label className="text-xs">Màu sắc chủ đạo của hóa đơn</Label>
+                <div className="flex flex-wrap gap-2.5">
                   {THEME_COLORS.map((c) => (
                     <button
                       key={c.id}
                       type="button"
                       onClick={() => setThemeColor(c.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-all ${
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs transition-all ${
                         themeColor === c.id
-                          ? 'border-zinc-900 dark:border-zinc-100 font-semibold ring-2 ring-primary/20'
-                          : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
+                          ? 'border-zinc-900 dark:border-zinc-100 font-semibold ring-2 ring-primary/20 bg-background'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 bg-background/50'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded-full ${c.bg}`} />
+                      <div className={`w-3.5 h-3.5 rounded-full ${c.bg}`} />
                       <span>{c.name}</span>
                     </button>
                   ))}
@@ -223,12 +227,13 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
               </div>
 
               <div className="space-y-2">
-                <Label className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" /> Lời nhắn cảm ơn / Hướng dẫn ở chân hóa đơn</Label>
+                <Label className="text-xs">Lời nhắn cảm ơn / Hướng dẫn ở chân hóa đơn</Label>
                 <Textarea
                   rows={2}
                   value={noteMessage}
                   onChange={(e) => setNoteMessage(e.target.value)}
                   placeholder="VD: Cảm ơn Quý phụ huynh đã đồng hành cùng thầy cô trong suốt tháng qua..."
+                  className="text-xs"
                 />
               </div>
 
@@ -240,7 +245,7 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
                 />
                 <label
                   htmlFor="showAttendance"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-zinc-700 dark:text-zinc-300"
                 >
                   Đính kèm bảng chi tiết các buổi học & điểm danh trên hóa đơn (để phụ huynh dễ đối soát)
                 </label>
@@ -249,12 +254,12 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
           </div>
         )}
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={onClose} disabled={saving}>
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={onClose} disabled={saving} className="text-xs h-9">
             Hủy
           </Button>
-          <Button onClick={handleSave} disabled={saving || loading} className="bg-zinc-900 hover:bg-zinc-800 text-white">
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button onClick={handleSave} disabled={saving || loading} className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs h-9">
+            {saving && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             Lưu Cấu hình Mẫu
           </Button>
         </DialogFooter>
