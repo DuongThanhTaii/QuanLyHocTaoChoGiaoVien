@@ -10,12 +10,21 @@ export class Result<T> {
     return new Result<T>(value, null); 
   }
   
-  static fail<T>(error: DomainError): Result<T> { 
-    return new Result<T>(null, error); 
+  static fail<T>(error: DomainError | Error | string): Result<T> {
+    const domainError = typeof error === 'string'
+      ? new DomainError(error)
+      : error instanceof DomainError
+        ? error
+        : new DomainError(error.message);
+    return new Result<T>(null, domainError); 
   }
   
   isSuccess(): boolean { 
     return this.error === null; 
+  }
+
+  isFailure(): boolean {
+    return this.error !== null;
   }
   
   getValue(): T { 
