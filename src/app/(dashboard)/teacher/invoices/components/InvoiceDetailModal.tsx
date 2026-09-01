@@ -82,6 +82,7 @@ export function InvoiceDetailModal({
   const studentName = invoice.students?.full_name || invoice.profiles?.full_name || 'Học sinh';
   const className = invoice.classes?.name || 'Lớp học';
   const brandName = templateSnapshot?.brandName || 'GiasuPro Education';
+  const logoUrl = templateSnapshot?.logoUrl || null;
   const contactPhone = templateSnapshot?.contactPhone || '';
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã tin tưởng đồng hành cùng thầy cô!';
   const themeColor = templateSnapshot?.themeColor || '#3B82F6';
@@ -192,6 +193,13 @@ export function InvoiceDetailModal({
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-6">
               <div>
                 <div className="flex items-center gap-3">
+                  {logoUrl && (
+                    <img 
+                      src={logoUrl} 
+                      alt="Logo" 
+                      className="w-12 h-12 object-contain mix-blend-multiply dark:mix-blend-normal"
+                    />
+                  )}
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{brandName}</h2>
                     {contactPhone && <p className="text-xs text-zinc-500">Hotline / Zalo: {contactPhone}</p>}

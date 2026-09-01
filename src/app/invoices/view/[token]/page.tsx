@@ -104,6 +104,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   }
 
   const brandName = templateSnapshot?.brandName || teacher?.full_name || 'GiasuPro Education';
+  const logoUrl = templateSnapshot?.logoUrl || null;
   const contactPhone = templateSnapshot?.contactPhone || teacher?.phone || '';
   const contactEmail = templateSnapshot?.contactEmail || teacher?.email || '';
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã đồng hành cùng thầy cô!';
@@ -141,12 +142,12 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         
         {/* Banner trạng thái */}
         {isPaid ? (
-          <div className="bg-emerald-600 text-white p-4 rounded-2xl shadow-md flex items-center gap-3">
+          <div className="bg-emerald-500 text-white p-4 rounded-2xl shadow-md flex items-center gap-3">
             <CheckCircle2 className="w-8 h-8 flex-shrink-0" />
             <div>
-              <h3 className="font-bold text-base">Hóa đơn đã được thanh toán thành công!</h3>
-              <p className="text-xs text-emerald-100 mt-0.5">
-                Ngày ghi nhận: {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('vi-VN') : 'Đã thanh toán'} • Phương thức: {invoice.payment_method === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}
+              <h3 className="font-bold">Hóa đơn đã được thanh toán</h3>
+              <p className="text-emerald-50 text-sm">
+                Vào lúc {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('vi-VN') : 'Đã ghi nhận'}
               </p>
             </div>
           </div>
@@ -154,10 +155,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
           <div className="bg-blue-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Clock className="w-6 h-6 flex-shrink-0" />
-              <div>
-                <h3 className="font-bold text-sm">Học phí đang chờ thanh toán</h3>
-                <p className="text-xs text-blue-100">Hạn nộp: {new Date(invoice.due_date).toLocaleDateString('vi-VN')}</p>
-              </div>
+              <h3 className="font-bold text-sm">Học phí đang chờ thanh toán</h3>
             </div>
             <span className="font-bold text-lg text-white">
               {Number(invoice.total_amount).toLocaleString('vi-VN')} đ
@@ -172,7 +170,13 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
             {/* Header Thương hiệu Giáo viên */}
             <div className="flex items-start justify-between border-b border-zinc-100 dark:border-zinc-800 pb-6">
               <div className="flex items-center gap-3">
-
+                {logoUrl && (
+                  <img 
+                    src={logoUrl} 
+                    alt="Logo" 
+                    className="w-12 h-12 object-contain mix-blend-multiply dark:mix-blend-normal"
+                  />
+                )}
                 <div>
                   <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{brandName}</h2>
                   {contactPhone && (
@@ -217,6 +221,14 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
                 </span>
                 <span className="font-medium text-zinc-700 dark:text-zinc-300">
                   {new Date(invoice.period_start).toLocaleDateString('vi-VN')} – {new Date(invoice.period_end).toLocaleDateString('vi-VN')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-500 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-zinc-400" /> Hạn thanh toán:
+                </span>
+                <span className="font-bold text-amber-600">
+                  {new Date(invoice.due_date).toLocaleDateString('vi-VN')}
                 </span>
               </div>
             </div>
