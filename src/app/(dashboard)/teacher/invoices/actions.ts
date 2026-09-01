@@ -148,8 +148,7 @@ export async function generateBatchInvoicesAction(params: {
     throw new Error(result.getError().message);
   }
 
-  revalidatePath('/teacher/invoices');
-  revalidatePath('/teacher/analytics');
+  revalidatePath('/', 'layout');
   return { success: true, count: result.getValue().length };
 }
 
@@ -218,8 +217,7 @@ export async function createCustomInvoiceAction(params: {
     throw new Error(result.getError().message);
   }
 
-  revalidatePath('/teacher/invoices');
-  revalidatePath('/teacher/analytics');
+  revalidatePath('/', 'layout');
   return { success: true, invoiceId: result.getValue().id };
 }
 
@@ -254,8 +252,7 @@ export async function recordPaymentAction(params: {
     throw new Error(result.getError().message);
   }
 
-  revalidatePath('/teacher/invoices');
-  revalidatePath('/teacher/analytics');
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
@@ -277,8 +274,7 @@ export async function cancelInvoiceAction(invoiceId: string, reason?: string) {
   }
 
   await repos.invoices.save(invoice);
-  revalidatePath('/teacher/invoices');
-  revalidatePath('/teacher/analytics');
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
@@ -299,8 +295,7 @@ export async function deleteInvoiceAction(invoiceId: string) {
   }
 
   await repos.invoices.delete(invoiceId);
-  revalidatePath('/teacher/invoices');
-  revalidatePath('/teacher/analytics');
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
