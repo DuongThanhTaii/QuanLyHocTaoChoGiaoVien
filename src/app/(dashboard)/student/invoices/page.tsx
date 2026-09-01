@@ -41,7 +41,6 @@ export default async function StudentInvoicesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Hóa đơn học phí của tôi</h1>
-        <p className="text-zinc-500 text-sm">Xem và thanh toán học phí nhanh chóng qua mã VietQR.</p>
       </div>
 
       <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
