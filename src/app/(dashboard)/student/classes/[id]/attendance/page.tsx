@@ -1,9 +1,9 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui/UserAvatar';
-import { CheckCircle2, Clock, XCircle, AlertCircle, CalendarCheck } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -127,19 +127,9 @@ export default async function StudentAttendancePage({ params }: { params: Promis
       {/* Bảng Lịch sử điểm danh dạng Shadcn Table */}
       <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Lịch sử điểm danh ({attendanceRecords.length})
-              </CardTitle>
-              <CardDescription className="text-xs text-zinc-500 mt-0.5">
-                Chi tiết tình trạng tham gia từng buổi học
-              </CardDescription>
-            </div>
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <CalendarCheck className="w-4 h-4" />
-            </div>
-          </div>
+          <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+            Lịch sử điểm danh ({attendanceRecords.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {attendanceRecords.length === 0 ? (

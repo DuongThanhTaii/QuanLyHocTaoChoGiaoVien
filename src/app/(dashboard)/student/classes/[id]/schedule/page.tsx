@@ -2,7 +2,7 @@ import { createClient } from '@/infrastructure/auth/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, CheckCircle2, AlertCircle, CalendarDays, History } from 'lucide-react';
+import { Calendar, Clock, MapPin, CheckCircle2, AlertCircle } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
@@ -82,19 +82,12 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
       {/* Phần 1: Lịch học định kỳ hàng tuần */}
       <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Lịch học định kỳ hàng tuần
-              </CardTitle>
-              <CardDescription className="text-xs text-zinc-500 mt-0.5">
-                Các khung giờ học cố định của lớp
-              </CardDescription>
-            </div>
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <CalendarDays className="w-4 h-4" />
-            </div>
-          </div>
+          <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+            Lịch học định kỳ hàng tuần
+          </CardTitle>
+          <CardDescription className="text-xs text-zinc-500 mt-0.5">
+            Các khung giờ học cố định của lớp
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {!slots || slots.length === 0 ? (
@@ -139,19 +132,9 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
       {/* Phần 2: Danh sách các buổi học chi tiết bằng Shadcn Table */}
       <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Danh sách các buổi học ({sessionList.length})
-              </CardTitle>
-              <CardDescription className="text-xs text-zinc-500 mt-0.5">
-                Chi tiết từng buổi học và tình trạng điểm danh của bạn
-              </CardDescription>
-            </div>
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-              <History className="w-4 h-4" />
-            </div>
-          </div>
+          <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+            Danh sách các buổi học ({sessionList.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {sessionList.length === 0 ? (
@@ -163,7 +146,6 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
               <Table>
                 <TableHeader className="bg-zinc-50/75 dark:bg-zinc-900/75">
                   <TableRow>
-                    <TableHead className="w-12 text-center text-xs font-semibold">#</TableHead>
                     <TableHead className="text-xs font-semibold">Ngày học</TableHead>
                     <TableHead className="text-xs font-semibold">Thời gian</TableHead>
                     <TableHead className="text-xs font-semibold">Buổi học</TableHead>
@@ -171,7 +153,7 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sessionList.map((s: any, idx: number) => {
+                  {sessionList.map((s: any) => {
                     const sDate = new Date(s.session_date);
                     const dayLabel = dayNames[sDate.getDay()] || '';
                     const dateFormatted = sDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -192,10 +174,6 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
                         key={s.id}
                         className={`text-sm ${isToday ? 'bg-primary/5 hover:bg-primary/10' : ''}`}
                       >
-                        <TableCell className="text-center font-medium text-xs text-zinc-400">
-                          {idx + 1}
-                        </TableCell>
-
                         <TableCell>
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1.5">
