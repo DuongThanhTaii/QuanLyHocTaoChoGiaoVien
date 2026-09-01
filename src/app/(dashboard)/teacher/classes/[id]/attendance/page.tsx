@@ -4,9 +4,13 @@ import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
 import { AttendanceManager } from './AttendanceManager';
 
-export default async function AttendancePage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
+export default async function AttendancePage(props: { params: Promise<{ id: string }>, searchParams: Promise<{ date?: string }> }) {
+  const resolvedParams = await props.params;
+  const resolvedSearchParams = await props.searchParams;
   const classId = resolvedParams.id;
+  
+  // Use date from URL search query, or default to today
+  const selectedDateStr = resolvedSearchParams.date || new Date().toISOString().split('T')[0];
   
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -36,36 +40,37 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
     };
   });
 
-  // Find or create today's session
-  const dateStr = new Date().toISOString().split('T')[0];
+  // Find or create session for the SELECTED date
   let { data: session } = await supabase
     .from('class_sessions')
     .select('id, start_time, end_time')
     .eq('class_id', classId)
-    .eq('session_date', dateStr)
+    .eq('session_date', selectedDateStr)
     .maybeSingle();
 
-  if (!session) {
-    // Try to find today's schedule slot to get default times
-    const currentDay = new Date().getDay(); // 0-6
-    const { data: slot } = await supabase
-      .from('schedule_slots')
-      .select('id, start_time, end_time')
-      .eq('class_id', classId)
-      .eq('day_of_week', currentDay)
-      .limit(1)
-      .maybeSingle();
+  const selectedDateObj = new Date(selectedDateStr);
+  const selectedDayOfWeek = selectedDateObj.getDay();
 
-    // Create session
+  // Check if there is a schedule slot for this day
+  const { data: slot } = await supabase
+    .from('schedule_slots')
+    .select('id, start_time, end_time')
+    .eq('class_id', classId)
+    .eq('day_of_week', selectedDayOfWeek)
+    .limit(1)
+    .maybeSingle();
+
+  if (!session && slot) {
+    // Only auto-create session if there is a scheduled slot for this day!
     const { data: newSession } = await supabase
       .from('class_sessions')
       .insert({
         class_id: classId,
-        schedule_slot_id: slot?.id || null,
-        title: 'Buổi học ' + new Date().toLocaleDateString('vi-VN'),
-        session_date: dateStr,
-        start_time: slot?.start_time || '00:00:00',
-        end_time: slot?.end_time || '23:59:59',
+        schedule_slot_id: slot.id,
+        title: 'Buổi học ' + selectedDateObj.toLocaleDateString('vi-VN'),
+        session_date: selectedDateStr,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
         status: 'SCHEDULED'
       })
       .select('id, start_time, end_time')
@@ -74,10 +79,11 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
     session = newSession;
   }
 
-  const slotId = session?.id || 'uuid-slot-123'; // passed down as slotId to avoid refactoring UI/props
+  const isScheduled = !!slot || !!session;
+  const slotId = session?.id || 'uuid-slot-123';
   const timeRange = session ? `${session.start_time} - ${session.end_time}` : 'Không có lịch học (Ngoài giờ)';
 
-  // Fetch existing attendance records for this session using admin to bypass missing RLS
+  // Fetch existing attendance records
   const { createClient: createAdmin } = require('@supabase/supabase-js');
   const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   
@@ -91,13 +97,23 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
     return acc;
   }, {});
 
+  // Fetch schedule slots to build the date selector list
+  const { data: allSlots } = await supabase
+    .from('schedule_slots')
+    .select('day_of_week')
+    .eq('class_id', classId);
+    
+  const scheduleDays = allSlots?.map(s => s.day_of_week) || [];
+
   return (
     <div className="space-y-6">
       <AttendanceManager 
         classId={classId}
         slotId={slotId}
         students={students}
-        dateString={new Date().toLocaleDateString('vi-VN')}
+        selectedDateStr={selectedDateStr}
+        isScheduled={isScheduled}
+        scheduleDays={scheduleDays}
         timeRange={timeRange}
         initialAttendance={initialAttendance}
       />
