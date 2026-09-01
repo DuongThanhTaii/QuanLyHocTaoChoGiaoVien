@@ -449,7 +449,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                <div className="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                   {totalPaidRevenue.toLocaleString('vi-VN')} đ
                 </div>
                 <div className="text-[11px] text-zinc-500 flex items-center gap-2 flex-wrap">
@@ -477,7 +477,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
+                <div className="text-3xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
                   {totalPending.toLocaleString('vi-VN')} đ
                 </div>
                 <p className="text-[11px] text-zinc-500">Đang chờ phụ huynh chuyển khoản</p>
@@ -497,7 +497,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                <div className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                   {totalInvoiced.toLocaleString('vi-VN')} đ
                 </div>
                 <p className="text-[11px] text-zinc-500">Tổng học phí đã lập hóa đơn</p>
@@ -518,7 +518,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
+                <div className="text-3xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
                   {collectionRate}%
                 </div>
                 <p className="text-[11px] text-zinc-500">Tỷ lệ phụ huynh nộp đúng hạn</p>

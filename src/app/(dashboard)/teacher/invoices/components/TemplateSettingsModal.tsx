@@ -105,9 +105,6 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
           <DialogTitle className="text-xl font-bold">
             Tùy biến Mẫu Hóa đơn Học phí
           </DialogTitle>
-          <DialogDescription>
-            Thiết kế giao diện hóa đơn gửi cho phụ huynh và học sinh trông bắt mắt, chuyên nghiệp và uy tín.
-          </DialogDescription>
         </DialogHeader>
 
         {loading ? (

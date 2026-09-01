@@ -138,30 +138,30 @@ export function ChatHeader({
                 </Button>
               }
             />
-            <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuContent align="end" className="w-60 min-w-[230px]">
               {isGroup ? (
                 <>
-                  <DropdownMenuItem onClick={() => setMembersModalOpen(true)}>
-                    <Info className="w-4 h-4 mr-2 text-zinc-500" />
-                    <span>Thông tin & Thành viên</span>
+                  <DropdownMenuItem onClick={() => setMembersModalOpen(true)} className="cursor-pointer">
+                    <Info className="w-4 h-4 mr-2 text-zinc-500 shrink-0" />
+                    <span className="whitespace-nowrap font-medium text-xs text-zinc-700">Thông tin & Thành viên</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLeaveGroup} className="text-amber-600 focus:text-amber-600 cursor-pointer">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    <span>Rời khỏi nhóm</span>
+                    <LogOut className="w-4 h-4 mr-2 shrink-0" />
+                    <span className="whitespace-nowrap font-medium text-xs">Rời khỏi nhóm</span>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem onClick={handleDisbandGroup} className="text-red-600 focus:text-red-600 font-medium cursor-pointer">
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      <span>Giải tán nhóm</span>
+                      <Trash2 className="w-4 h-4 mr-2 shrink-0" />
+                      <span className="whitespace-nowrap font-medium text-xs">Giải tán nhóm</span>
                     </DropdownMenuItem>
                   )}
                 </>
               ) : (
                 <>
                   <DropdownMenuItem onClick={handleDeleteDirect} className="text-red-600 focus:text-red-600 cursor-pointer">
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    <span>Xóa đoạn chat</span>
+                    <Trash2 className="w-4 h-4 mr-2 shrink-0" />
+                    <span className="whitespace-nowrap font-medium text-xs">Xóa đoạn chat</span>
                   </DropdownMenuItem>
                 </>
               )}

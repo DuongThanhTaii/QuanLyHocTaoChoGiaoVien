@@ -43,7 +43,7 @@ export default async function TeacherStats() {
           <BookOpen className="h-4 w-4 text-zinc-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{classes.length}</div>
+          <div className="text-3xl font-bold tracking-tight text-zinc-900">{classes.length}</div>
         </CardContent>
       </Card>
       
@@ -53,7 +53,7 @@ export default async function TeacherStats() {
           <Calendar className="h-4 w-4 text-zinc-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{todaySlotsCount}</div>
+          <div className="text-3xl font-bold tracking-tight text-zinc-900">{todaySlotsCount}</div>
         </CardContent>
       </Card>
     </div>

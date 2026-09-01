@@ -131,7 +131,7 @@ export function ConversationList({
                 onClick={() => onSelectConversation(conv.id)}
                 className={`p-3.5 flex items-center gap-3 cursor-pointer transition-colors ${
                   isActive
-                    ? 'bg-blue-50/80 border-l-4 border-l-blue-600'
+                    ? 'bg-blue-50/80'
                     : 'hover:bg-zinc-50'
                 }`}
               >

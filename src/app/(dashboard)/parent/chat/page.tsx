@@ -20,7 +20,6 @@ export default async function ParentChatPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tin nhắn</h1>
-        <p className="text-zinc-500 text-sm">Trao đổi trực tiếp với giáo viên về tình hình học tập của con.</p>
       </div>
 
       <ChatLayout

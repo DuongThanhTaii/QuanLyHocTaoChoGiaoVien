@@ -337,7 +337,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               {totalPaid.toLocaleString('vi-VN')} đ
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">Đã vào tài khoản hoặc tiền mặt</p>
@@ -362,7 +362,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-3xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
               {totalPending.toLocaleString('vi-VN')} đ
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">Phụ huynh đang đối soát / chưa đóng</p>
@@ -391,7 +391,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+            <div className="text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">
               {totalOverdue.toLocaleString('vi-VN')} đ
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">Cần gửi tin nhắn nhắc học phí</p>
@@ -417,7 +417,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <div className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {periodFilteredInvoices.length} HĐ
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">Phát hành trong {currentPeriodLabel}</p>

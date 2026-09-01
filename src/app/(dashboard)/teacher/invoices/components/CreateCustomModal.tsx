@@ -215,9 +215,6 @@ export function CreateCustomModal({ isOpen, onClose, onSuccess }: Props) {
           <DialogTitle className="text-xl font-bold">
             Tạo Hóa đơn Theo Yêu Cầu / Tình Huống Đặc Biệt
           </DialogTitle>
-          <DialogDescription>
-            Hỗ trợ linh hoạt cho học sinh học nửa tháng rồi dừng, học bù, phụ đạo hoặc các khoản thu tài liệu tùy biến.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
