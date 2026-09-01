@@ -71,10 +71,12 @@ export async function getClassStudentsAction(classId: string) {
  */
 export async function getMonthlyBillingPreviewAction(classId: string, month: number, year: number) {
   const { user } = await getAuthenticatedTeacher();
-  const repos = await getRepositories();
   const { createClient: createAdmin } = require('@supabase/supabase-js');
   const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const service = new InvoiceService(repos.invoices, repos.attendance, repos.enrollments, repos.classes, supabaseAdmin);
+  
+  const { createRepositories } = await import('@/infrastructure/persistence/supabase/repositories/index');
+  const adminRepos = createRepositories(supabaseAdmin);
+  const service = new InvoiceService(adminRepos.invoices, adminRepos.attendance, adminRepos.enrollments, adminRepos.classes, supabaseAdmin);
 
   const result = await service.getMonthlyBillingPreview(user.id, classId, month, year);
   if (result.isFailure()) {
@@ -101,10 +103,12 @@ export async function generateBatchInvoicesAction(params: {
   }>;
 }) {
   const { user, supabase } = await getAuthenticatedTeacher();
-  const repos = await getRepositories();
   const { createClient: createAdmin } = require('@supabase/supabase-js');
   const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const service = new InvoiceService(repos.invoices, repos.attendance, repos.enrollments, repos.classes, supabaseAdmin);
+  
+  const { createRepositories } = await import('@/infrastructure/persistence/supabase/repositories/index');
+  const adminRepos = createRepositories(supabaseAdmin);
+  const service = new InvoiceService(adminRepos.invoices, adminRepos.attendance, adminRepos.enrollments, adminRepos.classes, supabaseAdmin);
 
   // Lấy template snapshot
   const { data: template } = await supabase
@@ -165,10 +169,12 @@ export async function createCustomInvoiceAction(params: {
   dueDate?: string;
 }) {
   const { user, supabase } = await getAuthenticatedTeacher();
-  const repos = await getRepositories();
   const { createClient: createAdmin } = require('@supabase/supabase-js');
   const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const service = new InvoiceService(repos.invoices, repos.attendance, repos.enrollments, repos.classes, supabaseAdmin);
+  
+  const { createRepositories } = await import('@/infrastructure/persistence/supabase/repositories/index');
+  const adminRepos = createRepositories(supabaseAdmin);
+  const service = new InvoiceService(adminRepos.invoices, adminRepos.attendance, adminRepos.enrollments, adminRepos.classes, supabaseAdmin);
 
   const { data: template } = await supabase
     .from('invoice_templates')
@@ -228,10 +234,12 @@ export async function recordPaymentAction(params: {
   note?: string;
 }) {
   const { user } = await getAuthenticatedTeacher();
-  const repos = await getRepositories();
   const { createClient: createAdmin } = require('@supabase/supabase-js');
   const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const service = new InvoiceService(repos.invoices, repos.attendance, repos.enrollments, repos.classes, supabaseAdmin);
+  
+  const { createRepositories } = await import('@/infrastructure/persistence/supabase/repositories/index');
+  const adminRepos = createRepositories(supabaseAdmin);
+  const service = new InvoiceService(adminRepos.invoices, adminRepos.attendance, adminRepos.enrollments, adminRepos.classes, supabaseAdmin);
 
   const result = await service.recordPayment({
     invoiceId: params.invoiceId,
