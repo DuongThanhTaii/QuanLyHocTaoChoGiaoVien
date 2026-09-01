@@ -19,8 +19,10 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // 1. Tìm hóa đơn qua payment_token hoặc id
-  const { data: invoiceData, error } = await supabaseAdmin
+  // Kiểm tra token có phải UUID hợp lệ không
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
+  
+  let query = supabaseAdmin
     .from('invoices')
     .select(`
       *,
@@ -42,9 +44,15 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         email,
         avatar_url
       )
-    `)
-    .or(`id.eq.${token},notes.ilike.%${token}%`)
-    .single();
+    `);
+
+  if (isUuid) {
+    query = query.or(`id.eq.${token},payment_token.eq.${token},notes.ilike.%${token}%`);
+  } else {
+    query = query.or(`payment_token.eq.${token},notes.ilike.%${token}%`);
+  }
+
+  const { data: invoiceData, error } = await query.single();
 
   if (error || !invoiceData) {
     notFound();
