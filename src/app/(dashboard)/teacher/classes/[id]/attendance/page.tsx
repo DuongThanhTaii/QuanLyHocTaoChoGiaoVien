@@ -9,9 +9,6 @@ export default async function AttendancePage(props: { params: Promise<{ id: stri
   const resolvedSearchParams = await props.searchParams;
   const classId = resolvedParams.id;
   
-  // Use date from URL search query, or default to today
-  const selectedDateStr = resolvedSearchParams.date || new Date().toISOString().split('T')[0];
-  
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -19,6 +16,31 @@ export default async function AttendancePage(props: { params: Promise<{ id: stri
     redirect('/login');
   }
 
+  // Fetch schedule slots first to know which days have classes
+  const { data: allSlots } = await supabase
+    .from('schedule_slots')
+    .select('day_of_week')
+    .eq('class_id', classId);
+    
+  const scheduleDays = allSlots?.map(s => s.day_of_week) || [];
+
+  // Determine the default date to show (most recent scheduled day)
+  let defaultDateStr = new Date().toISOString().split('T')[0];
+  if (scheduleDays.length > 0) {
+    // Look back up to 14 days to find the most recent day that has a schedule
+    for (let i = 0; i < 14; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      if (scheduleDays.includes(d.getDay())) {
+        defaultDateStr = d.toISOString().split('T')[0];
+        break; // Found the most recent scheduled day
+      }
+    }
+  }
+
+  // Use date from URL search query, or the calculated default date
+  const selectedDateStr = resolvedSearchParams.date || defaultDateStr;
+  
   const repos = await getRepositories();
   
   // Fetch enrolled students
@@ -40,14 +62,6 @@ export default async function AttendancePage(props: { params: Promise<{ id: stri
     };
   });
 
-  // Find or create session for the SELECTED date
-  let { data: session } = await supabase
-    .from('class_sessions')
-    .select('id, start_time, end_time')
-    .eq('class_id', classId)
-    .eq('session_date', selectedDateStr)
-    .maybeSingle();
-
   const selectedDateObj = new Date(selectedDateStr);
   const selectedDayOfWeek = selectedDateObj.getDay();
 
@@ -60,7 +74,18 @@ export default async function AttendancePage(props: { params: Promise<{ id: stri
     .limit(1)
     .maybeSingle();
 
-  if (!session && slot) {
+  // Strict check: It's only a scheduled day if it matches the class schedule settings
+  const isScheduled = scheduleDays.includes(selectedDayOfWeek);
+
+  // Find or create session for the SELECTED date
+  let { data: session } = await supabase
+    .from('class_sessions')
+    .select('id, start_time, end_time')
+    .eq('class_id', classId)
+    .eq('session_date', selectedDateStr)
+    .maybeSingle();
+
+  if (!session && slot && isScheduled) {
     // Only auto-create session if there is a scheduled slot for this day!
     const { data: newSession } = await supabase
       .from('class_sessions')
@@ -79,9 +104,8 @@ export default async function AttendancePage(props: { params: Promise<{ id: stri
     session = newSession;
   }
 
-  const isScheduled = !!slot || !!session;
   const slotId = session?.id || 'uuid-slot-123';
-  const timeRange = session ? `${session.start_time} - ${session.end_time}` : 'Không có lịch học (Ngoài giờ)';
+  const timeRange = session ? `${session.start_time} - ${session.end_time}` : (slot ? `${slot.start_time} - ${slot.end_time}` : 'Không có lịch học');
 
   // Fetch existing attendance records
   const { createClient: createAdmin } = require('@supabase/supabase-js');
@@ -96,14 +120,6 @@ export default async function AttendancePage(props: { params: Promise<{ id: stri
     acc[record.student_id] = { status: record.status, note: record.note || '' };
     return acc;
   }, {});
-
-  // Fetch schedule slots to build the date selector list
-  const { data: allSlots } = await supabase
-    .from('schedule_slots')
-    .select('day_of_week')
-    .eq('class_id', classId);
-    
-  const scheduleDays = allSlots?.map(s => s.day_of_week) || [];
 
   return (
     <div className="space-y-6">
