@@ -124,7 +124,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   // Lấy danh sách điểm danh chi tiết nếu bật hiển thị
   let attendanceList: any[] = [];
   if (showAttendance) {
-    const { data: attData } = await supabase
+    const { data: attData } = await supabaseAdmin
       .from('attendance_records')
       .select('session_id, status, note, class_sessions(session_date, title)')
       .eq('student_id', invoice.student_id)
