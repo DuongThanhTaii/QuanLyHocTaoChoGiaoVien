@@ -1,3 +1,42 @@
 'use client';
-import Link from 'next/link'; import { usePathname } from 'next/navigation'; import { cn } from '@/lib/utils';
-export function StudentClassTabs({ classId }: { classId: string }) { const pathname = usePathname(); const tabs = [['','Tổng quan'],['students','Học sinh'],['schedule','Lịch học'],['attendance','Điểm danh'],['evaluations','Đánh giá'],['lessons','Bài giảng']]; return <div className="overflow-x-auto border-b border-zinc-200"><nav className="-mb-px flex min-w-max space-x-8">{tabs.map(([key,name]) => { const href = `/student/classes/${classId}${key ? `/${key}` : ''}`; return <Link key={key} href={href} className={cn(pathname === href ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-500 hover:text-zinc-700', 'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium')}>{name}</Link> })}</nav></div>; }
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+
+export function StudentClassTabs({ classId }: { classId: string }) {
+  const pathname = usePathname();
+  const tabs = [
+    ['', 'Tổng quan'],
+    ['students', 'Học sinh'],
+    ['schedule', 'Lịch học'],
+    ['attendance', 'Điểm danh'],
+    ['evaluations', 'Đánh giá'],
+    ['lessons', 'Bài giảng']
+  ];
+
+  return (
+    <div className="overflow-x-auto overflow-y-hidden border-b border-zinc-200 scrollbar-none">
+      <nav className="-mb-px flex min-w-max space-x-8">
+        {tabs.map(([key, name]) => {
+          const href = `/student/classes/${classId}${key ? `/${key}` : ''}`;
+          const isActive = pathname === href;
+          return (
+            <Link
+              key={key}
+              href={href}
+              className={cn(
+                isActive
+                  ? 'border-zinc-900 text-zinc-900 font-semibold'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 font-medium',
+                'whitespace-nowrap border-b-2 px-1 py-4 text-sm transition-colors'
+              )}
+            >
+              {name}
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
+  );
+}
