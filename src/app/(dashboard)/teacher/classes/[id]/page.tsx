@@ -1,6 +1,6 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Calendar, Banknote } from 'lucide-react';
+import { Users, Calendar, Banknote, BookOpenCheck } from 'lucide-react';
 import { ClassFeedList, FeedItem } from './components/ClassFeedList';
 
 export default async function ClassOverviewPage({ params }: { params: Promise<{ id: string }> }) {
@@ -97,7 +97,37 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
     ? `Đã thu ${paidAmount.toLocaleString('vi-VN')} đ / ${totalBilledAmount.toLocaleString('vi-VN')} đ` 
     : 'Chưa phát hành hóa đơn cho lớp';
 
-  // 4. Lấy Bài giảng & Thông báo cho Hoạt động gần đây
+  // 4. Thống kê Giảng dạy của Giáo viên (Dựa trên số buổi đã điểm danh)
+  const { data: pastSessions } = await supabaseAdmin
+    .from('class_sessions')
+    .select('id, session_date, schedule_slot_id')
+    .eq('class_id', id)
+    .lte('session_date', todayStr);
+
+  const pastSessionIds = pastSessions?.map(s => s.id) || [];
+  
+  let taughtCount = 0;
+  let makeupTaughtCount = 0;
+
+  if (pastSessionIds.length > 0) {
+    const { data: attendanceData } = await supabaseAdmin
+      .from('attendance_records')
+      .select('session_id')
+      .in('session_id', pastSessionIds);
+      
+    // Find unique sessions that have attendance
+    const taughtSessionIds = new Set(attendanceData?.map((r: any) => r.session_id));
+    taughtCount = taughtSessionIds.size;
+    
+    // Count how many of these were makeup (schedule_slot_id is null)
+    const taughtMakeupSessions = pastSessions?.filter(s => taughtSessionIds.has(s.id) && !s.schedule_slot_id);
+    makeupTaughtCount = taughtMakeupSessions?.length || 0;
+  }
+  
+  // Tính nhanh tiền lương dự kiến (Giả định 150k/buổi như trong ảnh)
+  const estimatedSalary = taughtCount * 150000;
+
+  // 5. Lấy Bài giảng & Thông báo cho Hoạt động gần đây
   const { data: lessons } = await supabaseAdmin
     .from('lessons')
     .select('id, title, content, created_at, materials(id, name, size_bytes)')
@@ -120,8 +150,8 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-6">
-      {/* 3 Thẻ Thống kê với Dữ liệu Thật 100% */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 4 Thẻ Thống kê */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Thẻ 1: Học sinh */}
         <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
@@ -177,6 +207,28 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
               {tuitionText}
             </div>
             <p className="text-xs text-zinc-500 truncate">{tuitionSubtext}</p>
+          </CardContent>
+        </Card>
+
+        {/* Thẻ 4: Thống kê Giảng dạy */}
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Số buổi đã dạy
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+              <BookOpenCheck className="w-3 h-3" />
+              <span>Thống kê</span>
+            </span>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-purple-600 dark:text-purple-400">
+              {taughtCount} <span className="text-lg font-medium text-zinc-500">buổi</span>
+            </div>
+            <p className="text-xs text-zinc-500 truncate">
+              {makeupTaughtCount > 0 ? `Bao gồm ${makeupTaughtCount} buổi dạy bù` : 'Đã chốt điểm danh đầy đủ'}
+              {/* Nếu hệ thống có bảng cấu hình lương, có thể thay bằng: Tạm tính: {estimatedSalary.toLocaleString('vi-VN')} đ */}
+            </p>
           </CardContent>
         </Card>
       </div>
