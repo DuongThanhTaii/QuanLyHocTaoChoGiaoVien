@@ -196,7 +196,6 @@ export class SupabaseInvoiceRepository implements IInvoiceRepository {
       subtotal: subtotal,
       discount: discount,
       tax_rate: anyInv.taxRate || anyInv._taxRate || 0,
-      tax_amount: (subtotal * (anyInv.taxRate || anyInv._taxRate || 0)) / 100,
       total_amount: totalAmount,
       status: anyInv.status || anyInv._status,
       due_date: (anyInv.dueDate || anyInv._dueDate).toISOString(),
