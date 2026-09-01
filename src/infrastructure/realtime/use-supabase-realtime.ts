@@ -73,11 +73,33 @@ export function useSupabaseRealtime(
         if (!newMsg) return;
 
         setMessages((prev) => {
-          // Tránh trùng lặp nếu đã nhận qua broadcast hoặc optimistic
+          // 1. Tránh trùng lặp nếu đã nhận qua broadcast hoặc real id đã có
           if (prev.some((m) => m.id === newMsg.id)) {
             return prev;
           }
 
+          // 2. Nếu là tin nhắn của chính mình, thay thế tin nhắn tạm (temp-) cùng nội dung
+          if (newMsg.sender_id === currentUserId) {
+            const tempIdx = prev.findIndex(
+              (m) => m.id.startsWith('temp-') && m.content === newMsg.content
+            );
+            if (tempIdx !== -1) {
+              const updated = [...prev];
+              updated[tempIdx] = {
+                id: newMsg.id,
+                conversationId: newMsg.conversation_id,
+                senderId: newMsg.sender_id,
+                content: newMsg.content,
+                type: newMsg.type,
+                metadata: newMsg.metadata,
+                createdAt: newMsg.created_at,
+                senderName: 'Bạn'
+              };
+              return updated;
+            }
+          }
+
+          // 3. Thêm tin nhắn mới bình thường
           return [
             ...prev,
             {
@@ -235,12 +257,35 @@ export function useSupabaseRealtime(
     setMessages((prev) => [...prev, message]);
   }, []);
 
+  const confirmOptimisticMessage = useCallback((tempId: string, realMessage: ChatMessage) => {
+    setMessages((prev) => {
+      // Nếu đã có tin thật từ postgres_changes
+      if (prev.some((m) => m.id === realMessage.id)) {
+        return prev.filter((m) => m.id !== tempId);
+      }
+      // Thay thế tin temp bằng tin thật
+      const idx = prev.findIndex((m) => m.id === tempId);
+      if (idx !== -1) {
+        const copy = [...prev];
+        copy[idx] = realMessage;
+        return copy;
+      }
+      return [...prev, realMessage];
+    });
+  }, []);
+
+  const removeOptimisticMessage = useCallback((tempId: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== tempId));
+  }, []);
+
   return {
     messages,
     typingUsers,
     sendTypingSignal,
     sendStopTypingSignal,
     broadcastNewMessage,
-    addOptimisticMessage
+    addOptimisticMessage,
+    confirmOptimisticMessage,
+    removeOptimisticMessage
   };
 }

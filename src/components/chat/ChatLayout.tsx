@@ -39,6 +39,7 @@ export function ChatLayout({
   const [initialMessages, setInitialMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const isSendingRef = useRef(false);
 
   // Hook Supabase Realtime
   const {
@@ -47,7 +48,9 @@ export function ChatLayout({
     sendTypingSignal,
     sendStopTypingSignal,
     broadcastNewMessage,
-    addOptimisticMessage
+    addOptimisticMessage,
+    confirmOptimisticMessage,
+    removeOptimisticMessage
   } = useSupabaseRealtime(activeConversationId, currentUserId, initialMessages);
 
   // 1. Tải danh sách conversations
@@ -99,9 +102,13 @@ export function ChatLayout({
   // Xử lý gửi tin nhắn
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    const text = inputText.trim();
-    if (!text || !activeConversationId || isSending) return;
+    if (isSendingRef.current) return;
 
+    const text = inputText.trim();
+    if (!text || !activeConversationId) return;
+
+    isSendingRef.current = true;
+    setIsSending(true);
     setInputText('');
     sendStopTypingSignal();
 
@@ -118,17 +125,31 @@ export function ChatLayout({
     };
     addOptimisticMessage(optimisticMsg);
 
-    setIsSending(true);
-    const res = await sendMessage(activeConversationId, text);
-    setIsSending(false);
+    try {
+      const res = await sendMessage(activeConversationId, text);
 
-    if (res?.error) {
-      toast.error(res.error);
-    } else if (res?.message) {
-      // Broadcast ngay lập tức cho partner qua WebSocket
-      broadcastNewMessage(res.message);
-      // Cập nhật lại danh sách hội thoại để cập nhật preview tin nhắn cuối
-      loadConversations(false);
+      if (res?.error) {
+        toast.error(res.error);
+        removeOptimisticMessage(tempId);
+      } else if (res?.message) {
+        confirmOptimisticMessage(tempId, res.message);
+        // Broadcast ngay lập tức cho partner qua WebSocket
+        broadcastNewMessage(res.message);
+        // Cập nhật lại danh sách hội thoại để cập nhật preview tin nhắn cuối
+        loadConversations(false);
+      }
+    } catch (err: any) {
+      toast.error('Lỗi khi gửi tin nhắn: ' + (err?.message || 'Vui lòng thử lại'));
+      removeOptimisticMessage(tempId);
+    } finally {
+      isSendingRef.current = false;
+      setIsSending(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && e.nativeEvent.isComposing) {
+      e.preventDefault();
     }
   };
 
@@ -257,6 +278,7 @@ export function ChatLayout({
                   placeholder="Nhập tin nhắn..."
                   value={inputText}
                   onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
                   className="flex-1 h-10 px-4 rounded-full border border-border/60 bg-muted/40 focus:bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-muted-foreground"
                   autoFocus
                 />
