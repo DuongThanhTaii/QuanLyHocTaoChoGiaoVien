@@ -101,15 +101,16 @@ export class InvoiceService {
     }
 
     // 3. Lấy tất cả các buổi học trong tháng
-    const startDate = new Date(year, month - 1, 1).toISOString();
-    const endDate = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+    const startDateLocal = `${year}-${String(month).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDateLocal = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
     const { data: sessions } = await this.supabase
       .from('class_sessions')
       .select('id, session_date, title, status')
       .eq('class_id', classId)
-      .gte('session_date', startDate.split('T')[0])
-      .lte('session_date', endDate.split('T')[0])
+      .gte('session_date', startDateLocal)
+      .lte('session_date', endDateLocal)
       .order('session_date', { ascending: true });
 
     const classSessions = sessions || [];
@@ -127,8 +128,8 @@ export class InvoiceService {
       .from('invoices')
       .select('id, student_id, status, total_amount, period_start, period_end')
       .eq('class_id', classId)
-      .gte('period_start', startDate.split('T')[0])
-      .lte('period_end', endDate.split('T')[0]);
+      .gte('period_start', startDateLocal)
+      .lte('period_end', endDateLocal);
 
     const existingMap = new Map<string, any>();
     (existingInvoices || []).forEach(inv => {
@@ -158,7 +159,7 @@ export class InvoiceService {
 
       for (const session of classSessions) {
         const att = studentAttendance.find(a => a.session_id === session.id);
-        const status = att ? att.status : 'not_marked';
+        const status = att ? String(att.status).toLowerCase() : 'not_marked';
         
         if (status === 'present') presentCount++;
         else if (status === 'late') lateCount++;

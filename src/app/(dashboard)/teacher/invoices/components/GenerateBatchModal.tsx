@@ -165,7 +165,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pr-6">
           <DialogTitle className="text-xl font-bold">
             Sinh Hóa đơn Tự động theo Lớp
@@ -272,7 +272,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                     <TableRow>
                       <TableHead className="w-10 text-center"></TableHead>
                       <TableHead className="text-xs font-semibold">Học sinh</TableHead>
-                      <TableHead className="text-xs font-semibold text-center">Điểm danh (Có mặt / Phép / Vắng)</TableHead>
+                      <TableHead className="text-xs font-semibold text-center">Điểm danh</TableHead>
                       <TableHead className="text-xs font-semibold text-center">Số buổi tính phí</TableHead>
                       <TableHead className="text-xs font-semibold text-right">Đơn giá</TableHead>
                       <TableHead className="text-xs font-semibold text-right">Miễn giảm</TableHead>
@@ -295,7 +295,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                             />
                           </TableCell>
                           <TableCell>
-                            <div className="font-semibold text-zinc-900 dark:text-zinc-100">{item.fullName}</div>
+                            <div className="font-semibold text-zinc-900 dark:text-zinc-100">{item.studentName}</div>
                             {item.phone && <div className="text-[10px] text-zinc-400">{item.phone}</div>}
                           </TableCell>
                           <TableCell className="text-center">
@@ -327,22 +327,20 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                           </TableCell>
                           <TableCell className="text-right">
                             <Input
-                              type="number"
-                              step="10000"
-                              value={item.unitPrice}
+                              type="text"
+                              value={item.unitPrice ? Number(item.unitPrice).toLocaleString('vi-VN') : ''}
                               disabled={hasInvoice || !isSelected}
-                              onChange={(e) => handleItemChange(item.studentId, 'unitPrice', Number(e.target.value))}
+                              onChange={(e) => handleItemChange(item.studentId, 'unitPrice', Number(e.target.value.replace(/\D/g, '')))}
                               className="w-24 text-right text-xs h-7 ml-auto font-mono"
                             />
                           </TableCell>
                           <TableCell className="text-right">
                             <Input
-                              type="number"
-                              step="10000"
-                              value={item.discount || ''}
+                              type="text"
+                              value={item.discount ? Number(item.discount).toLocaleString('vi-VN') : ''}
                               placeholder="0"
                               disabled={hasInvoice || !isSelected}
-                              onChange={(e) => handleItemChange(item.studentId, 'discount', Number(e.target.value))}
+                              onChange={(e) => handleItemChange(item.studentId, 'discount', Number(e.target.value.replace(/\D/g, '')))}
                               className="w-20 text-right text-xs h-7 ml-auto font-mono"
                             />
                           </TableCell>
