@@ -37,23 +37,31 @@ export default async function TeacherStats() {
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <Card>
+      <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Tổng số lớp học</CardTitle>
-          <BookOpen className="h-4 w-4 text-zinc-500" />
+          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Tổng số lớp học</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+            <BookOpen className="w-3 h-3" />
+            <span>Đang dạy</span>
+          </span>
         </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold tracking-tight text-zinc-900">{classes.length}</div>
+        <CardContent className="space-y-1">
+          <div className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">{classes.length}</div>
+          <p className="text-xs text-zinc-500">Lớp học đang hoạt động</p>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Lịch dạy hôm nay</CardTitle>
-          <Calendar className="h-4 w-4 text-zinc-500" />
+          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Lịch dạy hôm nay</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <Calendar className="w-3 h-3" />
+            <span>Hôm nay</span>
+          </span>
         </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold tracking-tight text-zinc-900">{todaySlotsCount}</div>
+        <CardContent className="space-y-1">
+          <div className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">{todaySlotsCount}</div>
+          <p className="text-xs text-zinc-500">Buổi dạy theo thời khóa biểu</p>
         </CardContent>
       </Card>
     </div>

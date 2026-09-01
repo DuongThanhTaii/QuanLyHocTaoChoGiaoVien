@@ -187,52 +187,61 @@ export default async function StudentClassPage({ params }: { params: Promise<{ i
       {/* 3 Thẻ thống kê tổng quan nhanh */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Sĩ số lớp */}
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               Sĩ số lớp
-            </CardTitle>
-            <Users className="w-4 h-4 text-blue-500" />
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+              <Users className="w-3 h-3" />
+              <span>Thành viên</span>
+            </span>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
               {studentCount || 0}
             </div>
-            <p className="text-xs text-zinc-500 mt-1">Học sinh đang theo học</p>
+            <p className="text-xs text-zinc-500">Học sinh đang theo học</p>
           </CardContent>
         </Card>
 
         {/* Chuyên cần */}
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               Chuyên cần của bạn
-            </CardTitle>
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            </span>
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="w-3 h-3" />
+              <span>{attendanceRate}%</span>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
               {attendanceRate}%
             </div>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-zinc-500">
               {attendanceTotal > 0 ? `Có mặt ${attendancePresent}/${attendanceTotal} buổi` : 'Chưa có buổi học ghi nhận'}
             </p>
           </CardContent>
         </Card>
 
         {/* Đánh giá gần nhất */}
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               Đánh giá gần nhất
-            </CardTitle>
-            <Sparkles className="w-4 h-4 text-purple-500" />
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+              <Sparkles className="w-3 h-3" />
+              <span>Giáo viên</span>
+            </span>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
+          <CardContent className="space-y-1">
+            <div className="text-3xl font-extrabold tracking-tight text-purple-600 dark:text-purple-400 truncate">
               {latestEvaluation ? (ratingBadgeMap[latestEvaluation.rating]?.label || 'Tốt') : '—'}
             </div>
-            <p className="text-xs text-zinc-500 mt-1 truncate">
+            <p className="text-xs text-zinc-500 truncate">
               {latestEvaluation?.comment ? `"${latestEvaluation.comment}"` : 'Chưa có nhận xét mới'}
             </p>
           </CardContent>

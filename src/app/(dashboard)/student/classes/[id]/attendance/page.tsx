@@ -73,53 +73,76 @@ export default async function StudentAttendancePage({ params }: { params: Promis
         </h2>
       </div>
 
-      {/* Thẻ tóm tắt chuyên cần cá nhân */}
+      {/* Thẻ tóm tắt chuyên cần cá nhân theo phong cách chuẩn Shadcn Dashboard */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               Tổng buổi học
             </span>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+              Tất cả
+            </span>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
               {myTotal}
             </div>
-            <p className="text-[11px] text-zinc-400">Đã điểm danh</p>
+            <p className="text-xs text-zinc-500">Đã được giáo viên điểm danh</p>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Có mặt
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Có mặt
             </span>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="w-3 h-3" />
+              <span>{myRate}%</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
               {myPresent}
             </div>
-            <p className="text-[11px] text-zinc-400">Tỷ lệ: {myRate}%</p>
+            <p className="text-xs text-zinc-500">Tỷ lệ chuyên cần {myRate}%</p>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" /> Đi trễ
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Đi muộn
             </span>
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <Clock className="w-3 h-3" />
+              <span>Vào trễ</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
               {myLate}
             </div>
-            <p className="text-[11px] text-zinc-400">Buổi vào trễ</p>
+            <p className="text-xs text-zinc-500">{myLate > 0 ? 'Cần chú ý vào lớp đúng giờ' : 'Không có buổi nào trễ'}</p>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1">
-              <XCircle className="w-3.5 h-3.5" /> Vắng
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Vắng mặt
             </span>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+              <XCircle className="w-3 h-3" />
+              <span>Nghỉ học</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-red-600 dark:text-red-400">
               {myAbsent}
             </div>
-            <p className="text-[11px] text-zinc-400">Buổi nghỉ học</p>
+            <p className="text-xs text-zinc-500">{myAbsent > 0 ? 'Có buổi vắng trong kỳ học' : 'Tham gia đầy đủ các buổi'}</p>
           </CardContent>
         </Card>
       </div>

@@ -124,50 +124,59 @@ export default async function ClassOverviewPage({ params }: { params: Promise<{ 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Thẻ 1: Học sinh */}
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Học sinh
-            </CardTitle>
-            <Users className="w-4 h-4 text-zinc-400" />
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Học sinh trong lớp
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+              <Users className="w-3 h-3" />
+              <span>Sĩ số</span>
+            </span>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
               {studentCount}
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1">Đang theo học trong lớp</p>
+            <p className="text-xs text-zinc-500">Đang theo học chính thức</p>
           </CardContent>
         </Card>
         
         {/* Thẻ 2: Buổi học tới */}
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               Buổi học tới
-            </CardTitle>
-            <Calendar className="w-4 h-4 text-zinc-400" />
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+              <Calendar className="w-3 h-3" />
+              <span>Lịch dạy</span>
+            </span>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 truncate">
+          <CardContent className="space-y-1">
+            <div className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
               {nextSessionText}
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1 truncate">{nextSessionSubtext}</p>
+            <p className="text-xs text-zinc-500 truncate">{nextSessionSubtext}</p>
           </CardContent>
         </Card>
 
         {/* Thẻ 3: Tỷ lệ đóng học phí */}
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-xs bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <Card className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               Tỷ lệ đóng học phí
-            </CardTitle>
-            <Banknote className="w-4 h-4 text-zinc-400" />
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <Banknote className="w-3 h-3" />
+              <span>Học phí</span>
+            </span>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+          <CardContent className="space-y-1">
+            <div className="text-4xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
               {tuitionText}
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1 truncate">{tuitionSubtext}</p>
+            <p className="text-xs text-zinc-500 truncate">{tuitionSubtext}</p>
           </CardContent>
         </Card>
       </div>
