@@ -196,7 +196,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
   }
 
   async function handleDelete(invoiceId: string) {
-    if (!confirm('Bạn có chắc chắn muốn xóa hóa đơn nháp này?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa hóa đơn này? Thao tác này không thể hoàn tác.')) return;
     try {
       await deleteInvoiceAction(invoiceId);
       setInvoices(prev => prev.filter(i => i.id !== invoiceId));
@@ -603,14 +603,14 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
                               <Share2 className="w-4 h-4" />
                             </Button>
 
-                            {/* Nút xóa bản nháp */}
-                            {inv.status === 'draft' && (
+                            {/* Nút xóa hóa đơn */}
+                            {!isPaid && (
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => handleDelete(inv.id)}
-                                className="h-8 w-8 text-zinc-400 hover:text-red-600"
-                                title="Xóa hóa đơn nháp"
+                                className="h-8 w-8 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                                title="Xóa hóa đơn"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
