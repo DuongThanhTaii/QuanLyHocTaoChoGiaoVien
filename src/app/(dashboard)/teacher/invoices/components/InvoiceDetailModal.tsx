@@ -272,76 +272,77 @@ export function InvoiceDetailModal({
             </div>
 
             {/* Tổng kết tài chính & VietQR */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-              {/* Bên trái: Mã VietQR hoặc thông tin đã thanh toán */}
-              <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col justify-center">
-                {isPaid ? (
-                  <div className="text-center py-4 space-y-2">
-                    <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center mx-auto">
-                      <CheckCircle2 className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-bold text-emerald-700 dark:text-emerald-400">Hóa đơn đã được thanh toán</h4>
-                    <p className="text-xs text-zinc-500">
-                      Thời gian: {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('vi-VN') : 'Đã ghi nhận'}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      Hình thức: {invoice.payment_method === 'cash' ? '💵 Tiền mặt' : '💳 Chuyển khoản ngân hàng'}
-                    </p>
-                  </div>
-                ) : vietQrUrl ? (
-                  <div className="flex flex-col lg:flex-row items-center gap-6 p-2">
-                    <img
-                      src={vietQrUrl}
-                      alt="VietQR Học phí"
-                      className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded-2xl border border-zinc-200 shadow-md bg-white p-2"
-                    />
-                    <div className="space-y-1.5 text-sm text-center lg:text-left">
-                      <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-center lg:justify-start gap-1 text-base">
-                        <QrCode className="w-5 h-5 text-blue-600" /> Quét mã thanh toán
-                      </div>
-                      <p className="text-zinc-500">Ngân hàng: <b>{bankAccount.bank_name}</b></p>
-                      <p className="text-zinc-500">STK: <b className="font-mono text-zinc-900 dark:text-zinc-100 text-base">{bankAccount.account_number}</b></p>
-                      <p className="text-zinc-500">Chủ TK: <b>{bankAccount.account_name}</b></p>
-                      <p className="text-[12px] text-emerald-600 font-semibold mt-2 bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-lg inline-block">
-                        App ngân hàng sẽ tự điền đúng số tiền và cú pháp
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-4 text-xs text-zinc-500">
-                    Chưa cài đặt tài khoản ngân hàng để tạo mã QR.
-                  </div>
-                )}
-              </div>
-
-              {/* Bên phải: Bảng cộng tổng */}
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b text-zinc-600 dark:text-zinc-400">
+            <div className="flex flex-col gap-8 pt-4">
+              
+              {/* Phần 1: Bảng cộng tổng (Nằm trên, rộng hết ngang) */}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between py-2 border-b text-zinc-600 dark:text-zinc-400">
                   <span>Tạm tính:</span>
-                  <span className="font-semibold">{Number(invoice.subtotal).toLocaleString('vi-VN')} đ</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{Number(invoice.subtotal).toLocaleString('vi-VN')} đ</span>
                 </div>
                 {Number(invoice.discount) > 0 && (
-                  <div className="flex justify-between py-1 border-b text-red-600">
+                  <div className="flex justify-between py-2 border-b text-red-600">
                     <span>Giảm trừ / Học bổng:</span>
                     <span className="font-semibold">-{Number(invoice.discount).toLocaleString('vi-VN')} đ</span>
                   </div>
                 )}
                 {Number(invoice.extra_fee) > 0 && (
-                  <div className="flex justify-between py-1 border-b text-zinc-600">
+                  <div className="flex justify-between py-2 border-b text-zinc-600">
                     <span>Phụ thu / Tài liệu:</span>
                     <span className="font-semibold">+{Number(invoice.extra_fee).toLocaleString('vi-VN')} đ</span>
                   </div>
                 )}
-                <div className="flex justify-between py-2 border-b-2 border-zinc-900 dark:border-zinc-100 text-sm font-bold">
+                <div className="flex justify-between py-4 border-b-2 border-zinc-900 dark:border-zinc-100 text-base font-bold">
                   <span className="text-zinc-900 dark:text-zinc-100">Tổng thanh toán:</span>
-                  <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+                  <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
                     {Number(invoice.total_amount).toLocaleString('vi-VN')} đ
                   </span>
                 </div>
 
                 {customNotes && (
-                  <div className="bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-lg border border-amber-200/50 text-[11px] text-amber-900 dark:text-amber-200 mt-2">
+                  <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-xl border border-amber-200/50 text-sm text-amber-900 dark:text-amber-200 mt-4">
                     <b>Ghi chú:</b> {customNotes}
+                  </div>
+                )}
+              </div>
+
+              {/* Phần 2: Mã VietQR hoặc thông tin đã thanh toán (Nằm dưới) */}
+              <div className="bg-zinc-50 dark:bg-zinc-950 p-6 sm:p-8 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center">
+                {isPaid ? (
+                  <div className="text-center py-4 space-y-3">
+                    <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="w-7 h-7" />
+                    </div>
+                    <h4 className="text-lg font-bold text-emerald-700 dark:text-emerald-400">Hóa đơn đã được thanh toán</h4>
+                    <p className="text-sm text-zinc-500">
+                      Thời gian: {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('vi-VN') : 'Đã ghi nhận'}
+                    </p>
+                    <p className="text-sm text-zinc-500">
+                      Hình thức: {invoice.payment_method === 'cash' ? '💵 Tiền mặt' : '💳 Chuyển khoản ngân hàng'}
+                    </p>
+                  </div>
+                ) : vietQrUrl ? (
+                  <div className="flex flex-col sm:flex-row items-center gap-8 w-full max-w-2xl mx-auto">
+                    <img
+                      src={vietQrUrl}
+                      alt="VietQR Học phí"
+                      className="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-2xl border border-zinc-200 shadow-md bg-white p-2 shrink-0"
+                    />
+                    <div className="space-y-2 text-base text-center sm:text-left flex-1">
+                      <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-center sm:justify-start gap-1.5 text-lg">
+                        <QrCode className="w-6 h-6 text-blue-600" /> Quét mã thanh toán
+                      </div>
+                      <p className="text-zinc-500">Ngân hàng: <b>{bankAccount.bank_name}</b></p>
+                      <p className="text-zinc-500">STK: <b className="font-mono text-zinc-900 dark:text-zinc-100 text-xl">{bankAccount.account_number}</b></p>
+                      <p className="text-zinc-500">Chủ TK: <b>{bankAccount.account_name}</b></p>
+                      <div className="mt-4 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-100 text-sm text-emerald-700 font-semibold inline-block text-left">
+                        💡 App ngân hàng sẽ tự điền đúng số tiền và cú pháp chuyển khoản.
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-sm text-zinc-500">
+                    Chưa cài đặt tài khoản ngân hàng để tạo mã QR.
                   </div>
                 )}
               </div>
