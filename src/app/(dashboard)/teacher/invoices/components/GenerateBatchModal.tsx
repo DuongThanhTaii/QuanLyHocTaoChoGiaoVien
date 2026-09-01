@@ -170,9 +170,6 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
           <DialogTitle className="text-xl font-bold">
             Sinh Hóa đơn Tự động theo Lớp
           </DialogTitle>
-          <DialogDescription>
-            Hệ thống tự động quét nhật ký điểm danh trong tháng, tính toán chính xác số buổi học và học phí cho từng học sinh.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
