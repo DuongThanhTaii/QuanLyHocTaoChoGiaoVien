@@ -245,9 +245,6 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
             <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               Quản lý Hóa đơn & Học phí
             </h1>
-            <p className="text-xs text-zinc-500 mt-1">
-              Theo dõi phiếu thu, phát hành hóa đơn và đối soát công nợ theo từng kỳ học.
-            </p>
           </div>
 
           {/* Bộ chọn Kỳ / Tháng học phí */}
