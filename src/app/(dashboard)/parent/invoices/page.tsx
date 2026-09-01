@@ -13,8 +13,14 @@ export default async function ParentInvoicesPage() {
 
   if (!user) return null;
 
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   // 1. Lấy guardian profile
-  const { data: guardian } = await supabase
+  const { data: guardian } = await supabaseAdmin
     .from('guardians')
     .select('id')
     .eq('user_id', user.id)
@@ -23,7 +29,7 @@ export default async function ParentInvoicesPage() {
   let studentIds: string[] = [];
 
   if (guardian) {
-    const { data: links } = await supabase
+    const { data: links } = await supabaseAdmin
       .from('student_guardians')
       .select('student_id')
       .eq('guardian_id', guardian.id);
@@ -33,12 +39,6 @@ export default async function ParentInvoicesPage() {
 
   let invoices: any[] = [];
   if (studentIds.length > 0) {
-    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     const { data } = await supabaseAdmin
       .from('invoices')
       .select(`

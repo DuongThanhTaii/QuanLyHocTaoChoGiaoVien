@@ -13,8 +13,14 @@ export default async function StudentInvoicesPage() {
 
   if (!user) return null;
 
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   // Lấy các student ID của user này
-  const { data: students } = await supabase
+  const { data: students } = await supabaseAdmin
     .from('students')
     .select('id')
     .eq('user_id', user.id);
@@ -23,12 +29,6 @@ export default async function StudentInvoicesPage() {
 
   let invoices: any[] = [];
   if (studentIds.length > 0) {
-    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     const { data } = await supabaseAdmin
       .from('invoices')
       .select(`
