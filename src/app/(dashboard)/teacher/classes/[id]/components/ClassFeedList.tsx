@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -78,13 +79,18 @@ export function ClassFeedList({ classId, items }: { classId: string; items: Feed
       {/* Danh sách các bài giảng & thông báo */}
       <CardContent className="divide-y divide-zinc-100 dark:divide-zinc-800/80 p-0">
         {items.length === 0 ? (
-          <div className="text-center py-10 px-4 flex flex-col items-center justify-center space-y-3">
-            <img
-              src="/images/empty_states/empty.png"
-              alt="Chưa có thông báo"
-              className="w-24 h-24 object-contain mx-auto"
-            />
-            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+          <div className="text-center py-10 px-4 flex flex-col items-center justify-center">
+            <div className="relative mb-2 flex flex-col items-center">
+              <Image
+                src="/images/empty_states/empty.png"
+                alt="Chưa có thông báo"
+                width={140}
+                height={140}
+                className="w-28 h-28 object-contain relative z-10"
+              />
+              <div className="w-24 h-2 bg-zinc-400/40 dark:bg-zinc-600/40 rounded-[50%] blur-[2px] -mt-[22px] z-0" />
+            </div>
+            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300 mt-1">
               Chưa có bài giảng, tài liệu hoặc thông báo nào trước đó.
             </p>
           </div>
