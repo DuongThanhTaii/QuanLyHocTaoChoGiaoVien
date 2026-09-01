@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { CheckCircle2, Clock, XCircle, ShieldAlert, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, ShieldAlert, AlertCircle, Calendar as CalendarIcon, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { markAttendance } from '../../attendance-actions';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { markAttendance, createMakeupSession } from '../../attendance-actions';
 import { toast } from 'sonner';
-import { format, subDays } from 'date-fns';
+import { format, subDays, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 type Student = {
   id: string;
@@ -49,6 +53,14 @@ export function AttendanceManager({
   
   const [attendanceState, setAttendanceState] = useState<Record<string, { status: string; note: string }>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  
+  // States for Makeup Session form
+  const [makeupStart, setMakeupStart] = useState('19:00');
+  const [makeupEnd, setMakeupEnd] = useState('21:00');
+  const [makeupNote, setMakeupNote] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Update local state when initialAttendance changes (e.g. user selected a new date)
   useEffect(() => {
@@ -60,11 +72,13 @@ export function AttendanceManager({
     );
   }, [initialAttendance, students]);
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newDate = e.target.value;
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    const newDateStr = format(date, 'yyyy-MM-dd');
     const params = new URLSearchParams(searchParams.toString());
-    params.set('date', newDate);
+    params.set('date', newDateStr);
     router.push(`${pathname}?${params.toString()}`);
+    setIsCalendarOpen(false);
   };
 
   const handleStatusChange = (studentId: string, status: string) => {
@@ -126,6 +140,30 @@ export function AttendanceManager({
     });
   };
 
+  const handleCreateMakeupSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreatingSession(true);
+    
+    const formData = new FormData();
+    formData.append('classId', classId);
+    formData.append('date', selectedDateStr);
+    formData.append('startTime', makeupStart);
+    formData.append('endTime', makeupEnd);
+    formData.append('note', makeupNote);
+    
+    const res = await createMakeupSession(formData);
+    
+    setIsCreatingSession(false);
+    if (res?.success) {
+      toast.success('Tạo buổi học thành công', { description: 'Bây giờ bạn có thể điểm danh.' });
+      setIsDialogOpen(false);
+      // Force reload to get the new session
+      window.location.reload(); 
+    } else {
+      toast.error('Lỗi', { description: res?.error || 'Không thể tạo buổi học' });
+    }
+  };
+
   const StatusButton = ({ studentId, value, icon: Icon, label }: { studentId: string, value: 'present'|'late'|'absent'|'excused', icon: any, label: string }) => {
     const isSelected = attendanceState[studentId]?.status === value;
     const colors = statusColors[value];
@@ -146,62 +184,102 @@ export function AttendanceManager({
     );
   };
 
-  // Generate recent 14 days for the selector
-  const recentDays = Array.from({ length: 14 }).map((_, i) => {
-    const date = subDays(new Date(), i);
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const dayOfWeek = date.getDay();
-    const hasSchedule = scheduleDays.includes(dayOfWeek);
-    return {
-      dateStr,
-      label: format(date, 'EEEE, dd/MM/yyyy', { locale: vi }),
-      hasSchedule,
-      isToday: i === 0
-    };
-  });
-
-  // Check if selectedDateStr is in our recentDays list, if not, add it
-  if (!recentDays.find(d => d.dateStr === selectedDateStr)) {
-    const d = new Date(selectedDateStr);
-    recentDays.unshift({
-      dateStr: selectedDateStr,
-      label: format(d, 'EEEE, dd/MM/yyyy', { locale: vi }),
-      hasSchedule: scheduleDays.includes(d.getDay()),
-      isToday: false
-    });
-  }
-
   const selectedDateObj = new Date(selectedDateStr);
   const formattedSelectedDate = format(selectedDateObj, 'dd/MM/yyyy');
+  const dayName = format(selectedDateObj, 'EEEE', { locale: vi });
 
   return (
     <div className="space-y-6">
-      {/* NATIVE SELECTOR (Replacing complex Shadcn Select for simplicity in integration) */}
+      {/* SHADCN MINI CALENDAR & DATE SELECTOR */}
       <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-4">
         <div>
           <h2 className="text-lg font-semibold text-zinc-900 mb-1">Chọn ngày điểm danh</h2>
           <p className="text-sm text-zinc-500 mb-4">Bạn có thể chọn các ngày trong quá khứ để điểm danh bù.</p>
-          <div className="flex items-center gap-2 max-w-sm">
-            <CalendarIcon className="w-5 h-5 text-zinc-400" />
-            <select
-              value={selectedDateStr}
-              onChange={handleDateChange}
-              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {recentDays.map((day) => (
-                <option key={day.dateStr} value={day.dateStr} disabled={day.isToday && !day.hasSchedule && selectedDateStr !== day.dateStr}>
-                  {day.label} {day.isToday && !day.hasSchedule ? '(Không có lịch)' : ''} {!day.isToday && !day.hasSchedule ? '(Ngày nghỉ)' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+          
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[280px] justify-start text-left font-normal",
+                  !selectedDateStr && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDateStr ? `${dayName}, ${formattedSelectedDate}` : <span>Chọn ngày</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDateObj}
+                onSelect={handleDateSelect}
+                locale={vi}
+                initialFocus
+                // Highlight scheduled days by customizing modifiers
+                modifiers={{
+                  scheduled: (date) => scheduleDays.includes(date.getDay())
+                }}
+                modifiersStyles={{
+                  scheduled: { fontWeight: 'bold', textDecoration: 'underline' }
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+          <p className="text-xs text-muted-foreground mt-2 flex gap-4">
+             <span>* Ngày in đậm, gạch dưới là ngày có lịch học cố định.</span>
+          </p>
         </div>
       </div>
 
       {!isScheduled ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md flex items-center gap-2">
-          <AlertCircle className="w-5 h-5" />
-          <span>Ngày <strong>{formattedSelectedDate}</strong> không có trong lịch học cố định. Bạn không thể điểm danh.</span>
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl space-y-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-amber-800">Ngày {formattedSelectedDate} không có trong lịch</h3>
+              <p className="text-amber-700 text-sm mt-1">
+                Nếu bạn có tổ chức dạy bù hoặc học tăng cường vào ngày này, hãy bấm tạo buổi học để ghi nhận điểm danh và tính học phí.
+              </p>
+            </div>
+          </div>
+          
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-amber-600 hover:bg-amber-700 text-white ml-8">
+                <Plus className="w-4 h-4 mr-2" />
+                + Tạo buổi học
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <form onSubmit={handleCreateMakeupSession}>
+                <DialogHeader>
+                  <DialogTitle>Tạo buổi học phát sinh</DialogTitle>
+                  <DialogDescription>
+                    Tạo buổi học vào ngày {formattedSelectedDate} để có thể điểm danh.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="startTime" className="text-right text-sm font-medium">Bắt đầu</label>
+                    <Input id="startTime" type="time" value={makeupStart} onChange={(e) => setMakeupStart(e.target.value)} className="col-span-3" required />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="endTime" className="text-right text-sm font-medium">Kết thúc</label>
+                    <Input id="endTime" type="time" value={makeupEnd} onChange={(e) => setMakeupEnd(e.target.value)} className="col-span-3" required />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="note" className="text-right text-sm font-medium">Ghi chú</label>
+                    <Input id="note" value={makeupNote} onChange={(e) => setMakeupNote(e.target.value)} placeholder="Ví dụ: Dạy bù cho T2" className="col-span-3" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
+                  <Button type="submit" disabled={isCreatingSession}>{isCreatingSession ? 'Đang tạo...' : 'Lưu buổi học'}</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       ) : (
         <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">

@@ -103,3 +103,61 @@ export async function markAttendance(formData: FormData) {
 
   return { error: result.getError().message };
 }
+
+const CreateMakeupSessionSchema = z.object({
+  classId: z.string().uuid(),
+  date: z.string(), // YYYY-MM-DD
+  startTime: z.string(), // HH:mm
+  endTime: z.string(), // HH:mm
+  note: z.string().optional()
+});
+
+export async function createMakeupSession(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || user.user_metadata?.role !== 'teacher') {
+    return { error: 'Unauthorized' };
+  }
+
+  const rawData = {
+    classId: formData.get('classId'),
+    date: formData.get('date'),
+    startTime: formData.get('startTime'),
+    endTime: formData.get('endTime'),
+    note: formData.get('note')
+  };
+
+  const parsed = CreateMakeupSessionSchema.safeParse(rawData);
+  if (!parsed.success) {
+    return { error: 'Invalid data' };
+  }
+
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  
+  // Format times properly for DB
+  const startObj = new Date(`${parsed.data.date}T${parsed.data.startTime}:00`);
+  const endObj = new Date(`${parsed.data.date}T${parsed.data.endTime}:00`);
+  
+  const { data: session, error } = await supabaseAdmin
+    .from('class_sessions')
+    .insert({
+      class_id: parsed.data.classId,
+      schedule_slot_id: null,
+      title: 'Buổi học bù / Phát sinh' + (parsed.data.note ? ` - ${parsed.data.note}` : ''),
+      session_date: parsed.data.date,
+      start_time: `${parsed.data.startTime}:00`,
+      end_time: `${parsed.data.endTime}:00`,
+      status: 'SCHEDULED'
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/teacher/classes/${parsed.data.classId}/attendance`);
+  return { success: true, sessionId: session.id };
+}
