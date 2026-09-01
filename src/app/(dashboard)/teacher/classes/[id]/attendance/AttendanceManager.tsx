@@ -190,150 +190,161 @@ export function AttendanceManager({
 
   return (
     <div className="space-y-6">
-      {/* SHADCN MINI CALENDAR & DATE SELECTOR */}
-      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-900 mb-1">Chọn ngày điểm danh</h2>
-          <p className="text-sm text-zinc-500 mb-4">Bạn có thể chọn các ngày trong quá khứ để điểm danh bù.</p>
+      {/* KHỐI GIAO DIỆN CHÍNH (UNIFIED LAYOUT) */}
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+        
+        {/* HEADER AREA */}
+        <div className="p-5 border-b border-zinc-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-zinc-50/50">
           
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[280px] justify-start text-left font-normal",
-                  !selectedDateStr && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDateStr ? `${dayName}, ${formattedSelectedDate}` : <span>Chọn ngày</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDateObj}
-                onSelect={handleDateSelect}
-                locale={vi}
-                initialFocus
-                // Highlight scheduled days by customizing modifiers
-                modifiers={{
-                  scheduled: (date) => scheduleDays.includes(date.getDay())
-                }}
-                modifiersStyles={{
-                  scheduled: { fontWeight: 'bold', textDecoration: 'underline' }
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-          <p className="text-xs text-muted-foreground mt-2 flex gap-4">
-             <span>* Ngày in đậm, gạch dưới là ngày có lịch học cố định.</span>
-          </p>
-        </div>
-      </div>
-
-      {!isScheduled ? (
-        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl space-y-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-            <div>
-              <h3 className="font-semibold text-amber-800">Ngày {formattedSelectedDate} không có trong lịch</h3>
-              <p className="text-amber-700 text-sm mt-1">
-                Nếu bạn có tổ chức dạy bù hoặc học tăng cường vào ngày này, hãy bấm tạo buổi học để ghi nhận điểm danh và tính học phí.
-              </p>
-            </div>
-          </div>
-          
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-amber-600 hover:bg-amber-700 text-white ml-8">
-                <Plus className="w-4 h-4 mr-2" />
-                + Tạo buổi học
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <form onSubmit={handleCreateMakeupSession}>
-                <DialogHeader>
-                  <DialogTitle>Tạo buổi học phát sinh</DialogTitle>
-                  <DialogDescription>
-                    Tạo buổi học vào ngày {formattedSelectedDate} để có thể điểm danh.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="startTime" className="text-right text-sm font-medium">Bắt đầu</label>
-                    <Input id="startTime" type="time" value={makeupStart} onChange={(e) => setMakeupStart(e.target.value)} className="col-span-3" required />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="endTime" className="text-right text-sm font-medium">Kết thúc</label>
-                    <Input id="endTime" type="time" value={makeupEnd} onChange={(e) => setMakeupEnd(e.target.value)} className="col-span-3" required />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="note" className="text-right text-sm font-medium">Ghi chú</label>
-                    <Input id="note" value={makeupNote} onChange={(e) => setMakeupNote(e.target.value)} placeholder="Ví dụ: Dạy bù cho T2" className="col-span-3" />
-                  </div>
+          {/* Cụm Bên Trái: Tiêu đề + Nút chọn ngày + Giờ học */}
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-lg font-bold text-zinc-900 tracking-tight">Điểm danh</h2>
+            
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "h-9 font-medium shadow-xs",
+                    !selectedDateStr && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500" />
+                  {selectedDateStr ? `${dayName}, ${formattedSelectedDate}` : <span>Chọn ngày</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDateObj}
+                  onSelect={handleDateSelect}
+                  locale={vi}
+                  initialFocus
+                  modifiers={{
+                    scheduled: (date) => scheduleDays.includes(date.getDay())
+                  }}
+                  modifiersStyles={{
+                    scheduled: { fontWeight: 'bold', textDecoration: 'underline' }
+                  }}
+                />
+                <div className="p-3 border-t border-zinc-100 bg-zinc-50/50">
+                  <p className="text-[11px] text-zinc-500 font-medium">
+                    * Ngày in đậm, gạch dưới là ngày có lịch cố định.
+                  </p>
                 </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
-                  <Button type="submit" disabled={isCreatingSession}>{isCreatingSession ? 'Đang tạo...' : 'Lưu buổi học'}</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ) : (
-        <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-zinc-900">Điểm danh ngày {formattedSelectedDate}</h2>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={markAllPresent} disabled={isSubmitting || students.length === 0}>
+              </PopoverContent>
+            </Popover>
+
+            {isScheduled && (
+              <span className="inline-flex items-center rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700">
+                <Clock className="w-3.5 h-3.5 mr-1.5 text-zinc-500" />
+                {timeRange}
+              </span>
+            )}
+          </div>
+
+          {/* Cụm Bên Phải: Nút hành động (chỉ hiện khi có lịch) */}
+          {isScheduled && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={markAllPresent} disabled={isSubmitting || students.length === 0} className="h-9">
                 <CheckCircle2 className="w-4 h-4 mr-2 text-green-600" />
                 Đánh dấu tất cả Có mặt
               </Button>
-              <Button onClick={handleSaveAll} disabled={isSubmitting || students.length === 0}>
+              <Button size="sm" onClick={handleSaveAll} disabled={isSubmitting || students.length === 0} className="h-9 bg-zinc-900 hover:bg-zinc-800 text-white shadow-xs">
                 {isSubmitting ? 'Đang lưu...' : 'Lưu điểm danh'}
               </Button>
             </div>
-          </div>
-
-          <div className="bg-zinc-50 p-4 rounded-lg flex justify-between items-center border border-zinc-100">
-            <div>
-              <p className="font-semibold text-zinc-700">Giờ học: {timeRange}</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {students.length === 0 ? (
-              <div className="text-center py-8 text-zinc-500">
-                Chưa có học sinh nào trong lớp
-              </div>
-            ) : (
-              students.map((student) => (
-                <div key={student.id} className="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-100 pb-4 gap-4">
-                  <div className="font-medium text-zinc-800">{student.name}</div>
-                  
-                  <div className="flex flex-wrap md:flex-nowrap gap-4 items-center">
-                    <div className="flex gap-2">
-                      <StatusButton studentId={student.id} value="present" icon={CheckCircle2} label="Có mặt" />
-                      <StatusButton studentId={student.id} value="late" icon={Clock} label="Đi trễ" />
-                      <StatusButton studentId={student.id} value="absent" icon={XCircle} label="Vắng" />
-                      <StatusButton studentId={student.id} value="excused" icon={ShieldAlert} label="Có phép" />
-                    </div>
-                    
-                    <Input 
-                      type="text" 
-                      placeholder="Ghi chú..." 
-                      value={attendanceState[student.id]?.note || ''}
-                      onChange={(e) => handleNoteChange(student.id, e.target.value)}
-                      className="w-full md:w-48 h-14"
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          )}
         </div>
-      )}
+
+        {/* BODY AREA */}
+        <div className="p-6">
+          {!isScheduled ? (
+            // TRẠNG THÁI KHÔNG CÓ LỊCH (EMPTY STATE)
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4 border border-amber-100 shadow-sm">
+                <AlertCircle className="w-8 h-8 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-zinc-900 mb-2">Ngày {formattedSelectedDate} không có lịch</h3>
+              <p className="text-sm text-zinc-500 max-w-md mx-auto mb-6 leading-relaxed">
+                Hệ thống không tìm thấy lịch học cố định nào cho ngày này. Nếu bạn có tổ chức dạy bù hoặc học tăng cường, vui lòng khởi tạo buổi học để tiến hành điểm danh.
+              </p>
+              
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-amber-500 hover:bg-amber-600 text-white shadow-xs px-6">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Tạo buổi học
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <form onSubmit={handleCreateMakeupSession}>
+                    <DialogHeader>
+                      <DialogTitle>Tạo buổi học phát sinh</DialogTitle>
+                      <DialogDescription>
+                        Tạo buổi học vào ngày {formattedSelectedDate} để có thể điểm danh.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="startTime" className="text-right text-sm font-medium">Bắt đầu</label>
+                        <Input id="startTime" type="time" value={makeupStart} onChange={(e) => setMakeupStart(e.target.value)} className="col-span-3" required />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="endTime" className="text-right text-sm font-medium">Kết thúc</label>
+                        <Input id="endTime" type="time" value={makeupEnd} onChange={(e) => setMakeupEnd(e.target.value)} className="col-span-3" required />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="note" className="text-right text-sm font-medium">Ghi chú</label>
+                        <Input id="note" value={makeupNote} onChange={(e) => setMakeupNote(e.target.value)} placeholder="Ví dụ: Dạy bù cho T2" className="col-span-3" />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
+                      <Button type="submit" disabled={isCreatingSession}>{isCreatingSession ? 'Đang tạo...' : 'Lưu buổi học'}</Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          ) : (
+            // TRẠNG THÁI CÓ LỊCH -> HIỂN THỊ DANH SÁCH
+            <div className="space-y-4">
+              {students.length === 0 ? (
+                <div className="text-center py-12 text-zinc-500 bg-zinc-50 rounded-lg border border-zinc-100 border-dashed">
+                  Chưa có học sinh nào trong lớp
+                </div>
+              ) : (
+                <div className="divide-y divide-zinc-100">
+                  {students.map((student) => (
+                    <div key={student.id} className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-4 first:pt-0 last:pb-0 hover:bg-zinc-50/50 transition-colors rounded-lg px-2 -mx-2">
+                      <div className="font-semibold text-zinc-800">{student.name}</div>
+                      
+                      <div className="flex flex-wrap md:flex-nowrap gap-4 items-center">
+                        <div className="flex gap-2">
+                          <StatusButton studentId={student.id} value="present" icon={CheckCircle2} label="Có mặt" />
+                          <StatusButton studentId={student.id} value="late" icon={Clock} label="Đi trễ" />
+                          <StatusButton studentId={student.id} value="absent" icon={XCircle} label="Vắng" />
+                          <StatusButton studentId={student.id} value="excused" icon={ShieldAlert} label="Có phép" />
+                        </div>
+                        
+                        <Input 
+                          type="text" 
+                          placeholder="Ghi chú..." 
+                          value={attendanceState[student.id]?.note || ''}
+                          onChange={(e) => handleNoteChange(student.id, e.target.value)}
+                          className="w-full md:w-48 h-12 text-sm bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
