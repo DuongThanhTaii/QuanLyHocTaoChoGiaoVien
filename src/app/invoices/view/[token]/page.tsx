@@ -172,12 +172,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
             {/* Header Thương hiệu Giáo viên */}
             <div className="flex items-start justify-between border-b border-zinc-100 dark:border-zinc-800 pb-6">
               <div className="flex items-center gap-3">
-                <div 
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shadow-md"
-                  style={{ backgroundColor: themeColor }}
-                >
-                  {brandName.charAt(0).toUpperCase()}
-                </div>
+
                 <div>
                   <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{brandName}</h2>
                   {contactPhone && (
@@ -199,26 +194,26 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
             </div>
 
             {/* Thông tin Học sinh & Lớp học */}
-            <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/80 space-y-2 text-xs">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/80 space-y-3 text-sm">
               <div className="flex justify-between items-center">
-                <span className="text-zinc-500 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-zinc-400" /> Học sinh:
+                <span className="text-zinc-500 flex items-center gap-2">
+                  <User className="w-4 h-4 text-zinc-400" /> Học sinh:
                 </span>
-                <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                <span className="font-bold text-base text-zinc-900 dark:text-zinc-100">
                   {student?.full_name || 'Học sinh'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-zinc-500 flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5 text-zinc-400" /> Lớp học:
+                <span className="text-zinc-500 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-zinc-400" /> Lớp học:
                 </span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                   {classroom?.name || 'Lớp học'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-zinc-500 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-zinc-400" /> Kỳ tính phí:
+                <span className="text-zinc-500 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-zinc-400" /> Kỳ tính phí:
                 </span>
                 <span className="font-medium text-zinc-700 dark:text-zinc-300">
                   {new Date(invoice.period_start).toLocaleDateString('vi-VN')} – {new Date(invoice.period_end).toLocaleDateString('vi-VN')}
@@ -227,27 +222,27 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
             </div>
 
             {/* Bảng kê chi phí */}
-            <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
               <Table>
-                <TableHeader className="bg-zinc-50 dark:bg-zinc-800/50">
+                <TableHeader className="bg-zinc-100 dark:bg-zinc-800/80">
                   <TableRow>
-                    <TableHead className="text-xs font-semibold text-zinc-600">Nội dung</TableHead>
-                    <TableHead className="text-center text-xs font-semibold text-zinc-600 w-16">SL</TableHead>
-                    <TableHead className="text-right text-xs font-semibold text-zinc-600">Đơn giá</TableHead>
-                    <TableHead className="text-right text-xs font-semibold text-zinc-600">Thành tiền</TableHead>
+                    <TableHead className="text-sm font-bold text-zinc-700 dark:text-zinc-300">Nội dung khoản thu</TableHead>
+                    <TableHead className="text-center text-sm font-bold text-zinc-700 dark:text-zinc-300 w-16">SL</TableHead>
+                    <TableHead className="text-right text-sm font-bold text-zinc-700 dark:text-zinc-300">Đơn giá</TableHead>
+                    <TableHead className="text-right text-sm font-bold text-zinc-700 dark:text-zinc-300">Thành tiền</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {lineItems.map((item, idx) => (
-                    <TableRow key={idx} className="text-xs">
+                    <TableRow key={idx} className="text-sm">
                       <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
                         {item.description}
                       </TableCell>
-                      <TableCell className="text-center">{item.quantity}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-center text-zinc-600">{item.quantity}</TableCell>
+                      <TableCell className="text-right text-zinc-600">
                         {Number(item.unitPrice?.amount ?? item.unitPrice ?? 0).toLocaleString('vi-VN')} đ
                       </TableCell>
-                      <TableCell className="text-right font-bold text-zinc-900 dark:text-zinc-100">
+                      <TableCell className="text-right font-bold text-zinc-900 dark:text-zinc-100 text-base">
                         {Number(item.amount?.amount ?? item.amount ?? 0).toLocaleString('vi-VN')} đ
                       </TableCell>
                     </TableRow>
@@ -257,26 +252,26 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
             </div>
 
             {/* Chi tiết Tổng tiền */}
-            <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-500">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-5 rounded-2xl border border-zinc-100 dark:border-zinc-800 space-y-3 text-sm shadow-sm">
+              <div className="flex justify-between text-zinc-600">
                 <span>Tạm tính:</span>
-                <span className="font-semibold">{Number(invoice.subtotal).toLocaleString('vi-VN')} đ</span>
+                <span className="font-semibold text-base text-zinc-900">{Number(invoice.subtotal).toLocaleString('vi-VN')} đ</span>
               </div>
               {Number(invoice.discount) > 0 && (
                 <div className="flex justify-between text-red-600">
                   <span>Giảm trừ / Học bổng:</span>
-                  <span className="font-semibold">-{Number(invoice.discount).toLocaleString('vi-VN')} đ</span>
+                  <span className="font-bold text-base">-{Number(invoice.discount).toLocaleString('vi-VN')} đ</span>
                 </div>
               )}
               {Number(invoice.extra_fee) > 0 && (
                 <div className="flex justify-between text-zinc-600">
                   <span>Phụ thu khác:</span>
-                  <span className="font-semibold">+{Number(invoice.extra_fee).toLocaleString('vi-VN')} đ</span>
+                  <span className="font-bold text-base">+{Number(invoice.extra_fee).toLocaleString('vi-VN')} đ</span>
                 </div>
               )}
-              <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2 flex justify-between items-center">
-                <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Tổng tiền cần thanh toán:</span>
-                <span className="font-extrabold text-xl text-emerald-600 dark:text-emerald-400">
+              <div className="border-t border-zinc-200 dark:border-zinc-800 pt-3 mt-2 flex justify-between items-center">
+                <span className="font-bold text-base text-zinc-900 dark:text-zinc-100">Tổng tiền thanh toán:</span>
+                <span className="font-black text-2xl text-emerald-600 dark:text-emerald-400">
                   {Number(invoice.total_amount).toLocaleString('vi-VN')} đ
                 </span>
               </div>
@@ -285,9 +280,6 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
             {/* Khu vực Thanh toán QR Code */}
             {!isPaid && bankAccount && vietQrUrl && (
               <div className="bg-gradient-to-b from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200/80 dark:border-blue-900/60 rounded-3xl p-6 text-center space-y-4 shadow-sm">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold">
-                  <QrCode className="w-3.5 h-3.5" /> Quét mã thanh toán tự động (VietQR 24/7)
-                </div>
 
                 <div className="flex justify-center">
                   <div className="bg-white p-3 rounded-2xl shadow-md border border-zinc-100 inline-block">

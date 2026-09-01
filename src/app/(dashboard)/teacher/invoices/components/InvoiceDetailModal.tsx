@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { generateVietQrUrl } from '@/lib/vietqr';
 import { toast } from 'sonner';
 import { 
+  Info,
   Printer, 
   Copy, 
   ExternalLink, 
@@ -335,8 +337,19 @@ export function InvoiceDetailModal({
                       <p className="text-zinc-500">Ngân hàng: <b>{bankAccount.bank_name}</b></p>
                       <p className="text-zinc-500">STK: <b className="font-mono text-zinc-900 dark:text-zinc-100 text-xl">{bankAccount.account_number}</b></p>
                       <p className="text-zinc-500">Chủ TK: <b>{bankAccount.account_name}</b></p>
-                      <div className="mt-4 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-100 text-sm text-emerald-700 font-semibold inline-block text-left">
-                        💡 App ngân hàng sẽ tự điền đúng số tiền và cú pháp chuyển khoản.
+                      <div className="mt-4 flex items-center gap-1.5">
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-full border border-emerald-100 text-emerald-700 cursor-help transition-colors hover:bg-emerald-100">
+                                <Info className="w-5 h-5" />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="bg-emerald-800 text-white max-w-xs text-xs">
+                              <p>App ngân hàng sẽ tự điền đúng số tiền và cú pháp chuyển khoản.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </div>
                   </div>
