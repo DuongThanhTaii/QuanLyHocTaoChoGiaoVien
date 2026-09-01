@@ -33,7 +33,13 @@ export default async function ParentInvoicesPage() {
 
   let invoices: any[] = [];
   if (studentIds.length > 0) {
-    const { data } = await supabase
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data } = await supabaseAdmin
       .from('invoices')
       .select(`
         *,
