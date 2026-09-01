@@ -134,17 +134,15 @@ export default async function ParentInvoicesPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <Link href={`/invoices/view/${paymentToken}`} target="_blank">
-                            <Button size="sm" variant={isPaid ? "outline" : "default"} className={isPaid ? "" : "bg-blue-600 hover:bg-blue-700 text-white"}>
-                              {isPaid ? (
-                                <>
-                                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Xem phiếu
-                                </>
-                              ) : (
-                                <>
-                                  <QrCode className="w-3.5 h-3.5 mr-1" /> Quét VietQR trả ngay
-                                </>
-                              )}
-                            </Button>
+                            {isPaid ? (
+                              <span className="text-emerald-600 hover:text-emerald-700 font-medium text-xs flex items-center justify-end gap-1 underline underline-offset-2">
+                                Xem chi tiết
+                              </span>
+                            ) : (
+                              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                                <QrCode className="w-3.5 h-3.5 mr-1" /> Thanh toán
+                              </Button>
+                            )}
                           </Link>
                         </TableCell>
                       </TableRow>

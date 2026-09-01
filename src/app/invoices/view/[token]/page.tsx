@@ -141,7 +141,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
       <div className="max-w-2xl mx-auto space-y-6">
         
         {/* Banner trạng thái */}
-        {isPaid ? (
+        {isPaid && (
           <div className="bg-emerald-500 text-white p-4 rounded-2xl shadow-md flex items-center gap-3">
             <CheckCircle2 className="w-8 h-8 flex-shrink-0" />
             <div>
@@ -151,17 +151,8 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
               </p>
             </div>
           </div>
-        ) : (
-          <div className="bg-blue-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Clock className="w-6 h-6 flex-shrink-0" />
-              <h3 className="font-bold text-sm">Học phí đang chờ thanh toán</h3>
-            </div>
-            <span className="font-bold text-lg text-white">
-              {Number(invoice.total_amount).toLocaleString('vi-VN')} đ
-            </span>
-          </div>
         )}
+
 
         {/* Thẻ Phiếu Thu Chính */}
         <Card className="border-0 shadow-lg bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
@@ -303,9 +294,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
                   </div>
                 </div>
 
-                <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                  Mở ứng dụng bất kỳ ngân hàng nào (Vietcombank, MB, Techcombank, BIDV, MoMo...) và quét mã trên. Số tiền và nội dung sẽ được tự động điền chính xác.
-                </p>
+
 
                 {/* Các nút copy thông tin chuyển khoản */}
                 <PublicInvoiceClientActions
