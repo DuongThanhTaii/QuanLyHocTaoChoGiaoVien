@@ -113,7 +113,7 @@ export function InvoiceDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0 border-0 shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-0 border-0 shadow-2xl">
         <div className="p-6 md:p-8 space-y-6 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 print:p-0">
           
           {/* Thanh Toolbar thao tác trên đầu */}
@@ -190,12 +190,6 @@ export function InvoiceDetailModal({
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-6">
               <div>
                 <div className="flex items-center gap-3">
-                  <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm"
-                    style={{ backgroundColor: themeColor }}
-                  >
-                    {brandName.charAt(0).toUpperCase()}
-                  </div>
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{brandName}</h2>
                     {contactPhone && <p className="text-xs text-zinc-500">Hotline / Zalo: {contactPhone}</p>}
@@ -295,20 +289,22 @@ export function InvoiceDetailModal({
                     </p>
                   </div>
                 ) : vietQrUrl ? (
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col lg:flex-row items-center gap-6 p-2">
                     <img
                       src={vietQrUrl}
                       alt="VietQR Học phí"
-                      className="w-32 h-32 object-contain rounded-xl border border-zinc-200 shadow-sm bg-white p-1"
+                      className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded-2xl border border-zinc-200 shadow-md bg-white p-2"
                     />
-                    <div className="space-y-1 text-xs">
-                      <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
-                        <QrCode className="w-3.5 h-3.5 text-blue-600" /> Quét mã thanh toán
+                    <div className="space-y-1.5 text-sm text-center lg:text-left">
+                      <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-center lg:justify-start gap-1 text-base">
+                        <QrCode className="w-5 h-5 text-blue-600" /> Quét mã thanh toán
                       </div>
                       <p className="text-zinc-500">Ngân hàng: <b>{bankAccount.bank_name}</b></p>
-                      <p className="text-zinc-500">STK: <b className="font-mono text-zinc-900 dark:text-zinc-100">{bankAccount.account_number}</b></p>
+                      <p className="text-zinc-500">STK: <b className="font-mono text-zinc-900 dark:text-zinc-100 text-base">{bankAccount.account_number}</b></p>
                       <p className="text-zinc-500">Chủ TK: <b>{bankAccount.account_name}</b></p>
-                      <p className="text-[11px] text-emerald-600 font-semibold mt-1">App ngân hàng tự điền đúng số tiền và cú pháp</p>
+                      <p className="text-[12px] text-emerald-600 font-semibold mt-2 bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-lg inline-block">
+                        App ngân hàng sẽ tự điền đúng số tiền và cú pháp
+                      </p>
                     </div>
                   </div>
                 ) : (
