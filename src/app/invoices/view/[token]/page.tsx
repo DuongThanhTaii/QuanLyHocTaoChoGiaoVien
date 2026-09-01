@@ -13,10 +13,14 @@ interface Props {
 
 export default async function PublicInvoiceViewPage({ params }: Props) {
   const { token } = await params;
-  const supabase = await createClient();
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   // 1. Tìm hóa đơn qua payment_token hoặc id
-  const { data: invoiceData, error } = await supabase
+  const { data: invoiceData, error } = await supabaseAdmin
     .from('invoices')
     .select(`
       *,
@@ -52,7 +56,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   const classroom = Array.isArray(invoice.classes) ? invoice.classes[0] : invoice.classes;
 
   // 2. Lấy tài khoản ngân hàng của giáo viên
-  const { data: bankAccount } = await supabase
+  const { data: bankAccount } = await supabaseAdmin
     .from('bank_accounts')
     .select('*')
     .eq('user_id', invoice.teacher_id)
