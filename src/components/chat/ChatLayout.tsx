@@ -250,21 +250,21 @@ export function ChatLayout({
             )}
 
             {/* Input Form */}
-            <div className="p-3 bg-white border-t border-zinc-200">
+            <div className="p-3 bg-card border-t border-border/60">
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 <input
                   type="text"
                   placeholder="Nhập tin nhắn..."
                   value={inputText}
                   onChange={handleInputChange}
-                  className="flex-1 h-10 px-4 rounded-full border border-zinc-200 bg-zinc-50 focus:bg-white text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  className="flex-1 h-10 px-4 rounded-full border border-border/60 bg-muted/40 focus:bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-muted-foreground"
                   autoFocus
                 />
                 <Button
                   type="submit"
                   size="icon"
                   disabled={!inputText.trim() || isSending}
-                  className="rounded-full w-10 h-10 shrink-0 shadow-xs cursor-pointer"
+                  className="rounded-full w-10 h-10 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer active:scale-95 transition-transform disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
@@ -272,12 +272,12 @@ export function ChatLayout({
             </div>
           </>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8 text-zinc-400 bg-zinc-50/30">
-            <div className="p-4 bg-zinc-100 rounded-full mb-3 text-zinc-500">
-              <MessageSquare className="w-8 h-8" />
+          <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-background/50">
+            <div className="p-4 bg-muted/80 rounded-2xl mb-3 text-muted-foreground shadow-2xs border border-border/40">
+              <MessageSquare className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-base font-semibold text-zinc-700">Chọn cuộc trò chuyện</h3>
-            <p className="text-xs text-zinc-500 mt-1 max-w-xs leading-relaxed">
+            <h3 className="text-base font-semibold text-foreground">Chọn cuộc trò chuyện</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs leading-relaxed">
               Chọn một cuộc trò chuyện từ danh sách bên trái hoặc bắt đầu cuộc trò chuyện mới.
             </p>
           </div>
