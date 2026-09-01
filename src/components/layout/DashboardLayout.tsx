@@ -79,7 +79,7 @@ function NavItem({
   return (
     <Link
       href={item.href}
-      title={isCollapsed ? `${item.label}${hasBadge ? ` (${badge})` : ''}` : undefined}
+      title={isCollapsed ? `${item.label}${hasBadge ? ` ${badge}` : ''}` : undefined}
       className={`relative flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group
         ${isActive 
           ? "text-primary bg-primary/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]" 
@@ -99,8 +99,8 @@ function NavItem({
       <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden flex items-center justify-between flex-1 ${isCollapsed ? 'max-w-0 opacity-0' : 'max-w-[200px] opacity-100 ml-3'}`}>
         <span className="z-10">{item.label}</span>
         {hasBadge && (
-          <span className="z-10 font-bold text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20 shadow-2xs ml-1.5">
-            ({badge})
+          <span className="z-10 font-bold text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 shadow-2xs ml-1.5 min-w-[20px] text-center">
+            {badge}
           </span>
         )}
       </div>
@@ -160,6 +160,13 @@ export default function DashboardLayout({
   useEffect(() => {
     fetchUnreadCount();
 
+    const handleChatRead = () => {
+      setUnreadChatCount((prev) => Math.max(0, prev - 1));
+      fetchUnreadCount();
+    };
+
+    window.addEventListener('chat:read', handleChatRead);
+
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -174,9 +181,17 @@ export default function DashboardLayout({
           fetchUnreadCount();
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'conversation_participants' },
+        () => {
+          fetchUnreadCount();
+        }
+      )
       .subscribe();
 
     return () => {
+      window.removeEventListener('chat:read', handleChatRead);
       supabase.removeChannel(channel);
     };
   }, [pathname]);

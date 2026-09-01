@@ -234,6 +234,20 @@ export async function getUserConversations() {
     return { conversations: [] };
   }
 
+  // Lấy các tin nhắn mới nhất để xác định người gửi cuối cùng
+  const { data: latestMsgs } = await admin
+    .from('messages')
+    .select('conversation_id, sender_id, created_at')
+    .in('conversation_id', convIds)
+    .order('created_at', { ascending: false });
+
+  const lastMsgMap = new Map<string, any>();
+  (latestMsgs || []).forEach((m: any) => {
+    if (!lastMsgMap.has(m.conversation_id)) {
+      lastMsgMap.set(m.conversation_id, m);
+    }
+  });
+
   // Format dữ liệu cho Frontend
   const formatted = conversations.map((conv: any) => {
     const myPart = convMap.get(conv.id);
@@ -263,6 +277,9 @@ export async function getUserConversations() {
       }
     }
 
+    const lastMsg = lastMsgMap.get(conv.id);
+    const isSentByMe = lastMsg?.sender_id === user.id;
+
     return {
       id: conv.id,
       type: conv.type,
@@ -273,6 +290,7 @@ export async function getUserConversations() {
       lastMessageText: conv.last_message_text || 'Chưa có tin nhắn',
       lastReadAt: myPart?.last_read_at || null,
       isUnread: Boolean(
+        !isSentByMe &&
         conv.last_message_text && 
         (!myPart?.last_read_at || new Date(conv.last_message_at || 0) > new Date(myPart.last_read_at))
       ),
@@ -616,19 +634,31 @@ export async function getUnreadChatCount() {
   const convIds = myParts.map(p => p.conversation_id);
   const partMap = new Map(myParts.map(p => [p.conversation_id, p.last_read_at]));
 
-  // Lấy các cuộc trò chuyện có tin nhắn
-  const { data: convs } = await admin
-    .from('conversations')
-    .select('id, last_message_at, last_message_text')
-    .in('id', convIds);
+  // Lấy tin nhắn mới nhất của từng hội thoại để biết người gửi cuối cùng
+  const { data: latestMessages } = await admin
+    .from('messages')
+    .select('conversation_id, sender_id, created_at')
+    .in('conversation_id', convIds)
+    .order('created_at', { ascending: false });
+
+  const lastMsgMap = new Map<string, any>();
+  (latestMessages || []).forEach((m: any) => {
+    if (!lastMsgMap.has(m.conversation_id)) {
+      lastMsgMap.set(m.conversation_id, m);
+    }
+  });
 
   let unreadCount = 0;
-  (convs || []).forEach(conv => {
-    if (!conv.last_message_text) return;
-    const lastRead = partMap.get(conv.id);
+  convIds.forEach(cId => {
+    const lastMsg = lastMsgMap.get(cId);
+    if (!lastMsg) return;
+    // Nếu chính mình gửi tin nhắn cuối cùng -> không tính là chưa đọc
+    if (lastMsg.sender_id === user.id) return;
+
+    const lastRead = partMap.get(cId);
     if (!lastRead) {
-      if (conv.last_message_at) unreadCount++;
-    } else if (conv.last_message_at && new Date(conv.last_message_at) > new Date(lastRead)) {
+      unreadCount++;
+    } else if (new Date(lastMsg.created_at) > new Date(lastRead)) {
       unreadCount++;
     }
   });

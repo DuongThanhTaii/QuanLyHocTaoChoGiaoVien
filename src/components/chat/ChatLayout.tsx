@@ -69,6 +69,17 @@ export function ChatLayout({
     loadConversations();
   }, []);
 
+  const handleSelectConversation = (id: string) => {
+    setActiveConversationId(id);
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, isUnread: false } : c))
+    );
+    markConversationAsRead(id);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('chat:read', { detail: { conversationId: id } }));
+    }
+  };
+
   // 2. Tải tin nhắn khi đổi activeConversationId
   useEffect(() => {
     if (!activeConversationId) {
@@ -77,7 +88,13 @@ export function ChatLayout({
     }
 
     setIsLoadingMessages(true);
+    setConversations((prev) =>
+      prev.map((c) => (c.id === activeConversationId ? { ...c, isUnread: false } : c))
+    );
     markConversationAsRead(activeConversationId);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('chat:read', { detail: { conversationId: activeConversationId } }));
+    }
 
     getConversationMessages(activeConversationId)
       .then((res) => {
@@ -180,7 +197,7 @@ export function ChatLayout({
         <ConversationList
           conversations={conversations}
           activeConversationId={activeConversationId}
-          onSelectConversation={(id) => setActiveConversationId(id)}
+          onSelectConversation={handleSelectConversation}
           onNewConversation={handleConversationCreatedOrSelected}
           currentUserRole={currentUserRole}
           isLoading={isLoadingConversations}
