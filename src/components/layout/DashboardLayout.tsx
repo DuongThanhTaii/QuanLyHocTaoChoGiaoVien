@@ -27,6 +27,7 @@ import { UserAvatar } from '../ui/UserAvatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from '../ui/dropdown-menu';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 import { NotificationDropdown } from './NotificationDropdown';
+import { SupportButton } from '../shared/SupportButton';
 
 interface SidebarItem {
   icon: any;
@@ -315,6 +316,8 @@ export default function DashboardLayout({
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50 pointer-events-none" />
             )}
           </Link>
+          
+          <SupportButton isCollapsed={isCollapsed} />
           
           <DropdownMenu>
             <DropdownMenuTrigger className={`outline-none w-full flex items-center px-1.5 py-1.5 text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-300 cursor-pointer text-left border border-transparent hover:border-border overflow-hidden`}>
