@@ -53,16 +53,11 @@ export default async function TeacherContentPage({ searchParams }: { searchParam
       {!isDriveLinked ? (
         <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg dark:bg-blue-900/30 dark:text-blue-400">
-                <HardDrive className="w-6 h-6" />
-              </div>
-              <CardTitle className="text-lg">Liên kết Google Drive</CardTitle>
-            </div>
+            <CardTitle className="text-lg">Liên kết Google Drive</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button asChild className="w-fit whitespace-nowrap">
-              <Link href="/api/auth/google">
+            <Button asChild className="w-fit">
+              <Link href="/api/auth/google" className="flex items-center">
                 <LinkIcon className="w-4 h-4 mr-2" />
                 Kết nối Google Drive ngay
               </Link>
