@@ -21,6 +21,7 @@ import {
   FolderOpen,
   MoreVertical,
   Menu,
+  MoreHorizontal,
   ShieldCheck,
   ScrollText,
   Tags,
@@ -32,6 +33,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 import { NotificationDropdown } from './NotificationDropdown';
 import { SupportButton } from '../shared/SupportButton';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
+import { Button } from '../ui/button';
 
 interface SidebarItem {
   icon: any;
@@ -128,6 +131,28 @@ function NavItem({
   );
 }
 
+function isNavItemActive(item: SidebarItem, pathname: string) {
+  return item.href === '/teacher' || item.href === '/parent' || item.href === '/student'
+    ? pathname === item.href
+    : pathname.startsWith(item.href);
+}
+
+function MobileNavItem({ item, pathname, badge }: { item: SidebarItem; pathname: string; badge?: number }) {
+  const isActive = isNavItemActive(item, pathname);
+  return (
+    <Link
+      href={item.href}
+      className={`relative flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] font-medium transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+    >
+      <span className={`relative grid size-8 place-items-center rounded-lg ${isActive ? 'bg-primary/10' : ''}`}>
+        <item.icon className="size-[18px]" />
+        {!!badge && <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">{badge > 9 ? '9+' : badge}</span>}
+      </span>
+      <span className="max-w-16 truncate">{item.label}</span>
+    </Link>
+  );
+}
+
 export default function DashboardLayout({ 
   children, 
   userRole = 'teacher', 
@@ -145,6 +170,7 @@ export default function DashboardLayout({
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
+  const mobileNavItems = navItems.slice(0, 4);
   const pathname = usePathname();
 
   const { setTheme } = useTheme();
@@ -243,9 +269,10 @@ export default function DashboardLayout({
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
+      <div className="flex h-dvh bg-background text-foreground overflow-hidden font-sans">
+        <Sheet>
         {/* Sidebar */}
-        <aside className={`bg-card border-r border-border flex flex-col transition-all duration-300 z-10 ${isCollapsed ? 'w-[72px]' : 'w-64'}`}>
+        <aside className={`hidden bg-card border-r border-border lg:flex flex-col transition-all duration-300 z-10 ${isCollapsed ? 'w-[72px]' : 'w-64'}`}>
           
           {/* Logo Section */}
           <div className={`h-16 flex items-center border-b border-border transition-all duration-300 pl-2 pr-2 overflow-hidden`}>
@@ -368,6 +395,15 @@ export default function DashboardLayout({
         {/* Top Header */}
         <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-10">
           <div className="flex items-center gap-2 sm:gap-4">
+            <SheetTrigger
+              render={<Button variant="ghost" size="icon" className="lg:hidden" aria-label="Mở menu điều hướng" />}
+            >
+              <Menu className="size-5" />
+            </SheetTrigger>
+            <div className="flex items-center gap-2 lg:hidden">
+              <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">G</div>
+              <span className="font-semibold tracking-tight">GiaSưPro</span>
+            </div>
             <h2 className="text-foreground font-medium text-lg hidden sm:block">
               {greeting}, <span className="font-semibold text-primary">{displayName}</span>
             </h2>
@@ -377,7 +413,7 @@ export default function DashboardLayout({
             <NotificationDropdown />
             
             {currentDateStr && (
-              <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 shadow-2xs">
+              <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 shadow-2xs">
                 <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span>{currentDateStr}</span>
               </div>
@@ -386,12 +422,39 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 lg:pb-6">
           <div className="mx-auto max-w-6xl">
             {children}
           </div>
         </main>
       </div>
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid border-t bg-card/95 px-1 pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-1 shadow-[0_-8px_24px_rgba(0,0,0,0.05)] backdrop-blur lg:hidden" style={{ gridTemplateColumns: `repeat(${mobileNavItems.length + 1}, minmax(0, 1fr))` }}>
+        {mobileNavItems.map((item) => <MobileNavItem key={item.href} item={item} pathname={pathname} badge={item.label === 'Tin nhắn' ? unreadChatCount : undefined} />)}
+        <SheetTrigger render={<Button variant="ghost" className="h-auto flex-col gap-1 rounded-xl px-2 py-2 text-[10px] font-medium text-muted-foreground" aria-label="Mở toàn bộ menu" />}>
+          <span className="grid size-8 place-items-center rounded-lg"><MoreHorizontal className="size-[18px]" /></span>
+          <span>Tất cả</span>
+        </SheetTrigger>
+      </nav>
+      <SheetContent side="left" className="w-[min(20rem,86vw)] gap-0 p-0">
+        <SheetHeader className="border-b px-5 py-5 pr-12">
+          <SheetTitle className="flex items-center gap-2 text-lg"><span className="grid size-8 place-items-center rounded-lg bg-primary text-sm text-primary-foreground">G</span>GiaSưPro</SheetTitle>
+          <SheetDescription>Điều hướng tài khoản {userRole === 'teacher' ? 'giáo viên' : userRole === 'parent' ? 'phụ huynh' : userRole === 'student' ? 'học sinh' : 'quản trị viên'}.</SheetDescription>
+        </SheetHeader>
+        <div className="flex-1 space-y-1 overflow-y-auto p-3">
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium ${isNavItemActive(item, pathname) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+              <item.icon className="size-5" />
+              <span>{item.label}</span>
+              {item.label === 'Tin nhắn' && unreadChatCount > 0 && <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{unreadChatCount > 9 ? '9+' : unreadChatCount}</span>}
+            </Link>
+          ))}
+        </div>
+        <div className="space-y-2 border-t p-3">
+          <SupportButton isCollapsed={false} />
+          <Link href="/profile" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"><UserAvatar name={userName} email={userEmail} size="sm" /><span className="truncate">Hồ sơ & cài đặt</span></Link>
+        </div>
+      </SheetContent>
+      </Sheet>
       </div>
     </TooltipProvider>
   );
