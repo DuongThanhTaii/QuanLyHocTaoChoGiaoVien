@@ -133,7 +133,6 @@ export default function DashboardLayout({
   
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : [];
   const pathname = usePathname();
-  const isSettingsActive = pathname.startsWith('/settings');
 
   const { setTheme } = useTheme();
   const { setThemeColor } = useThemeColor();
@@ -296,26 +295,6 @@ export default function DashboardLayout({
 
         {/* Footer Section (Settings & Profile) */}
         <div className="p-3 border-t border-border bg-card/50 backdrop-blur-sm transition-all duration-300">
-          <Link 
-            href="/settings" 
-            title={isCollapsed ? 'Cài đặt' : undefined}
-            className={`relative flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group mb-2
-              ${isSettingsActive 
-                ? "text-primary bg-primary/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]" 
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }
-            `}
-          >
-            <Settings className={`w-5 h-5 shrink-0 transition-colors duration-300 ${isSettingsActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`} />
-            
-            <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden flex items-center ${isCollapsed ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100 ml-3'}`}>
-              <span className="z-10">Cài đặt</span>
-            </div>
-            
-            {isSettingsActive && (
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50 pointer-events-none" />
-            )}
-          </Link>
           
           <SupportButton isCollapsed={isCollapsed} />
           
@@ -346,6 +325,9 @@ export default function DashboardLayout({
                 <DropdownMenuSeparator className="bg-border" />
                 <Link href="/profile" className="cursor-pointer">
                   <DropdownMenuItem className="hover:bg-muted cursor-pointer">Hồ sơ cá nhân</DropdownMenuItem>
+                </Link>
+                <Link href="/settings" className="cursor-pointer">
+                  <DropdownMenuItem className="hover:bg-muted cursor-pointer">Cài đặt hệ thống</DropdownMenuItem>
                 </Link>
                 <Link href="/pricing" className="cursor-pointer">
                   <DropdownMenuItem className="hover:bg-muted cursor-pointer">Gói đăng ký (Pro)</DropdownMenuItem>
