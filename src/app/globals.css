@@ -165,3 +165,91 @@
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* Landing Page Animations */
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0%, 90%, 100% {
+    background-position: calc(-100% - var(--shimmer-width, 100px)) 0;
+  }
+  30%, 60% {
+    background-position: calc(100% + var(--shimmer-width, 100px)) 0;
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(.74, .25, .76, 1);
+  }
+  10% {
+    opacity: 0.5;
+    animation-timing-function: cubic-bezier(.12, .01, .08, .99);
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes flip {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(90deg);
+  }
+}
+
+@keyframes border-beam-orbit {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.border-beam-svg-rect {
+  animation: border-beam-orbit var(--beam-duration, 10s) linear infinite;
+}
+
+.animate-border-beam {
+  animation: border-beam calc(var(--duration, 15) * 1s) infinite linear;
+}
+
+.animate-shimmer {
+  animation: shimmer 5s infinite;
+}
+
+.animate-image-glow {
+  animation: image-glow 4s ease-out 0.6s forwards;
+}
+
+.animate-float-slow {
+  animation: float-slow 3.5s ease-in-out infinite;
+}
+
+.animate-flip {
+  animation: flip 6s infinite steps(2, end);
+}
+
+.animate-rotate {
+  animation: rotate 3s linear infinite both;
+}
