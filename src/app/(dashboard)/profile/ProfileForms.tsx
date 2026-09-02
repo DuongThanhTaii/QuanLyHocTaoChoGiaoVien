@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 import { VIETNAM_BANKS } from '@/lib/banks';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 
@@ -97,17 +97,44 @@ export function ChangePasswordModal() {
   const [state, formAction, isPending] = useActionState(changePassword as any, initialState);
   const [isOpen, setIsOpen] = useState(false);
 
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowOldPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+    }
+  };
+
   useEffect(() => {
     if (state?.success && state?.message) {
       toast.success(state.message);
-      setIsOpen(false);
+      handleOpenChange(false);
     } else if (state?.error) {
       toast.error(state.error);
     }
   }, [state]);
 
+  const hasTypedBoth = newPassword.length > 0 && confirmPassword.length > 0;
+  const isMatch = hasTypedBoth && newPassword === confirmPassword;
+  const isMismatch = hasTypedBoth && newPassword !== confirmPassword;
+  const isTooShort = newPassword.length > 0 && newPassword.length < 6;
+
+  const canSubmit = !isPending && oldPassword.length > 0 && newPassword.length >= 6 && newPassword === confirmPassword;
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger render={<Button variant="outline" type="button" />}>
         Đổi mật khẩu
       </DialogTrigger>
@@ -121,22 +148,105 @@ export function ChangePasswordModal() {
         
         <form action={formAction} className="space-y-4 pt-2">
           <div className="grid gap-4">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="oldPassword">Mật khẩu hiện tại</Label>
-              <Input id="oldPassword" name="oldPassword" type="password" required />
+              <div className="relative">
+                <Input 
+                  id="oldPassword" 
+                  name="oldPassword" 
+                  type={showOldPassword ? "text" : "password"} 
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="Nhập mật khẩu hiện tại"
+                  required 
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowOldPassword(!showOldPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                  tabIndex={-1}
+                  title={showOldPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                >
+                  {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-            <div className="space-y-2">
+
+            <div className="space-y-1.5">
               <Label htmlFor="newPassword">Mật khẩu mới</Label>
-              <Input id="newPassword" name="newPassword" type="password" required />
+              <div className="relative">
+                <Input 
+                  id="newPassword" 
+                  name="newPassword" 
+                  type={showNewPassword ? "text" : "password"} 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Tối thiểu 6 ký tự"
+                  required 
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                  tabIndex={-1}
+                  title={showNewPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {isTooShort && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Mật khẩu mới phải có ít nhất 6 ký tự
+                </p>
+              )}
             </div>
-            <div className="space-y-2">
+
+            <div className="space-y-1.5">
               <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required />
+              <div className="relative">
+                <Input 
+                  id="confirmPassword" 
+                  name="confirmPassword" 
+                  type={showConfirmPassword ? "text" : "password"} 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Nhập lại mật khẩu mới"
+                  required 
+                  className={`pr-10 transition-colors ${
+                    isMatch ? 'border-emerald-500 focus-visible:ring-emerald-500/20' : 
+                    isMismatch ? 'border-rose-500 focus-visible:ring-rose-500/20' : ''
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                  tabIndex={-1}
+                  title={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {isMatch && (
+                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 animate-in fade-in-0 duration-200">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Mật khẩu đã khớp
+                </p>
+              )}
+              {isMismatch && (
+                <p className="text-xs font-medium text-rose-500 dark:text-rose-400 flex items-center gap-1.5 animate-in fade-in-0 duration-200">
+                  <XCircle className="w-3.5 h-3.5" />
+                  Mật khẩu xác nhận không khớp
+                </p>
+              )}
             </div>
           </div>
+
           <DialogFooter className="mt-4">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isPending}>Hủy</Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>Hủy</Button>
+            <Button type="submit" disabled={!canSubmit}>
               {isPending ? 'Đang đổi...' : 'Xác nhận đổi'}
             </Button>
           </DialogFooter>
