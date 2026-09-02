@@ -23,8 +23,8 @@ export const PricingSection = () => {
 
           <AnimationContainer delay={0.1}>
             <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
-              Chọn gói dịch vụ{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
+              Chọn gói dịch vụ
+              <span className="block mt-3 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500 pb-2">
                 phù hợp với bạn
               </span>
             </h2>
@@ -32,7 +32,8 @@ export const PricingSection = () => {
 
           <AnimationContainer delay={0.15}>
             <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-zinc-300">
-              Khởi đầu hoàn toàn miễn phí. Nâng cấp bất cứ khi nào bạn muốn mở rộng quy mô lớp học.
+              Khởi đầu hoàn toàn miễn phí. <br /> Nâng cấp bất cứ khi nào bạn
+              muốn mở rộng quy mô lớp học.
             </p>
           </AnimationContainer>
 
@@ -45,7 +46,7 @@ export const PricingSection = () => {
                   "px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-full transition-all duration-200",
                   !isYearly
                     ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs"
-                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900",
                 )}
               >
                 Thanh toán theo tháng
@@ -56,7 +57,7 @@ export const PricingSection = () => {
                   "flex items-center gap-1.5 px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-full transition-all duration-200",
                   isYearly
                     ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xs"
-                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900",
                 )}
               >
                 <span>Thanh toán theo năm</span>
@@ -74,18 +75,22 @@ export const PricingSection = () => {
             const price = isYearly ? plan.priceYearly : plan.priceMonthly;
 
             return (
-              <AnimationContainer key={plan.name} delay={0.1 + idx * 0.1} className="h-full">
+              <AnimationContainer
+                key={plan.name}
+                delay={0.1 + idx * 0.1}
+                className="h-full"
+              >
                 <div
                   className={cn(
                     "relative h-full flex flex-col justify-between p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 transition-all duration-300",
                     plan.popular
                       ? "border-2 border-orange-500 shadow-xl shadow-orange-500/10 lg:-translate-y-2"
-                      : "border border-slate-200 dark:border-zinc-800 shadow-sm hover:border-orange-200 dark:hover:border-zinc-700"
+                      : "border border-slate-200 dark:border-zinc-800 shadow-sm hover:border-orange-200 dark:hover:border-zinc-700",
                   )}
                 >
                   {/* Popular Highlight Tag */}
                   {plan.popular && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold uppercase tracking-wider shadow-sm flex items-center gap-1">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold uppercase tracking-wider shadow-sm flex items-center gap-1 md:whitespace-nowrap">
                       <Sparkles className="w-3 h-3" />
                       <span>{plan.highlightBadge}</span>
                     </div>
@@ -115,7 +120,10 @@ export const PricingSection = () => {
                     {/* Features List */}
                     <ul className="space-y-3 mb-8">
                       {plan.features.map((feat) => (
-                        <li key={feat} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-600 dark:text-zinc-300">
+                        <li
+                          key={feat}
+                          className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-600 dark:text-zinc-300"
+                        >
                           <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                             <Check className="w-3 h-3" />
                           </div>
@@ -127,12 +135,18 @@ export const PricingSection = () => {
 
                   {/* CTA Button */}
                   <Link
-                    href={plan.popular ? "/register" : plan.tier === "starter" ? "/register" : "#contact"}
+                    href={
+                      plan.popular
+                        ? "/register"
+                        : plan.tier === "starter"
+                          ? "/register"
+                          : "#contact"
+                    }
                     className={cn(
                       "w-full py-3 rounded-2xl font-bold text-sm text-center flex items-center justify-center gap-2 transition-all duration-200 active:scale-95",
                       plan.popular
                         ? "bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-600"
-                        : "bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-700"
+                        : "bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-700",
                     )}
                   >
                     <span>{plan.cta}</span>

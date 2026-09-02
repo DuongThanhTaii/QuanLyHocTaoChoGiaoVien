@@ -26,7 +26,7 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
         {/* Main Hero Header */}
         <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
           {/* Linkify Signature Spark Flip Badge */}
-          <AnimationContainer delay={0.05}>
+          {/* <AnimationContainer delay={0.05}>
             <button className="group relative grid overflow-hidden rounded-full px-4 py-1.5 shadow-[0_1000px_0_0_hsl(0_0%_100%)_inset] dark:shadow-[0_1000px_0_0_hsl(0_0%_15%)_inset] transition-colors duration-200 border border-orange-200/80 dark:border-orange-900/60 mb-6 cursor-pointer">
               <span>
                 <span className="spark mask-gradient absolute inset-0 h-full w-full animate-flip overflow-hidden rounded-full [mask:linear-gradient(white,_transparent_50%)] before:absolute before:aspect-square before:w-[200%] before:rotate-[-90deg] before:animate-rotate before:bg-[conic-gradient(from_0deg,transparent_0_340deg,#f97316_360deg)] before:content-[''] before:[inset:0_auto_auto_50%] before:[translate:-50%_-15%]" />
@@ -38,7 +38,7 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
                 <ArrowRight className="ml-1 size-3.5 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
               </span>
             </button>
-          </AnimationContainer>
+          </AnimationContainer> */}
 
           {/* Heading */}
           <AnimationContainer delay={0.1}>
@@ -53,12 +53,17 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
           {/* Subtitle */}
           <AnimationContainer delay={0.15}>
             <p className="mt-6 text-base sm:text-lg lg:text-xl text-slate-600 dark:text-zinc-300 max-w-2xl leading-relaxed text-balance">
-              Giải pháp All-in-one cho Giáo viên & Gia sư: Tự động hóa điểm danh QR, nhắc lịch dạy, kết nối phụ huynh và thu học phí tự động qua VietQR.
+              Giải pháp All-in-one cho Giáo viên & Gia sư
+              <br /> Tự động hóa điểm danh QR, nhắc lịch dạy, kết nối phụ huynh
+              và thu học phí tự động qua VietQR.
             </p>
           </AnimationContainer>
 
           {/* CTAs */}
-          <AnimationContainer delay={0.2} className="mt-8 flex flex-wrap items-center justify-center gap-4 z-20">
+          <AnimationContainer
+            delay={0.2}
+            className="mt-8 flex flex-wrap items-center justify-center gap-4 z-20"
+          >
             {user ? (
               <Link
                 href={user.dashboardUrl}
@@ -86,7 +91,10 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
           </AnimationContainer>
 
           {/* Trust points */}
-          <AnimationContainer delay={0.25} className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
+          <AnimationContainer
+            delay={0.25}
+            className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-500 dark:text-zinc-400"
+          >
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               Không cần thẻ tín dụng
@@ -112,7 +120,7 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
             <CatMascot
               variant="stand"
               size="md"
-              speechText="Thầy/Cô chỉ việc dạy hay, sổ sách cứ để em lo! 🐾"
+              speechText="Thầy cô chỉ việc dạy hay, sổ sách cứ để em lo! 🐾"
               alwaysShowSpeech={false}
               showSpeechOnHover={true}
             />

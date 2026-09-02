@@ -58,7 +58,7 @@ export const Navbar = ({ user }: NavbarProps) => {
         "fixed top-0 inset-x-0 h-16 z-50 transition-all duration-300 select-none",
         scrolled
           ? "bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md border-b border-orange-100/80 dark:border-zinc-800 shadow-xs"
-          : "bg-transparent border-b border-transparent"
+          : "bg-transparent border-b border-transparent",
       )}
     >
       <MaxWidthWrapper className="flex items-center justify-between h-full">
@@ -76,7 +76,7 @@ export const Navbar = ({ user }: NavbarProps) => {
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-1">
-              GiaSư<span className="text-orange-500">Pro</span>
+              <span className="text-orange-500">Mari</span>
             </span>
             <span className="text-[10px] font-medium text-slate-400 -mt-1 hidden sm:block">
               Quản lý học tập 4.0
@@ -205,7 +205,11 @@ export const Navbar = ({ user }: NavbarProps) => {
             className="p-2 rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 focus:outline-none"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </MaxWidthWrapper>
@@ -257,8 +261,12 @@ export const Navbar = ({ user }: NavbarProps) => {
                 <div className="flex items-center gap-2.5 p-2 bg-orange-50 dark:bg-zinc-900 rounded-xl">
                   <UserAvatar name={user.name} email={user.email} size="sm" />
                   <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{user.name}</p>
-                    <p className="text-xs text-orange-600">{ROLE_LABELS[user.role] || user.role}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-orange-600">
+                      {ROLE_LABELS[user.role] || user.role}
+                    </p>
                   </div>
                 </div>
                 <Link
@@ -267,7 +275,9 @@ export const Navbar = ({ user }: NavbarProps) => {
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-orange-500 text-white font-bold text-sm shadow-md"
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  <span>Vào Dashboard ({ROLE_LABELS[user.role] || user.role})</span>
+                  <span>
+                    Vào Dashboard ({ROLE_LABELS[user.role] || user.role})
+                  </span>
                 </Link>
               </div>
             ) : (

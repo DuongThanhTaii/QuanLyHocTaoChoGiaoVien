@@ -10,11 +10,12 @@ export const MetricsSection = () => {
     <section className="py-12 sm:py-16 bg-gradient-to-b from-orange-50/40 via-white to-transparent dark:from-zinc-900/40 dark:via-zinc-950 dark:to-transparent border-y border-orange-100/60 dark:border-zinc-800">
       <MaxWidthWrapper>
         <AnimationContainer delay={0.1}>
-          <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
+          <div className="flex flex-col items-center justify-center text-center max-w-2xl mx-auto mb-8 sm:mb-12">
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
               Con số ấn tượng
             </h3>
-            <p className="mt-1 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+
+            <p className="mt-2 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white text-balance md:whitespace-nowrap">
               Đồng hành cùng hàng nghìn giáo viên trên toàn quốc
             </p>
           </div>

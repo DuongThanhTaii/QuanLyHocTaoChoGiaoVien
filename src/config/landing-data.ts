@@ -12,15 +12,15 @@ export interface NavMenuCategory {
 }
 
 export const SITE_CONFIG = {
-  name: "Gia Sư Pro",
+  name: "Mari",
   slogan: "Nền tảng Quản lý Học tập & Lớp học Toàn diện cho Giáo viên",
   description:
     "Đơn giản hóa điểm danh QR, nhắc lịch dạy, báo cáo tiến độ phụ huynh và tự động hóa học phí qua VietQR chỉ trên một nền tảng duy nhất.",
-  url: "https://giasupro.vn",
+  url: "https://mari.io.vn",
   contact: {
-    hotline: "1900 888 666",
-    email: "support@giasupro.vn",
-    address: "Hà Nội & TP. Hồ Chí Minh",
+    hotline: "0356 170 187",
+    email: "duongthanhtai1308@gmail.com",
+    address: " phường Bình Lợi Trung, TP. Hồ Chí Minh",
   },
 };
 
@@ -31,22 +31,26 @@ export const NAV_LINKS: NavMenuCategory[] = [
       {
         title: "Điểm danh thông minh",
         href: "#features",
-        description: "Điểm danh QR 1 chạm, tự động gửi thông báo tức thì cho phụ huynh.",
+        description:
+          "Điểm danh QR 1 chạm, tự động gửi thông báo tức thì cho phụ huynh.",
       },
       {
         title: "Học phí VietQR tự động",
         href: "#features",
-        description: "Tự động sinh QR kèm cú pháp, gạch nợ tức thì không cần kiểm tra thủ công.",
+        description:
+          "Tự động sinh QR kèm cú pháp, gạch nợ tức thì không cần kiểm tra thủ công.",
       },
       {
         title: "Thời khóa biểu & Lịch dạy",
         href: "#features",
-        description: "Quản lý lịch học, tự động nhắc nhở và thông báo đổi lịch/học bù.",
+        description:
+          "Quản lý lịch học, tự động nhắc nhở và thông báo đổi lịch/học bù.",
       },
       {
         title: "Sổ liên lạc số 3 bên",
         href: "#features",
-        description: "Kết nối trực tiếp Giáo viên - Phụ huynh - Học sinh, lưu trữ bài tập an toàn.",
+        description:
+          "Kết nối trực tiếp Giáo viên - Phụ huynh - Học sinh, lưu trữ bài tập an toàn.",
       },
     ],
   },
@@ -94,24 +98,28 @@ export const METRICS = [
 export const PROCESS_STEPS = [
   {
     step: "01",
-    title: "Khởi tạo Lớp & Học sinh",
-    description: "Nhập danh sách học sinh từ file Excel chỉ trong 30 giây. Hệ thống tự động tạo mã QR định danh và tài khoản kết nối cho từng học sinh.",
+    title: "Khởi tạo lớp và học sinh",
+    description:
+      "Nhập danh sách học sinh từ file Excel chỉ trong 30 giây. Hệ thống tự động tạo mã QR định danh và tài khoản kết nối cho từng học sinh.",
     badge: "Bắt đầu nhanh",
-    catDialogue: "Chào Thầy/Cô! Em đã sẵn sàng hỗ trợ lớp học rồi ạ! 🐾",
+    catDialogue: "Chào thầy cô! Em đã sẵn sàng hỗ trợ lớp học rồi ạ! 🐾",
   },
   {
     step: "02",
-    title: "Giảng dạy & Điểm danh 1 chạm",
-    description: "Điểm danh nhanh bằng quét mã QR hoặc chạm tick. Hệ thống tự động cập nhật lịch sử chuyên cần và gửi thông báo trực tiếp đến phụ huynh.",
+    title: "Giảng dạy và điểm danh 1 chạm",
+    description:
+      "Điểm danh nhanh bằng quét mã QR hoặc chạm tick. Hệ thống tự động cập nhật lịch sử chuyên cần và gửi thông báo trực tiếp đến phụ huynh.",
     badge: "Tiết kiệm 80% thời gian",
     catDialogue: "Học sinh điểm danh đúng giờ, phụ huynh yên tâm tuyệt đối! ✨",
   },
   {
     step: "03",
     title: "Tự động hóa Học phí VietQR",
-    description: "Mỗi kỳ học phí, hệ thống tự xuất hóa đơn và mã VietQR chuẩn xác. Phụ huynh thanh toán là gạch nợ real-time, không cần chụp màn hình chuyển khoản.",
+    description:
+      "Mỗi kỳ học phí, hệ thống tự xuất hóa đơn và mã VietQR chuẩn xác. Phụ huynh thanh toán là gạch nợ real-time, không cần chụp màn hình chuyển khoản.",
     badge: "Minh bạch & Chính xác",
-    catDialogue: "Học phí về tài khoản ngay, sổ sách tự động cân đối luôn nha! 💰",
+    catDialogue:
+      "Học phí về tài khoản ngay, sổ sách tự động cân đối luôn nha! 💰",
   },
 ];
 
@@ -122,7 +130,8 @@ export const PRICING_PLANS = [
     priceMonthly: "0đ",
     priceYearly: "0đ",
     period: "mãi mãi",
-    description: "Phù hợp cho gia sư dạy kèm tại nhà hoặc giáo viên có 1 - 2 lớp học nhỏ.",
+    description:
+      "Phù hợp cho gia sư dạy kèm tại nhà hoặc giáo viên có 1 - 2 lớp học nhỏ.",
     popular: false,
     cta: "Bắt đầu miễn phí",
     features: [
@@ -141,7 +150,8 @@ export const PRICING_PLANS = [
     priceYearly: "79.000đ",
     period: "tháng",
     yearlyNote: "Thanh toán theo năm (tiết kiệm 20%)",
-    description: "Dành cho giáo viên chuyên nghiệp, gia sư nhiều lớp muốn tự động hóa toàn diện.",
+    description:
+      "Dành cho giáo viên chuyên nghiệp, gia sư nhiều lớp muốn tự động hóa toàn diện.",
     popular: true,
     highlightBadge: "Được tin dùng nhiều nhất",
     cta: "Dùng thử 14 ngày miễn phí",
@@ -163,7 +173,8 @@ export const PRICING_PLANS = [
     priceYearly: "239.000đ",
     period: "tháng",
     yearlyNote: "Thanh toán theo năm (tiết kiệm 20%)",
-    description: "Giải pháp toàn diện cho trung tâm dạy thêm, câu lạc bộ, nhóm giáo viên liên kết.",
+    description:
+      "Giải pháp toàn diện cho trung tâm dạy thêm, câu lạc bộ, nhóm giáo viên liên kết.",
     popular: false,
     cta: "Liên hệ tư vấn",
     features: [
@@ -182,7 +193,8 @@ export const TESTIMONIALS = [
   {
     name: "Thầy Hoàng Văn Nam",
     role: "Giáo viên Toán THPT & Luyện thi ĐH (Hà Nội)",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    avatar:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     content:
       "Trước đây tôi quản lý 6 lớp với hơn 150 em học sinh, mỗi đầu tháng là ác mộng với việc kiểm tra tin nhắn chuyển khoản học phí. Từ ngày dùng tính năng VietQR tự động của Gia Sư Pro, tôi tiết kiệm được ít nhất 2 ngày mỗi tháng. Phụ huynh ai cũng khen chuyên nghiệp!",
@@ -190,7 +202,8 @@ export const TESTIMONIALS = [
   {
     name: "Cô Nguyễn Thu Trang",
     role: "Chủ nhiệm CLB Tiếng Anh & Gia sư IELTS (Đà Nẵng)",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
+    avatar:
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     content:
       "Tính năng điểm danh QR cực kỳ mượt mà. Học sinh vào lớp chỉ cần quét mã thẻ, máy báo 'ting ting' là phụ huynh ở nhà biết ngay con đã đến lớp an toàn. Rất đáng giá cho mọi thầy cô!",
@@ -198,7 +211,8 @@ export const TESTIMONIALS = [
   {
     name: "Thầy Lê Minh Đức",
     role: "Gia sư Hóa học & Quản lý Tổ hợp dạy thêm (TP. HCM)",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     content:
       "Giao diện hiện đại, trực quan và đặc biệt tông màu cam trắng nhìn rất sáng, tràn đầy năng lượng. Hệ thống quản lý lịch học bù và tài liệu rất tiện lợi cho học sinh theo dõi.",
@@ -206,7 +220,8 @@ export const TESTIMONIALS = [
   {
     name: "Chị Phạm Minh Anh",
     role: "Phụ huynh bé Tuấn Kiệt (Lớp 11)",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+    avatar:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     content:
       "Cảm giác rất an tâm khi theo dõi được lịch học, nhận xét của thầy cô sau mỗi buổi học ngay trên điện thoại. Đóng học phí thì chỉ cần mở app ngân hàng quét mã QR là xong ngay, không sợ nhầm lẫn.",
@@ -230,7 +245,8 @@ export const FAQS = [
       "Không. Phụ huynh và Học sinh được sử dụng hoàn toàn miễn phí để xem thời khóa biểu, nhận thông báo điểm danh, tải tài liệu bài tập và đóng học phí.",
   },
   {
-    question: "Tôi có thể chuyển danh sách học sinh từ file Excel cũ sang không?",
+    question:
+      "Tôi có thể chuyển danh sách học sinh từ file Excel cũ sang không?",
     answer:
       "Có! Gia Sư Pro hỗ trợ tính năng Import từ file Excel sẵn có. Bạn chỉ cần tải file danh sách học sinh hiện tại lên, hệ thống sẽ tự động phân loại và khởi tạo đầy đủ dữ liệu trong vòng vài chục giây.",
   },

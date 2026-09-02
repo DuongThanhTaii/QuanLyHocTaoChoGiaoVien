@@ -10,7 +10,10 @@ import { Star } from "lucide-react";
 
 export const TestimonialsSection = () => {
   return (
-    <section id="testimonials" className="py-20 sm:py-28 bg-slate-50/50 dark:bg-zinc-950/50 border-t border-slate-200/80 dark:border-zinc-800">
+    <section
+      id="testimonials"
+      className="py-20 sm:py-28 bg-slate-50/50 dark:bg-zinc-950/50 border-t border-slate-200/80 dark:border-zinc-800"
+    >
       <MaxWidthWrapper>
         {/* Header */}
         <div className="flex flex-col items-center justify-center text-center max-w-3xl mx-auto mb-16">
@@ -20,7 +23,7 @@ export const TestimonialsSection = () => {
 
           <AnimationContainer delay={0.1}>
             <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
-              Được tin cậy bởi các Thầy/Cô{" "}
+              Được tin cậy bởi các thầy cô{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
                 tâm huyết nhất
               </span>
@@ -28,8 +31,9 @@ export const TestimonialsSection = () => {
           </AnimationContainer>
 
           <AnimationContainer delay={0.15}>
-            <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-zinc-300">
-              Cùng lắng nghe chia sẻ từ những người đang dùng Gia Sư Pro mỗi ngày để tối ưu hóa việc dạy và học.
+            <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-zinc-300 md:whitespace-nowrap">
+              Cùng lắng nghe chia sẻ từ những người đang dùng Gia Sư Pro mỗi
+              ngày để tối ưu hóa việc dạy và học.
             </p>
           </AnimationContainer>
         </div>
@@ -43,7 +47,10 @@ export const TestimonialsSection = () => {
                   {/* Stars */}
                   <div className="flex items-center gap-1 mb-4 text-amber-400">
                     {Array.from({ length: review.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <Star
+                        key={i}
+                        className="w-4 h-4 fill-amber-400 text-amber-400"
+                      />
                     ))}
                   </div>
 
@@ -55,7 +62,11 @@ export const TestimonialsSection = () => {
 
                 {/* Author Info */}
                 <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3.5">
-                  <UserAvatar name={review.name} size="md" className="ring-2 ring-orange-200 dark:ring-orange-900" />
+                  <UserAvatar
+                    name={review.name}
+                    size="md"
+                    className="ring-2 ring-orange-200 dark:ring-orange-900"
+                  />
                   <div>
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white">
                       {review.name}
