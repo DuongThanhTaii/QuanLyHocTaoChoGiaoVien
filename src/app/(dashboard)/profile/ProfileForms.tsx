@@ -255,27 +255,77 @@ export function PayOSConfigForm({ profile }: { profile: any }) {
       
       {isExpanded && (
         <form action={formAction}>
-          <CardContent className="space-y-4 pt-2 border-t border-zinc-100">
-            <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-md mb-4">
-              <strong>Lưu ý:</strong> Nếu bạn không nhập gì, hệ thống sẽ sử dụng <strong>Chế độ Cơ bản</strong> (Phụ huynh quét mã xong bạn phải tự xác nhận bằng tay).
+          <CardContent className="space-y-6 pt-2 border-t border-zinc-100">
+            {/* Hướng dẫn cài đặt */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Hướng dẫn cài đặt PayOS</h3>
+              
+              <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                
+                {/* Step 1 */}
+                <div className="relative flex items-start gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold shrink-0 ring-4 ring-white dark:ring-zinc-950 z-10">1</div>
+                  <div className="flex-1 space-y-2 pt-1">
+                    <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Tạo dự án trên PayOS</h4>
+                    <p className="text-sm text-zinc-500">Đăng nhập vào <a href="https://payos.vn" target="_blank" className="text-blue-600 hover:underline">payos.vn</a>, tạo một Kênh thanh toán (Dự án) mới.</p>
+                    <div className="bg-zinc-100 dark:bg-zinc-800 h-40 rounded-lg flex items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-700">
+                      <span className="text-zinc-400 text-sm italic">Chèn hình ảnh minh họa bước 1 vào đây</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="relative flex items-start gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold shrink-0 ring-4 ring-white dark:ring-zinc-950 z-10">2</div>
+                  <div className="flex-1 space-y-2 pt-1">
+                    <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Lấy API Keys</h4>
+                    <p className="text-sm text-zinc-500">Vào phần <strong>Cài đặt</strong> của kênh thanh toán vừa tạo. Sao chép 3 thông số: <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs text-rose-600">Client ID</span>, <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs text-rose-600">API Key</span>, và <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs text-rose-600">Checksum Key</span> điền vào Form bên dưới.</p>
+                    <div className="bg-zinc-100 dark:bg-zinc-800 h-40 rounded-lg flex items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-700">
+                      <span className="text-zinc-400 text-sm italic">Chèn hình ảnh minh họa bước 2 vào đây</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="relative flex items-start gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold shrink-0 ring-4 ring-white dark:ring-zinc-950 z-10">3</div>
+                  <div className="flex-1 space-y-2 pt-1">
+                    <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Thiết lập Webhook</h4>
+                    <p className="text-sm text-zinc-500">Cũng tại trang Cài đặt của PayOS, tìm mục <strong>Cấu hình Webhook</strong>, dán đường dẫn dưới đây vào và bấm <strong>Xác nhận</strong>:</p>
+                    <div className="flex items-center gap-2 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-md">
+                      <code className="text-xs text-blue-600 font-mono break-all">https://giasupro.taidt.id.vn/api/webhooks/payos</code>
+                    </div>
+                    <div className="bg-zinc-100 dark:bg-zinc-800 h-40 rounded-lg flex items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-700">
+                      <span className="text-zinc-400 text-sm italic">Chèn hình ảnh minh họa bước 3 vào đây</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-200 dark:border-zinc-800 pt-6 mt-6">
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Điền thông tin API Key</h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="clientId">Client ID</Label>
+                  <Input id="clientId" name="clientId" defaultValue={profile?.payos_client_id || ''} placeholder="Nhập Client ID..." />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="apiKey">API Key</Label>
+                  <Input id="apiKey" name="apiKey" type="password" defaultValue={profile?.payos_api_key || ''} placeholder="Nhập API Key..." />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="checksumKey">Checksum Key</Label>
+                  <Input id="checksumKey" name="checksumKey" type="password" defaultValue={profile?.payos_checksum_key || ''} placeholder="Nhập Checksum Key..." />
+                </div>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="clientId">Client ID</Label>
-              <Input id="clientId" name="clientId" defaultValue={profile?.payos_client_id || ''} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="apiKey">API Key</Label>
-              <Input id="apiKey" name="apiKey" type="password" defaultValue={profile?.payos_api_key || ''} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="checksumKey">Checksum Key</Label>
-              <Input id="checksumKey" name="checksumKey" type="password" defaultValue={profile?.payos_checksum_key || ''} />
-            </div>
           </CardContent>
-          <CardFooter className="bg-zinc-50 border-t border-zinc-100 py-3 mt-4">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Đang lưu...' : 'Lưu API Key'}
+          <CardFooter className="bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800 py-4 mt-4">
+            <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+              {isPending ? 'Đang lưu...' : 'Lưu Cấu Hình PayOS'}
             </Button>
           </CardFooter>
         </form>
