@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { UserAvatar } from '../ui/UserAvatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from '../ui/dropdown-menu';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
+import { NotificationDropdown } from './NotificationDropdown';
 
 interface SidebarItem {
   icon: any;
@@ -373,12 +374,16 @@ export default function DashboardLayout({
             </h2>
           </div>
 
-          {currentDateStr && (
-            <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span>{currentDateStr}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <NotificationDropdown />
+            
+            {currentDateStr && (
+              <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 shadow-2xs">
+                <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span>{currentDateStr}</span>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Page Content */}

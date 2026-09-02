@@ -70,8 +70,8 @@ export function RecordPaymentModal({ invoice, isOpen, onClose, onSuccess }: Prop
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             Xác nhận Thu Tiền Học Phí
           </DialogTitle>
-          <DialogDescription>
-            Ghi nhận thu tiền mặt hoặc chuyển khoản trực tiếp từ phụ huynh/học sinh.
+          <DialogDescription className="hidden">
+            Xác nhận thanh toán
           </DialogDescription>
         </DialogHeader>
 
