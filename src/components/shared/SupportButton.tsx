@@ -30,23 +30,17 @@ export function SupportButton({ isCollapsed }: SupportButtonProps) {
         <DropdownMenuLabel>Liên hệ Hỗ trợ</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href={SUPPORT_CONFIG.zalo} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
-              Chat qua Zalo
-            </Link>
+          <DropdownMenuItem onClick={() => window.open(SUPPORT_CONFIG.zalo, '_blank')} className="cursor-pointer">
+            <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
+            Chat qua Zalo
           </DropdownMenuItem>
-          <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href={SUPPORT_CONFIG.messenger} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="w-4 h-4 mr-2 text-blue-600" />
-              Chat qua Messenger
-            </Link>
+          <DropdownMenuItem onClick={() => window.open(SUPPORT_CONFIG.messenger, '_blank')} className="cursor-pointer">
+            <MessageCircle className="w-4 h-4 mr-2 text-blue-600" />
+            Chat qua Messenger
           </DropdownMenuItem>
-          <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href={`mailto:${SUPPORT_CONFIG.email}`}>
-              <Mail className="w-4 h-4 mr-2 text-zinc-500" />
-              Gửi Email
-            </Link>
+          <DropdownMenuItem onClick={() => window.location.href = `mailto:${SUPPORT_CONFIG.email}`} className="cursor-pointer">
+            <Mail className="w-4 h-4 mr-2 text-zinc-500" />
+            Gửi Email
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
