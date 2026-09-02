@@ -30,15 +30,15 @@ export function SupportButton({ isCollapsed }: SupportButtonProps) {
         <DropdownMenuLabel>Liên hệ Hỗ trợ</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => window.open(SUPPORT_CONFIG.zalo, '_blank')} className="cursor-pointer">
+          <DropdownMenuItem render={<Link href={SUPPORT_CONFIG.zalo} target="_blank" />} className="cursor-pointer">
             <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
             Chat qua Zalo
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.open(SUPPORT_CONFIG.messenger, '_blank')} className="cursor-pointer">
+          <DropdownMenuItem render={<Link href={SUPPORT_CONFIG.messenger} target="_blank" />} className="cursor-pointer">
             <MessageCircle className="w-4 h-4 mr-2 text-blue-600" />
             Chat qua Messenger
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.location.href = `mailto:${SUPPORT_CONFIG.email}`} className="cursor-pointer">
+          <DropdownMenuItem render={<a href={`mailto:${SUPPORT_CONFIG.email}`} />} className="cursor-pointer">
             <Mail className="w-4 h-4 mr-2 text-zinc-500" />
             Gửi Email
           </DropdownMenuItem>
