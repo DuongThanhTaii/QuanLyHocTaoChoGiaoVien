@@ -33,7 +33,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 import { NotificationDropdown } from './NotificationDropdown';
 import { SupportButton } from '../shared/SupportButton';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '../ui/sheet';
 import { Button } from '../ui/button';
 
 interface SidebarItem {
@@ -255,6 +255,12 @@ export default function DashboardLayout({
   const displayName = userName || (userEmail ? userEmail.split('@')[0] : 'bạn');
 
   const [currentDateStr, setCurrentDateStr] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     const now = new Date();
     const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
@@ -270,7 +276,6 @@ export default function DashboardLayout({
   return (
     <TooltipProvider>
       <div className="flex h-dvh bg-background text-foreground overflow-hidden font-sans">
-        <Sheet>
         {/* Sidebar */}
         <aside className={`hidden bg-card border-r border-border lg:flex flex-col transition-all duration-300 z-10 ${isCollapsed ? 'w-[72px]' : 'w-64'}`}>
           
@@ -395,11 +400,15 @@ export default function DashboardLayout({
         {/* Top Header */}
         <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-10">
           <div className="flex items-center gap-2 sm:gap-4">
-            <SheetTrigger
-              render={<Button variant="ghost" size="icon" className="lg:hidden" aria-label="Mở menu điều hướng" />}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="lg:hidden" 
+              aria-label="Mở menu điều hướng"
+              onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu className="size-5" />
-            </SheetTrigger>
+            </Button>
             <div className="flex items-center gap-2 lg:hidden">
               <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">G</div>
               <span className="font-semibold tracking-tight">GiaSưPro</span>
@@ -428,32 +437,53 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+
       <nav className="fixed inset-x-0 bottom-0 z-30 grid border-t bg-card/95 px-1 pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-1 shadow-[0_-8px_24px_rgba(0,0,0,0.05)] backdrop-blur lg:hidden" style={{ gridTemplateColumns: `repeat(${mobileNavItems.length + 1}, minmax(0, 1fr))` }}>
         {mobileNavItems.map((item) => <MobileNavItem key={item.href} item={item} pathname={pathname} badge={item.label === 'Tin nhắn' ? unreadChatCount : undefined} />)}
-        <SheetTrigger render={<Button variant="ghost" className="h-auto flex-col gap-1 rounded-xl px-2 py-2 text-[10px] font-medium text-muted-foreground" aria-label="Mở toàn bộ menu" />}>
+        <Button 
+          variant="ghost" 
+          className="h-auto flex-col gap-1 rounded-xl px-2 py-2 text-[10px] font-medium text-muted-foreground" 
+          aria-label="Mở toàn bộ menu"
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
           <span className="grid size-8 place-items-center rounded-lg"><MoreHorizontal className="size-[18px]" /></span>
           <span>Tất cả</span>
-        </SheetTrigger>
+        </Button>
       </nav>
-      <SheetContent side="left" className="w-[min(20rem,86vw)] gap-0 p-0">
-        <SheetHeader className="border-b px-5 py-5 pr-12">
-          <SheetTitle className="flex items-center gap-2 text-lg"><span className="grid size-8 place-items-center rounded-lg bg-primary text-sm text-primary-foreground">G</span>GiaSưPro</SheetTitle>
-          <SheetDescription>Điều hướng tài khoản {userRole === 'teacher' ? 'giáo viên' : userRole === 'parent' ? 'phụ huynh' : userRole === 'student' ? 'học sinh' : 'quản trị viên'}.</SheetDescription>
-        </SheetHeader>
-        <div className="flex-1 space-y-1 overflow-y-auto p-3">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium ${isNavItemActive(item, pathname) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-              <item.icon className="size-5" />
-              <span>{item.label}</span>
-              {item.label === 'Tin nhắn' && unreadChatCount > 0 && <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{unreadChatCount > 9 ? '9+' : unreadChatCount}</span>}
+
+      {/* Mobile Drawer Sheet */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetContent side="left" className="w-[min(20rem,86vw)] gap-0 p-0">
+          <SheetHeader className="border-b px-5 py-5 pr-12">
+            <SheetTitle className="flex items-center gap-2 text-lg"><span className="grid size-8 place-items-center rounded-lg bg-primary text-sm text-primary-foreground">G</span>GiaSưPro</SheetTitle>
+            <SheetDescription>Điều hướng tài khoản {userRole === 'teacher' ? 'giáo viên' : userRole === 'parent' ? 'phụ huynh' : userRole === 'student' ? 'học sinh' : 'quản trị viên'}.</SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 space-y-1 overflow-y-auto p-3">
+            {navItems.map((item) => (
+              <Link 
+                key={item.href} 
+                href={item.href} 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium ${isNavItemActive(item, pathname) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+              >
+                <item.icon className="size-5" />
+                <span>{item.label}</span>
+                {item.label === 'Tin nhắn' && unreadChatCount > 0 && <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{unreadChatCount > 9 ? '9+' : unreadChatCount}</span>}
+              </Link>
+            ))}
+          </div>
+          <div className="space-y-2 border-t p-3">
+            <SupportButton isCollapsed={false} />
+            <Link 
+              href="/profile" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <UserAvatar name={userName} email={userEmail} size="sm" />
+              <span className="truncate">Hồ sơ & cài đặt</span>
             </Link>
-          ))}
-        </div>
-        <div className="space-y-2 border-t p-3">
-          <SupportButton isCollapsed={false} />
-          <Link href="/profile" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"><UserAvatar name={userName} email={userEmail} size="sm" /><span className="truncate">Hồ sơ & cài đặt</span></Link>
-        </div>
-      </SheetContent>
+          </div>
+        </SheetContent>
       </Sheet>
       </div>
     </TooltipProvider>

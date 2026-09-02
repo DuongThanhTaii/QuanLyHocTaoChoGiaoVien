@@ -59,7 +59,7 @@ export function BasicProfileForm({ profile }: { profile: any }) {
           </div>
         </div>
       </CardHeader>
-      <form action={formAction}>
+      <form id="profile-form" action={formAction}>
         <CardContent className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label>Email đăng nhập (Không thể thay đổi)</Label>
@@ -74,21 +74,21 @@ export function BasicProfileForm({ profile }: { profile: any }) {
             <Input id="phone" name="phone" defaultValue={profile?.phone || ''} disabled={!isEditing} className={!isEditing ? 'bg-zinc-50 text-zinc-600' : ''} />
           </div>
         </CardContent>
-        <CardFooter className="pt-4 border-t border-zinc-100 flex items-center justify-between">
-          <div className="flex gap-2">
-            {isEditing ? (
-              <>
-                <Button type="submit" disabled={isPending}>{isPending ? 'Đang lưu...' : 'Lưu thay đổi'}</Button>
-                <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isPending}>Hủy</Button>
-              </>
-            ) : (
-              <Button type="button" onClick={() => setIsEditing(true)}>Chỉnh sửa</Button>
-            )}
-          </div>
-          
-          <ChangePasswordModal />
-        </CardFooter>
       </form>
+      <CardFooter className="pt-4 border-t border-zinc-100 flex items-center justify-between">
+        <div className="flex gap-2">
+          {isEditing ? (
+            <>
+              <Button form="profile-form" type="submit" disabled={isPending}>{isPending ? 'Đang lưu...' : 'Lưu thay đổi'}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isPending}>Hủy</Button>
+            </>
+          ) : (
+            <Button type="button" onClick={() => setIsEditing(true)}>Chỉnh sửa</Button>
+          )}
+        </div>
+        
+        <ChangePasswordModal />
+      </CardFooter>
     </Card>
   );
 }
@@ -108,8 +108,8 @@ export function ChangePasswordModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" type="button">Đổi mật khẩu</Button>
+      <DialogTrigger render={<Button variant="outline" type="button" />}>
+        Đổi mật khẩu
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -119,8 +119,8 @@ export function ChangePasswordModal() {
           </DialogDescription>
         </DialogHeader>
         
-        <form action={formAction}>
-          <div className="grid gap-4 py-4">
+        <form action={formAction} className="space-y-4 pt-2">
+          <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="oldPassword">Mật khẩu hiện tại</Label>
               <Input id="oldPassword" name="oldPassword" type="password" required />
@@ -134,7 +134,7 @@ export function ChangePasswordModal() {
               <Input id="confirmPassword" name="confirmPassword" type="password" required />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isPending}>Hủy</Button>
             <Button type="submit" disabled={isPending}>
               {isPending ? 'Đang đổi...' : 'Xác nhận đổi'}
