@@ -20,7 +20,11 @@ import {
   LogOut,
   FolderOpen,
   MoreVertical,
-  Menu
+  Menu,
+  ShieldCheck,
+  ScrollText,
+  Tags,
+  BadgeDollarSign
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { UserAvatar } from '../ui/UserAvatar';
@@ -58,6 +62,15 @@ const studentNav: SidebarItem[] = [
   { icon: CreditCard, label: 'Học phí', href: '/student/invoices' },
   { icon: MessageSquare, label: 'Tin nhắn', href: '/student/chat' },
   { icon: Users, label: 'Yêu cầu liên kết', href: '/student/requests' },
+];
+
+const adminNav: SidebarItem[] = [
+  { icon: LayoutDashboard, label: 'Tổng quan', href: '/admin' },
+  { icon: Users, label: 'Người dùng', href: '/admin/users' },
+  { icon: ShieldCheck, label: 'Vai trò & quyền', href: '/admin/roles' },
+  { icon: Tags, label: 'Gói & giá cước', href: '/admin/plans' },
+  { icon: BadgeDollarSign, label: 'Subscription', href: '/admin/subscriptions' },
+  { icon: ScrollText, label: 'Nhật ký hệ thống', href: '/admin/logs' },
 ];
 
 function NavItem({ 
@@ -131,7 +144,7 @@ export default function DashboardLayout({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   
-  const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : [];
+  const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
   const pathname = usePathname();
 
   const { setTheme } = useTheme();
@@ -317,9 +330,10 @@ export default function DashboardLayout({
                     userRole === 'teacher' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                     userRole === 'student' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                     userRole === 'parent' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                    userRole === 'admin' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
                     'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'
                   }`}>
-                    {userRole === 'teacher' ? 'Giáo viên' : userRole === 'parent' ? 'Phụ huynh' : userRole === 'student' ? 'Học sinh' : 'Thành viên'}
+                    {userRole === 'teacher' ? 'Giáo viên' : userRole === 'parent' ? 'Phụ huynh' : userRole === 'student' ? 'Học sinh' : userRole === 'admin' ? 'Quản trị viên' : 'Thành viên'}
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
