@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Bell, CheckCircle2, Trash2, MailOpen } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import { Bell, CheckCircle2, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface Notification {
   id: string;
@@ -13,23 +12,44 @@ interface Notification {
   time: string;
 }
 
+const defaultNotifications: Notification[] = [
+  {
+    id: '1',
+    title: 'Học phí mới được thanh toán',
+    message: 'Hóa đơn HD-202609-2368 đã được thanh toán thành công.',
+    isRead: false,
+    time: '5 phút trước'
+  },
+  {
+    id: '2',
+    title: 'Nhắc nhở lịch học',
+    message: 'Lớp Toán nâng cao sẽ bắt đầu sau 30 phút.',
+    isRead: false,
+    time: '1 giờ trước'
+  }
+];
+
 export function NotificationDropdown() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Học phí mới được thanh toán',
-      message: 'Hóa đơn HD-202609-2368 đã được thanh toán thành công.',
-      isRead: false,
-      time: '5 phút trước'
-    },
-    {
-      id: '2',
-      title: 'Nhắc nhở lịch học',
-      message: 'Lớp Toán nâng cao sẽ bắt đầu sau 30 phút.',
-      isRead: false,
-      time: '1 giờ trước'
+  const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem('giasupro_mock_notifications');
+    if (saved) {
+      try {
+        setNotifications(JSON.parse(saved));
+      } catch (e) {
+        // ignore
+      }
     }
-  ]);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('giasupro_mock_notifications', JSON.stringify(notifications));
+    }
+  }, [notifications, mounted]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -50,10 +70,9 @@ export function NotificationDropdown() {
       <DropdownMenuTrigger asChild>
         <button className="relative p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300 mr-1">
           <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1.5 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          {unreadCount > 0 && mounted && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm border-2 border-white dark:border-zinc-950">
+              {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </button>
@@ -89,11 +108,13 @@ export function NotificationDropdown() {
             notifications.map((n) => (
               <div 
                 key={n.id} 
-                className={`p-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors group relative flex gap-3 cursor-pointer ${!n.isRead ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
+                className={`p-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors group relative flex gap-3 cursor-pointer ${!n.isRead ? 'bg-blue-50/10 dark:bg-blue-900/10' : ''}`}
                 onClick={() => markAsRead(n.id)}
               >
-                {!n.isRead && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r"></div>
+                {!n.isRead ? (
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0 shadow-sm" />
+                ) : (
+                  <div className="w-2 h-2 shrink-0" />
                 )}
                 
                 <div className="flex-1 min-w-0 pr-6 space-y-1">
