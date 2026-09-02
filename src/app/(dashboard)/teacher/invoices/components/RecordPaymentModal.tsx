@@ -66,8 +66,7 @@ export function RecordPaymentModal({ invoice, isOpen, onClose, onSuccess }: Prop
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+          <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
             Xác nhận Thu Tiền Học Phí
           </DialogTitle>
           <DialogDescription className="hidden">
