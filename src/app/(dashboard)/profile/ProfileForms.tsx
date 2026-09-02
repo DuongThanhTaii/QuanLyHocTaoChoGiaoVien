@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Trash2 } from 'lucide-react';
+import { Star, Trash2, Eye, EyeOff } from 'lucide-react';
 import { VIETNAM_BANKS } from '@/lib/banks';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 
@@ -304,6 +304,8 @@ export function AddBankAccountForm() {
 export function PayOSConfigForm({ profile }: { profile: any }) {
   const [state, formAction, isPending] = useActionState(updatePayOS as any, initialState);
   const [isExpanded, setIsExpanded] = useState(!!profile?.payos_client_id);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showChecksum, setShowChecksum] = useState(false);
 
   useEffect(() => {
     if (state?.success && state?.message) {
@@ -328,7 +330,13 @@ export function PayOSConfigForm({ profile }: { profile: any }) {
       </CardHeader>
       
       {isExpanded && (
-        <form action={formAction}>
+        <form action={formAction} autoComplete="off">
+          {/* Decoy fields to trap browser credential autofill heuristics */}
+          <div aria-hidden="true" style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1, overflow: 'hidden' }}>
+            <input type="text" name="fake_username_remember" tabIndex={-1} autoComplete="username" />
+            <input type="password" name="fake_password_remember" tabIndex={-1} autoComplete="current-password" />
+          </div>
+
           <CardContent className="space-y-6 pt-2 border-t border-zinc-100">
             {/* Hướng dẫn cài đặt */}
             <div className="space-y-4">
@@ -382,16 +390,69 @@ export function PayOSConfigForm({ profile }: { profile: any }) {
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Điền thông tin API Key</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="clientId">Client ID</Label>
-                  <Input id="clientId" name="clientId" defaultValue={profile?.payos_client_id || ''} placeholder="Nhập Client ID..." />
+                  <Label htmlFor="payos_client_id">Client ID</Label>
+                  <Input 
+                    id="payos_client_id" 
+                    name="clientId" 
+                    defaultValue={profile?.payos_client_id || ''} 
+                    placeholder="Nhập Client ID..." 
+                    autoComplete="off"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-form-type="other"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="apiKey">API Key</Label>
-                  <Input id="apiKey" name="apiKey" type="password" defaultValue={profile?.payos_api_key || ''} placeholder="Nhập API Key..." />
+                  <Label htmlFor="payos_api_key">API Key</Label>
+                  <div className="relative">
+                    <Input 
+                      id="payos_api_key" 
+                      name="apiKey" 
+                      type={showApiKey ? "text" : "password"} 
+                      defaultValue={profile?.payos_api_key || ''} 
+                      placeholder="Nhập API Key..." 
+                      autoComplete="new-password"
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      data-form-type="other"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                      tabIndex={-1}
+                      title={showApiKey ? "Ẩn API Key" : "Hiện API Key"}
+                    >
+                      {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="checksumKey">Checksum Key</Label>
-                  <Input id="checksumKey" name="checksumKey" type="password" defaultValue={profile?.payos_checksum_key || ''} placeholder="Nhập Checksum Key..." />
+                  <Label htmlFor="payos_checksum_key">Checksum Key</Label>
+                  <div className="relative">
+                    <Input 
+                      id="payos_checksum_key" 
+                      name="checksumKey" 
+                      type={showChecksum ? "text" : "password"} 
+                      defaultValue={profile?.payos_checksum_key || ''} 
+                      placeholder="Nhập Checksum Key..." 
+                      autoComplete="new-password"
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      data-form-type="other"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowChecksum(!showChecksum)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                      tabIndex={-1}
+                      title={showChecksum ? "Ẩn Checksum Key" : "Hiện Checksum Key"}
+                    >
+                      {showChecksum ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
