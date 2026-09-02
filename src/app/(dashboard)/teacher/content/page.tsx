@@ -1,10 +1,32 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { HardDrive, Link as LinkIcon, FolderPlus, FileVideo, PlusCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, HardDrive, Link as LinkIcon, FolderPlus, FileVideo, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '@/infrastructure/auth/supabase/server';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export default function TeacherContentPage() {
-  const isDriveLinked = false; // TODO: Lấy trạng thái từ Database
+export default async function TeacherContentPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const successMessage = params.success === 'drive_linked' ? 'Kết nối Google Drive thành công!' : null;
+  const errorMessage = params.error ? 'Kết nối thất bại. Vui lòng thử lại.' : null;
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  let isDriveLinked = false;
+  let userEmail = user?.email || '';
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('google_refresh_token')
+      .eq('id', user.id)
+      .single();
+      
+    if (profile?.google_refresh_token) {
+      isDriveLinked = true;
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -12,6 +34,22 @@ export default function TeacherContentPage() {
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Bài giảng & Bài tập</h1>
         <p className="text-zinc-500">Quản lý toàn bộ học liệu, bài tập và chấm điểm học sinh.</p>
       </div>
+
+      {successMessage && (
+        <Alert className="bg-emerald-50 text-emerald-900 border-emerald-200">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <AlertTitle>Thành công</AlertTitle>
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
+      )}
+
+      {errorMessage && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Lỗi</AlertTitle>
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
 
       {!isDriveLinked ? (
         <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden relative">
@@ -41,9 +79,11 @@ export default function TeacherContentPage() {
             </ul>
           </CardContent>
           <CardFooter className="bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-800 py-4">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
-              <LinkIcon className="w-4 h-4 mr-2" />
-              Kết nối Google Drive ngay
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium" asChild>
+              <Link href="/api/auth/google">
+                <LinkIcon className="w-4 h-4 mr-2" />
+                Kết nối Google Drive ngay
+              </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -80,7 +120,7 @@ export default function TeacherContentPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">Đã kết nối Drive</p>
-                    <p className="text-xs text-zinc-500">duongthanhtai1308@gmail.com</p>
+                    <p className="text-xs text-zinc-500">{userEmail}</p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" className="w-full text-xs" asChild>
