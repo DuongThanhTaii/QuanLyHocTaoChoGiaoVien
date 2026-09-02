@@ -32,7 +32,6 @@ export default async function TeacherContentPage({ searchParams }: { searchParam
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Bài giảng & Bài tập</h1>
-        <p className="text-zinc-500">Quản lý toàn bộ học liệu, bài tập và chấm điểm học sinh.</p>
       </div>
 
       {successMessage && (
@@ -52,40 +51,23 @@ export default async function TeacherContentPage({ searchParams }: { searchParam
       )}
 
       {!isDriveLinked ? (
-        <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+        <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
           <CardHeader>
-            <div className="flex items-center gap-3 mb-1">
+            <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 text-blue-600 rounded-lg dark:bg-blue-900/30 dark:text-blue-400">
                 <HardDrive className="w-6 h-6" />
               </div>
               <CardTitle className="text-lg">Liên kết Google Drive</CardTitle>
             </div>
-            <CardDescription className="text-base">
-              Hệ thống sử dụng trực tiếp Google Drive của bạn để lưu trữ bài giảng và bài làm của học sinh (không giới hạn dung lượng).
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" /> Học sinh nộp bài, file đi thẳng vào thư mục Drive của bạn.
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" /> Upload video bài giảng nặng hàng GB thoải mái.
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" /> Bạn toàn quyền kiểm soát và sở hữu dữ liệu.
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter className="bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-800 py-4">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium" asChild>
+            <Button asChild className="w-fit whitespace-nowrap">
               <Link href="/api/auth/google">
                 <LinkIcon className="w-4 h-4 mr-2" />
                 Kết nối Google Drive ngay
               </Link>
             </Button>
-          </CardFooter>
+          </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
