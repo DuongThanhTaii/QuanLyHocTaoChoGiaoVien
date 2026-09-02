@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount } from './actions';
+import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,15 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Trash2 } from 'lucide-react';
@@ -65,13 +74,78 @@ export function BasicProfileForm({ profile }: { profile: any }) {
             <Input id="phone" name="phone" defaultValue={profile?.phone || ''} disabled={!isEditing} className={!isEditing ? 'bg-zinc-50 text-zinc-600' : ''} />
           </div>
         </CardContent>
-        <CardFooter className="pt-2 border-t border-zinc-100">
-          {isEditing ? <div className="flex gap-2"><Button type="submit" disabled={isPending}>{isPending ? 'Đang lưu...' : 'Lưu thay đổi'}</Button><Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isPending}>Hủy</Button></div> : <Button type="button" onClick={() => setIsEditing(true)}>Chỉnh sửa</Button>}
+        <CardFooter className="pt-4 border-t border-zinc-100 flex items-center justify-between">
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button type="submit" disabled={isPending}>{isPending ? 'Đang lưu...' : 'Lưu thay đổi'}</Button>
+                <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isPending}>Hủy</Button>
+              </>
+            ) : (
+              <Button type="button" onClick={() => setIsEditing(true)}>Chỉnh sửa</Button>
+            )}
+          </div>
+          
+          <ChangePasswordModal />
         </CardFooter>
       </form>
     </Card>
   );
 }
+
+export function ChangePasswordModal() {
+  const [state, formAction, isPending] = useActionState(changePassword as any, initialState);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (state?.success && state?.message) {
+      toast.success(state.message);
+      setIsOpen(false);
+    } else if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" type="button">Đổi mật khẩu</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Đổi mật khẩu</DialogTitle>
+          <DialogDescription>
+            Nhập mật khẩu hiện tại và mật khẩu mới để thay đổi.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <form action={formAction}>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="oldPassword">Mật khẩu hiện tại</Label>
+              <Input id="oldPassword" name="oldPassword" type="password" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Mật khẩu mới</Label>
+              <Input id="newPassword" name="newPassword" type="password" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+              <Input id="confirmPassword" name="confirmPassword" type="password" required />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isPending}>Hủy</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Đang đổi...' : 'Xác nhận đổi'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export function BankAccountsList({ accounts }: { accounts: any[] }) {
   const handleSetDefault = async (id: string) => {

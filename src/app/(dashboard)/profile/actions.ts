@@ -144,9 +144,7 @@ export async function deleteBankAccount(id: string) {
     .eq('id', id)
     .eq('user_id', user.id);
 
-  if (error) {
-    return { error: error.message };
-  }
+  if (error) return { error: error.message };
 
   revalidatePath('/profile');
   return { success: true };
@@ -158,23 +156,64 @@ export async function setDefaultBankAccount(id: string) {
 
   if (!user) return { error: 'Unauthorized' };
 
-  // Reset all to false
+  // 1. Unset current default
   await supabase
     .from('bank_accounts')
     .update({ is_default: false })
     .eq('user_id', user.id);
 
-  // Set the specific one to true
+  // 2. Set new default
   const { error } = await supabase
     .from('bank_accounts')
     .update({ is_default: true })
     .eq('id', id)
     .eq('user_id', user.id);
 
-  if (error) {
-    return { error: error.message };
-  }
+  if (error) return { error: error.message };
 
   revalidatePath('/profile');
   return { success: true };
+}
+
+export async function changePassword(prevState: any, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !user.email) return { error: 'Unauthorized' };
+
+  const oldPassword = formData.get('oldPassword') as string;
+  const newPassword = formData.get('newPassword') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return { error: 'Vui lòng nhập đầy đủ thông tin' };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: 'Mật khẩu xác nhận không khớp' };
+  }
+
+  if (newPassword.length < 6) {
+    return { error: 'Mật khẩu mới phải có ít nhất 6 ký tự' };
+  }
+
+  // 1. Verify old password by attempting to sign in
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: oldPassword,
+  });
+
+  if (signInError) {
+    return { error: 'Mật khẩu cũ không chính xác' };
+  }
+
+  // 2. Change password
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: newPassword
+  });
+
+  if (updateError) {
+    return { error: updateError.message };
+  }
+
+  return { success: true, message: 'Đổi mật khẩu thành công!' };
 }
