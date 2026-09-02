@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle2, HardDrive, Link as LinkIcon, FolderPlus, FileVideo, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/infrastructure/auth/supabase/server';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default async function TeacherContentPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
@@ -65,49 +66,77 @@ export default async function TeacherContentPage({ searchParams }: { searchParam
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-2 border-zinc-200 dark:border-zinc-800 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <div>
-                <CardTitle>Thư viện Học liệu</CardTitle>
-                <CardDescription>Các tài liệu và video đã tải lên Drive.</CardDescription>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800">
+              <div className="p-1.5 bg-emerald-100 text-emerald-600 rounded-md dark:bg-emerald-900/30 dark:text-emerald-400">
+                <HardDrive className="w-4 h-4" />
               </div>
-              <Button size="sm">
-                <PlusCircle className="w-4 h-4 mr-2" /> Tải lên
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50 dark:bg-zinc-900/50">
-                <FileVideo className="w-10 h-10 text-zinc-300 mb-3" />
-                <p className="text-zinc-500 font-medium">Chưa có tài liệu nào</p>
-                <p className="text-zinc-400 text-sm">Bấm "Tải lên" để thêm file từ máy tính</p>
+              <div className="text-sm">
+                <span className="text-zinc-500 mr-2">Đã kết nối:</span>
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">{userEmail}</span>
               </div>
-            </CardContent>
-          </Card>
-          
-          <div className="space-y-6">
-            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Trạng thái lưu trữ</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-100 text-emerald-600 rounded-full dark:bg-emerald-900/30 dark:text-emerald-400">
-                    <HardDrive className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Đã kết nối Drive</p>
-                    <p className="text-xs text-zinc-500">{userEmail}</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="w-full text-xs" asChild>
-                  <Link href="https://drive.google.com" target="_blank">
-                    <FolderPlus className="w-3.5 h-3.5 mr-2" /> Mở thư mục Drive
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+              <Link href="https://drive.google.com" target="_blank" className="ml-2 text-zinc-400 hover:text-blue-500">
+                <LinkIcon className="w-4 h-4" />
+              </Link>
+            </div>
+            
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Tải tài liệu lên
+            </Button>
           </div>
+
+          <Tabs defaultValue="library" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="library">Kho tài liệu gốc</TabsTrigger>
+              <TabsTrigger value="assignments">Tình trạng giao bài</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="library">
+              <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-lg">Tất cả tài liệu</CardTitle>
+                      <CardDescription>Danh sách các bài giảng và bài tập bạn đã tải lên hệ thống.</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="p-8 text-center text-zinc-500 flex flex-col items-center">
+                    <FolderPlus className="w-12 h-12 text-zinc-300 mb-3" />
+                    <p className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">Kho tài liệu đang trống</p>
+                    <p className="text-sm">Bạn chưa tải lên bài giảng hay bài tập nào. Hãy tải lên file đầu tiên!</p>
+                    <Button variant="outline" className="mt-4">
+                      <PlusCircle className="w-4 h-4 mr-2" />
+                      Tải lên ngay
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="assignments">
+              <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-lg">Tiến độ nộp bài</CardTitle>
+                      <CardDescription>Theo dõi tình trạng nộp bài tập của các lớp.</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="p-8 text-center text-zinc-500 flex flex-col items-center">
+                    <FileVideo className="w-12 h-12 text-zinc-300 mb-3" />
+                    <p className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">Chưa giao bài tập nào</p>
+                    <p className="text-sm">Sau khi tải tài liệu lên Kho, hãy chọn "Giao cho lớp" để bắt đầu theo dõi.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </div>
