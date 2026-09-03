@@ -290,3 +290,6 @@ GRANT EXECUTE ON FUNCTION public.has_permission(TEXT) TO authenticated, service_
 GRANT EXECUTE ON FUNCTION public.is_account_restricted(UUID) TO authenticated, service_role;
 
 COMMIT;
+
+-- Make newly-created administration tables available to PostgREST immediately.
+NOTIFY pgrst, 'reload schema';

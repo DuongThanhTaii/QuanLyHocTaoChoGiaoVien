@@ -18,6 +18,7 @@ import {
 
 interface SupportButtonProps {
   isCollapsed?: boolean;
+  variant?: 'sidebar' | 'floating';
 }
 
 const SUPPORT_CONFIG = {
@@ -68,8 +69,9 @@ function HotlineLogo() {
   );
 }
 
-export function SupportButton({ isCollapsed = false }: SupportButtonProps) {
+export function SupportButton({ isCollapsed = false, variant = 'sidebar' }: SupportButtonProps) {
   const [open, setOpen] = useState(false);
+  const isFloating = variant === 'floating';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -77,14 +79,16 @@ export function SupportButton({ isCollapsed = false }: SupportButtonProps) {
         render={
           <button
             type="button"
-            className="relative w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group mb-2 text-muted-foreground hover:text-foreground hover:bg-muted outline-none cursor-pointer text-left"
+            className={isFloating
+              ? 'fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
+              : 'relative mb-2 flex w-full items-center overflow-hidden rounded-md px-3 py-2.5 text-left text-sm font-medium text-muted-foreground outline-none transition-all duration-300 hover:bg-muted hover:text-foreground'}
             title={isCollapsed ? "Hỗ trợ" : undefined}
           />
         }
       >
-        <LifeBuoy className="w-5 h-5 shrink-0 transition-colors duration-300 text-muted-foreground group-hover:text-foreground" />
+        <LifeBuoy className={`size-5 shrink-0 transition-colors duration-300 ${isFloating ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`} />
         
-        <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden flex items-center ${isCollapsed ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100 ml-3'}`}>
+        <div className={`flex items-center overflow-hidden whitespace-nowrap transition-all duration-300 ${isFloating ? 'max-w-[150px] opacity-100' : isCollapsed ? 'max-w-0 opacity-0' : 'ml-3 max-w-[150px] opacity-100'}`}>
           <span className="z-10">Hỗ trợ</span>
         </div>
       </DialogTrigger>
