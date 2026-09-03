@@ -11,6 +11,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
     redirect('/login');
   }
 
+  if (!user.email_confirmed_at) {
+    redirect(`/register/verify-email?email=${encodeURIComponent(user.email ?? '')}`);
+  }
+
   // Fetch profile to check onboarding status
   const { data: profile } = await supabase
     .from('profiles')

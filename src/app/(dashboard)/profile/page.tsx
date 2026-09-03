@@ -47,7 +47,7 @@ export default async function ProfilePage() {
         {/* Right Column */}
         <div className="space-y-8">
           <BankAccountsList accounts={accounts || []} />
-          <AddBankAccountForm phone={profileWithPhone.phone} phoneVerified={Boolean(profile?.phone_verified_at)} />
+          <AddBankAccountForm />
         </div>
       </div>
     </div>

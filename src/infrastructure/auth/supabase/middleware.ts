@@ -35,6 +35,7 @@ export async function updateSession(request: NextRequest) {
     console.error('Error fetching user in middleware:', err)
   }
 
+  const isEmailVerificationRoute = request.nextUrl.pathname.startsWith('/register/verify-email')
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
 
   // Restrictions are enforced at the edge as well as in admin actions. This
@@ -49,7 +50,7 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  if (user && isAuthRoute) {
+  if (user && isAuthRoute && !isEmailVerificationRoute) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
