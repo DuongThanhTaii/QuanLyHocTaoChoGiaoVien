@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { logout } from '@/app/(auth)/actions';
 import { getUnreadChatCount } from '@/app/actions/chat-actions';
 import { createBrowserClient } from '@supabase/ssr';
-import { ElementType, ReactNode, useEffect, useState, useRef } from 'react';
+import { ElementType, ReactNode, useCallback, useEffect, useState, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useThemeColor } from '../providers/theme-color-provider';
 import {
@@ -39,9 +39,19 @@ import { ChartNoAxesColumnIncreasingIcon } from '../ui/chart-no-axes-column-incr
 import { FoldersIcon } from '../ui/folders';
 
 interface SidebarItem {
-  icon: ElementType<{ className?: string; size?: number | string; strokeWidth?: number | string }>;
+  icon: ElementType;
   label: string;
   href: string;
+}
+
+type AnimatedIconController = { startAnimation?: () => void; stopAnimation?: () => void };
+
+function useSidebarIconAnimation() {
+  const iconRef = useRef<AnimatedIconController | null>(null);
+  const setIconRef = useCallback((node: unknown) => {
+    iconRef.current = node && typeof node === 'object' ? node as AnimatedIconController : null;
+  }, []);
+  return { setIconRef, start: () => iconRef.current?.startAnimation?.(), stop: () => iconRef.current?.stopAnimation?.() };
 }
 
 const teacherNav: SidebarItem[] = [
@@ -89,6 +99,7 @@ function NavItem({
   isCollapsed: boolean,
   badge?: number 
 }) {
+  const iconAnimation = useSidebarIconAnimation();
   // Logic to determine active state
   const isActive = item.href === '/teacher' || item.href === '/parent' || item.href === '/student' 
     ? pathname === item.href 
@@ -100,6 +111,8 @@ function NavItem({
     <Link
       href={item.href}
       title={isCollapsed ? `${item.label}${hasBadge ? ` ${badge}` : ''}` : undefined}
+      onMouseEnter={iconAnimation.start}
+      onMouseLeave={iconAnimation.stop}
       className={`relative flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-300 overflow-hidden group
         ${isActive 
           ? "text-primary bg-primary/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]" 
@@ -109,6 +122,7 @@ function NavItem({
     >
       <div className="relative shrink-0 flex items-center justify-center">
         <item.icon
+          ref={iconAnimation.setIconRef}
           size={20}
           strokeWidth={1.6}
           className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`}
@@ -144,14 +158,17 @@ function isNavItemActive(item: SidebarItem, pathname: string) {
 }
 
 function MobileNavItem({ item, pathname, badge }: { item: SidebarItem; pathname: string; badge?: number }) {
+  const iconAnimation = useSidebarIconAnimation();
   const isActive = isNavItemActive(item, pathname);
   return (
     <Link
       href={item.href}
+      onMouseEnter={iconAnimation.start}
+      onMouseLeave={iconAnimation.stop}
       className={`relative flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] font-medium transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
     >
       <span className={`relative grid size-8 place-items-center rounded-lg ${isActive ? 'bg-primary/10' : ''}`}>
-        <item.icon size={18} strokeWidth={1.6} className="size-[18px]" />
+        <item.icon ref={iconAnimation.setIconRef} size={18} strokeWidth={1.6} className="size-[18px]" />
         {!!badge && <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">{badge > 9 ? '9+' : badge}</span>}
       </span>
       <span className="max-w-16 truncate">{item.label}</span>
