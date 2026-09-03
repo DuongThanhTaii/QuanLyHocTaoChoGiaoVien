@@ -5,20 +5,13 @@ import { usePathname } from 'next/navigation';
 import { logout } from '@/app/(auth)/actions';
 import { getUnreadChatCount } from '@/app/actions/chat-actions';
 import { createBrowserClient } from '@supabase/ssr';
-import { ReactNode, useEffect, useState, useRef, useMemo } from 'react';
+import { ElementType, ReactNode, useEffect, useState, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useThemeColor } from '../providers/theme-color-provider';
 import {
-  LayoutDashboard,
   Users,
-  BookOpen,
   Calendar,
-  CreditCard,
-  MessageSquare,
-  BarChart,
-  Settings,
   LogOut,
-  FolderOpen,
   MoreVertical,
   Menu,
   MoreHorizontal,
@@ -27,7 +20,6 @@ import {
   Tags,
   BadgeDollarSign
 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { UserAvatar } from '../ui/UserAvatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from '../ui/dropdown-menu';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
@@ -36,39 +28,49 @@ import { SupportButton } from '../shared/SupportButton';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '../ui/sheet';
 import { Button } from '../ui/button';
 
+// Animated Icons
+import { LayoutDashboardIcon } from '../ui/layout-dashboard-icon';
+import { GraduationCapIcon } from '../ui/graduation-cap';
+import { CalendarDaysIcon } from '../ui/calendar-days';
+import { BookIcon } from '../ui/book-icon';
+import { CreditCardIcon } from '../ui/credit-card';
+import { MessageSquareMoreIcon } from '../ui/message-square-more';
+import { ChartNoAxesColumnIncreasingIcon } from '../ui/chart-no-axes-column-increasing';
+import { FoldersIcon } from '../ui/folders';
+
 interface SidebarItem {
-  icon: any;
+  icon: ElementType<{ className?: string; size?: number | string; strokeWidth?: number | string }>;
   label: string;
   href: string;
 }
 
 const teacherNav: SidebarItem[] = [
-  { icon: LayoutDashboard, label: 'Bảng điều khiển', href: '/teacher' },
-  { icon: Users, label: 'Lớp học', href: '/teacher/classes' },
-  { icon: Calendar, label: 'Thời khóa biểu', href: '/teacher/schedule' },
-  { icon: BookOpen, label: 'Bài giảng & Bài tập', href: '/teacher/content' },
-  { icon: CreditCard, label: 'Hóa đơn học phí', href: '/teacher/invoices' },
-  { icon: MessageSquare, label: 'Tin nhắn', href: '/teacher/chat' },
-  { icon: BarChart, label: 'Thống kê & Thuế', href: '/teacher/analytics' },
-  { icon: FolderOpen, label: 'Tiện ích & Biểu mẫu', href: '/teacher/tools' },
+  { icon: LayoutDashboardIcon, label: 'Bảng điều khiển', href: '/teacher' },
+  { icon: GraduationCapIcon, label: 'Lớp học', href: '/teacher/classes' },
+  { icon: CalendarDaysIcon, label: 'Thời khóa biểu', href: '/teacher/schedule' },
+  { icon: BookIcon, label: 'Bài giảng & Bài tập', href: '/teacher/content' },
+  { icon: CreditCardIcon, label: 'Hóa đơn học phí', href: '/teacher/invoices' },
+  { icon: MessageSquareMoreIcon, label: 'Tin nhắn', href: '/teacher/chat' },
+  { icon: ChartNoAxesColumnIncreasingIcon, label: 'Thống kê & Thuế', href: '/teacher/analytics' },
+  { icon: FoldersIcon, label: 'Tiện ích & Biểu mẫu', href: '/teacher/tools' },
 ];
 
 const parentNav: SidebarItem[] = [
   { icon: Users, label: 'Con của tôi', href: '/parent/students' },
-  { icon: CreditCard, label: 'Hóa đơn học phí', href: '/parent/invoices' },
-  { icon: MessageSquare, label: 'Tin nhắn', href: '/parent/chat' },
+  { icon: CreditCardIcon, label: 'Hóa đơn học phí', href: '/parent/invoices' },
+  { icon: MessageSquareMoreIcon, label: 'Tin nhắn', href: '/parent/chat' },
 ];
 
 const studentNav: SidebarItem[] = [
-  { icon: BookOpen, label: 'Lớp học của tôi', href: '/student/classes' },
-  { icon: Calendar, label: 'Thời khóa biểu', href: '/student/schedule' },
-  { icon: CreditCard, label: 'Học phí', href: '/student/invoices' },
-  { icon: MessageSquare, label: 'Tin nhắn', href: '/student/chat' },
+  { icon: GraduationCapIcon, label: 'Lớp học của tôi', href: '/student/classes' },
+  { icon: CalendarDaysIcon, label: 'Thời khóa biểu', href: '/student/schedule' },
+  { icon: CreditCardIcon, label: 'Học phí', href: '/student/invoices' },
+  { icon: MessageSquareMoreIcon, label: 'Tin nhắn', href: '/student/chat' },
   { icon: Users, label: 'Yêu cầu liên kết', href: '/student/requests' },
 ];
 
 const adminNav: SidebarItem[] = [
-  { icon: LayoutDashboard, label: 'Tổng quan', href: '/admin' },
+  { icon: LayoutDashboardIcon, label: 'Tổng quan', href: '/admin' },
   { icon: Users, label: 'Người dùng', href: '/admin/users' },
   { icon: ShieldCheck, label: 'Vai trò & quyền', href: '/admin/roles' },
   { icon: Tags, label: 'Gói & giá cước', href: '/admin/plans' },
@@ -105,8 +107,12 @@ function NavItem({
         }
       `}
     >
-      <div className="relative shrink-0">
-        <item.icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`} />
+      <div className="relative shrink-0 flex items-center justify-center">
+        <item.icon
+          size={20}
+          strokeWidth={1.6}
+          className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-primary drop-shadow-[0_0_5px_rgba(var(--color-primary),0.5)]" : "text-muted-foreground group-hover:text-foreground"}`}
+        />
         {hasBadge && isCollapsed && (
           <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-pulse">
             {badge > 9 ? '9+' : badge}
@@ -145,7 +151,7 @@ function MobileNavItem({ item, pathname, badge }: { item: SidebarItem; pathname:
       className={`relative flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] font-medium transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
     >
       <span className={`relative grid size-8 place-items-center rounded-lg ${isActive ? 'bg-primary/10' : ''}`}>
-        <item.icon className="size-[18px]" />
+        <item.icon size={18} strokeWidth={1.6} className="size-[18px]" />
         {!!badge && <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">{badge > 9 ? '9+' : badge}</span>}
       </span>
       <span className="max-w-16 truncate">{item.label}</span>
@@ -175,11 +181,12 @@ export default function DashboardLayout({
 
   const { setTheme } = useTheme();
   const { setThemeColor } = useThemeColor();
+  const isThemeColor = (value: string): value is 'zinc' | 'red' | 'blue' | 'green' | 'orange' => ['zinc', 'red', 'blue', 'green', 'orange'].includes(value);
 
   useEffect(() => {
     if (uiSettings && !sessionStorage.getItem('theme_synced')) {
       if (uiSettings.theme) setTheme(uiSettings.theme);
-      if (uiSettings.themeColor) setThemeColor(uiSettings.themeColor as any);
+      if (uiSettings.themeColor && isThemeColor(uiSettings.themeColor)) setThemeColor(uiSettings.themeColor);
       sessionStorage.setItem('theme_synced', 'true');
     }
   }, [uiSettings, setTheme, setThemeColor]);
