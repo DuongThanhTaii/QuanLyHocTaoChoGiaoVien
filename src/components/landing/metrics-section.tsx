@@ -21,17 +21,17 @@ export const MetricsSection = () => {
           </div>
         </AnimationContainer>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid auto-rows-fr grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
           {METRICS.map((metric, idx) => (
-            <AnimationContainer key={metric.label} delay={0.1 + idx * 0.08}>
-              <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs hover:border-orange-200 dark:hover:border-orange-800 transition-colors text-center group">
+            <AnimationContainer key={metric.label} delay={0.1 + idx * 0.08} className="h-full">
+              <div className="flex h-full min-h-[164px] flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-white p-4 text-center shadow-xs transition-colors group hover:border-orange-200 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-orange-800">
                 <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-orange-500 to-amber-600 group-hover:scale-105 transition-transform duration-300">
                   {metric.value}
                 </span>
                 <span className="mt-2 text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-100">
                   {metric.label}
                 </span>
-                <span className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
+                <span className="mt-1 text-xs text-slate-500 lg:whitespace-nowrap lg:text-[11px] dark:text-zinc-400">
                   {metric.description}
                 </span>
               </div>
