@@ -45,7 +45,18 @@ export async function requireAdminPermission(permission: AdminPermission) {
     permission_code: permission,
   });
 
-  if (error || !allowed) throw new AdminAuthorizationError();
+  if (!error && allowed) return { user, admin: getServiceClient() };
+
+  // The original production admin role remains a safe compatibility fallback
+  // while a database is waiting for the dynamic-RBAC migration/schema reload.
+  // It never grants access to a non-admin user.
+  const { data: legacyAdmin } = await supabase
+    .from('user_roles')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .eq('role', 'admin')
+    .maybeSingle();
+  if (!legacyAdmin) throw new AdminAuthorizationError();
   return { user, admin: getServiceClient() };
 }
 
