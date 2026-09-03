@@ -355,7 +355,7 @@ export default function DashboardLayout({
                     <div className="absolute inset-0 z-20 cursor-pointer bg-transparent" onContextMenu={(event) => event.preventDefault()} />
                   </div>
                   <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'ml-0 max-w-0 opacity-0' : 'ml-1 max-w-[150px] opacity-100'}`}>
-                    <div className="text-xl font-bold tracking-tight text-foreground">Mari</div>
+                    <img src="/images/empty_states/logo_word.svg" alt="Mari" className="h-9 w-28 max-w-none object-contain object-left" />
                   </div>
               </TooltipTrigger>
               {isCollapsed && (
