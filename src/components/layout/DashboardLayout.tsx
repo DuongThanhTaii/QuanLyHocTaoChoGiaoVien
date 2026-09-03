@@ -14,10 +14,7 @@ import {
   MoreVertical,
   Menu,
   MoreHorizontal,
-  ShieldCheck,
-  ScrollText,
-  Tags,
-  BadgeDollarSign
+  ScrollText
 } from 'lucide-react';
 import { UserAvatar } from '../ui/UserAvatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from '../ui/dropdown-menu';
@@ -37,6 +34,9 @@ import { MessageSquareMoreIcon } from '../ui/message-square-more';
 import { ChartNoAxesColumnIncreasingIcon } from '../ui/chart-no-axes-column-increasing';
 import { FoldersIcon } from '../ui/folders';
 import { UsersIcon } from '../ui/users';
+import { ShieldCheckIcon } from '../ui/shield-check';
+import { TagsIcon } from '../ui/tags-icon';
+import { BadgeDollarSignIcon } from '../ui/badge-dollar-sign-icon';
 import { UserIcon } from '../ui/user';
 import { SettingsIcon } from '../ui/settings';
 import { LogoutIcon } from '../ui/logout';
@@ -87,9 +87,9 @@ const studentNav: SidebarItem[] = [
 const adminNav: SidebarItem[] = [
   { icon: LayoutDashboardIcon, label: 'Tổng quan', href: '/admin' },
   { icon: UsersIcon, label: 'Người dùng', href: '/admin/users' },
-  { icon: ShieldCheck, label: 'Vai trò & quyền', href: '/admin/roles' },
-  { icon: Tags, label: 'Gói & giá cước', href: '/admin/plans' },
-  { icon: BadgeDollarSign, label: 'Subscription', href: '/admin/subscriptions' },
+  { icon: ShieldCheckIcon, label: 'Vai trò & quyền', href: '/admin/roles' },
+  { icon: TagsIcon, label: 'Gói & giá cước', href: '/admin/plans' },
+  { icon: BadgeDollarSignIcon, label: 'Subscription', href: '/admin/subscriptions' },
   { icon: ScrollText, label: 'Nhật ký hệ thống', href: '/admin/logs' },
 ];
 
@@ -221,6 +221,7 @@ export default function DashboardLayout({
   uiSettings?: { theme?: string; themeColor?: string }
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
   const mobileNavItems = navItems.slice(0, 4);
@@ -237,6 +238,13 @@ export default function DashboardLayout({
       sessionStorage.setItem('theme_synced', 'true');
     }
   }, [uiSettings, setTheme, setThemeColor]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isCollapsed]);
 
   const [unreadChatCount, setUnreadChatCount] = useState<number>(0);
 
@@ -333,8 +341,21 @@ export default function DashboardLayout({
                 className="flex items-center cursor-pointer shrink-0 border-none outline-none bg-transparent"
                 onClick={() => isCollapsed && setIsCollapsed(false)}
               >
-                  <div className={`flex items-center overflow-hidden transition-all duration-300 ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[190px] opacity-100 ml-1'}`}>
-                    <img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-12 w-auto max-w-[180px] object-contain" />
+                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+                    <div className="absolute bottom-1 z-0 h-1.5 w-8 translate-y-1 rounded-[50%] bg-black/30 blur-[2px]" />
+                    <video
+                      ref={videoRef}
+                      src="/logo.webm"
+                      className="relative z-10 h-full w-full scale-110 object-contain pointer-events-none select-none"
+                      muted
+                      playsInline
+                      onContextMenu={(event) => event.preventDefault()}
+                      controlsList="nodownload"
+                    />
+                    <div className="absolute inset-0 z-20 cursor-pointer bg-transparent" onContextMenu={(event) => event.preventDefault()} />
+                  </div>
+                  <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'ml-0 max-w-0 opacity-0' : 'ml-1 max-w-[150px] opacity-100'}`}>
+                    <div className="text-xl font-bold tracking-tight text-foreground">Mari</div>
                   </div>
               </TooltipTrigger>
               {isCollapsed && (
