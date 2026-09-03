@@ -75,9 +75,24 @@ export async function POST(req: NextRequest) {
     const title = (formData.get('title') as string) || file?.name || 'Tài liệu không tên';
     const description = (formData.get('description') as string) || '';
     const type = (formData.get('type') as string) === 'ASSIGNMENT' ? 'ASSIGNMENT' : 'LECTURE';
+    const dueDateStr = formData.get('dueDate') as string | null;
+    const classIdsRaw = formData.get('classIds') as string | null;
+
+    let classIds: string[] = [];
+    if (classIdsRaw) {
+      try {
+        classIds = JSON.parse(classIdsRaw);
+      } catch {
+        classIds = classIdsRaw.split(',').map((s) => s.trim()).filter(Boolean);
+      }
+    }
 
     if (!file) {
       return NextResponse.json({ error: 'Vui lòng chọn file để tải lên' }, { status: 400 });
+    }
+
+    if (classIds.length === 0) {
+      return NextResponse.json({ error: 'Vui lòng chọn ít nhất một lớp học để đăng bài' }, { status: 400 });
     }
 
     // 5. Perform multipart upload to Google Drive API v3
@@ -145,33 +160,74 @@ export async function POST(req: NextRequest) {
       console.warn('Lỗi phân quyền Drive file:', permError);
     }
 
-    // 7. Store metadata into Supabase materials table
-    const { data: newMaterial, error: insertError } = await admin
-      .from('materials')
-      .insert({
-        teacher_id: user.id,
-        title: title,
-        description: description || null,
-        type: type,
-        drive_file_id: driveFileData.id,
-        drive_view_link: driveFileData.webViewLink || `https://drive.google.com/file/d/${driveFileData.id}/view`,
-        file_size_bytes: file.size,
-        mime_type: file.type || driveFileData.mimeType || 'application/octet-stream',
-      })
-      .select()
-      .single();
+    const driveViewLink = driveFileData.webViewLink || `https://drive.google.com/file/d/${driveFileData.id}/view`;
 
-    if (insertError) {
-      console.error('Lỗi lưu database materials:', insertError);
-      return NextResponse.json(
-        { error: 'Đã tải lên Drive nhưng lỗi lưu trữ thông tin hệ thống: ' + insertError.message },
-        { status: 500 }
-      );
+    // 7. Distribute to all selected classes
+    for (const classId of classIds) {
+      if (type === 'LECTURE') {
+        // Create lesson in lessons table
+        const { data: newLesson, error: lessonError } = await admin
+          .from('lessons')
+          .insert({
+            class_id: classId,
+            title: title,
+            content: description || null,
+            created_by: user.id,
+          })
+          .select()
+          .single();
+
+        if (lessonError) {
+          console.error(`Lỗi tạo bài giảng cho lớp ${classId}:`, lessonError);
+        }
+
+        // Attach material in materials table
+        await admin.from('materials').insert({
+          lesson_id: newLesson?.id || null,
+          class_id: classId,
+          name: title,
+          storage_path: driveViewLink,
+          file_type: file.type || driveFileData.mimeType || 'application/octet-stream',
+          size_bytes: file.size,
+          uploaded_by: user.id,
+        });
+      } else {
+        // ASSIGNMENT: Create exercise in exercises table
+        const dueDate = dueDateStr ? new Date(dueDateStr).toISOString() : null;
+
+        await admin.from('exercises').insert({
+          class_id: classId,
+          title: title,
+          description: description || null,
+          due_date: dueDate,
+          max_score: 10,
+          attachments: [
+            {
+              name: title,
+              url: driveViewLink,
+              drive_file_id: driveFileData.id,
+              size_bytes: file.size,
+              mime_type: file.type || driveFileData.mimeType,
+            },
+          ],
+        });
+
+        // Also record in materials table so it shows in central library
+        await admin.from('materials').insert({
+          class_id: classId,
+          name: title,
+          storage_path: driveViewLink,
+          file_type: file.type || driveFileData.mimeType || 'application/octet-stream',
+          size_bytes: file.size,
+          uploaded_by: user.id,
+        });
+      }
     }
 
     return NextResponse.json({
       success: true,
-      material: newMaterial,
+      driveFile: driveFileData,
+      assignedClassesCount: classIds.length,
     });
   } catch (error: any) {
     console.error('Unexpected error in content upload:', error);

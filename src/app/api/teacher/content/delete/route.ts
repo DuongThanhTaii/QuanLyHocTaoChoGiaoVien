@@ -13,9 +13,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Chưa đăng nhập' }, { status: 401 });
     }
 
-    const { id } = await req.json();
-    if (!id) {
-      return NextResponse.json({ error: 'Thiếu ID tài liệu' }, { status: 400 });
+    const body = await req.json();
+    const ids: string[] = Array.isArray(body.ids) ? body.ids : body.id ? [body.id] : [];
+
+    if (ids.length === 0) {
+      return NextResponse.json({ error: 'Thiếu ID tài liệu cần xóa' }, { status: 400 });
     }
 
     const admin = createAdminClient(
@@ -23,33 +25,19 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // 1. Fetch material to verify ownership and obtain drive_file_id
-    const { data: material, error: fetchError } = await admin
-      .from('materials')
-      .select('*')
-      .eq('id', id)
+    // 1. Get Google access token to delete files from Drive
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('google_refresh_token')
+      .eq('id', user.id)
       .single();
 
-    if (fetchError || !material) {
-      return NextResponse.json({ error: 'Không tìm thấy tài liệu' }, { status: 404 });
-    }
+    let accessToken: string | null = null;
+    if (profile?.google_refresh_token) {
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-    if (material.teacher_id !== user.id) {
-      return NextResponse.json({ error: 'Bạn không có quyền xóa tài liệu này' }, { status: 403 });
-    }
-
-    // 2. Delete file on Google Drive (best effort)
-    try {
-      const { data: profile } = await admin
-        .from('profiles')
-        .select('google_refresh_token')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.google_refresh_token && material.drive_file_id) {
-        const clientId = process.env.GOOGLE_CLIENT_ID;
-        const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
+      try {
         const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -62,28 +50,58 @@ export async function POST(req: NextRequest) {
         });
 
         const tokens = await tokenResponse.json();
-        if (tokens.access_token) {
-          await fetch(`https://www.googleapis.com/drive/v3/files/${material.drive_file_id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${tokens.access_token}` },
-          });
-        }
+        accessToken = tokens.access_token || null;
+      } catch (tokenErr) {
+        console.warn('Lỗi lấy access token xóa file Drive:', tokenErr);
       }
-    } catch (driveErr) {
-      console.warn('Lỗi xóa file trên Drive (vẫn tiếp tục xóa trong database):', driveErr);
     }
 
-    // 3. Delete from Supabase
+    // 2. Fetch materials to get Drive file IDs and verify ownership
+    const { data: materials } = await admin
+      .from('materials')
+      .select('id, storage_path, lesson_id, class_id')
+      .in('id', ids);
+
+    for (const mat of (materials || [])) {
+      // Extract Google Drive file ID from storage_path (e.g., https://drive.google.com/file/d/FILE_ID/view)
+      let driveFileId: string | null = null;
+      const match = mat.storage_path?.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) {
+        driveFileId = match[1];
+      }
+
+      // Delete from Google Drive if access token and file ID exist
+      if (accessToken && driveFileId) {
+        try {
+          await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+        } catch (driveErr) {
+          console.warn(`Lỗi xóa file ${driveFileId} trên Drive:`, driveErr);
+        }
+      }
+
+      // If attached to a lesson, also clean up lesson if desired
+      if (mat.lesson_id) {
+        await admin.from('lessons').delete().eq('id', mat.lesson_id);
+      }
+    }
+
+    // 3. Delete materials from database
     const { error: deleteError } = await admin
       .from('materials')
       .delete()
-      .eq('id', id);
+      .in('id', ids);
 
     if (deleteError) {
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      deletedCount: ids.length,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Lỗi hệ thống khi xóa' }, { status: 500 });
   }

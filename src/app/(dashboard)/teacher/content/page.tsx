@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/infrastructure/auth/supabase/server';
@@ -23,6 +23,9 @@ export default async function TeacherContentPage({
   let isDriveLinked = false;
   let userEmail = user?.email || '';
   let materials: any[] = [];
+  let classes: any[] = [];
+  let lessons: any[] = [];
+  let exercises: any[] = [];
 
   if (user) {
     const admin = createAdminClient(
@@ -30,6 +33,7 @@ export default async function TeacherContentPage({
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // 1. Check Google Drive connection
     const { data: profile } = await admin
       .from('profiles')
       .select('google_refresh_token')
@@ -38,17 +42,52 @@ export default async function TeacherContentPage({
 
     if (profile?.google_refresh_token) {
       isDriveLinked = true;
+    }
 
-      // Fetch teacher's materials from database
-      const { data: materialsData, error: matError } = await admin
+    // 2. Fetch teacher's classes
+    const { data: classesData } = await admin
+      .from('classes')
+      .select('id, name, subject, color')
+      .eq('teacher_id', user.id)
+      .order('created_at', { ascending: false });
+
+    classes = classesData || [];
+    const classIds = classes.map((c) => c.id);
+
+    if (classIds.length > 0) {
+      // 3. Fetch materials for teacher's classes
+      const { data: materialsData } = await admin
         .from('materials')
         .select('*')
-        .eq('teacher_id', user.id)
+        .in('class_id', classIds)
         .order('created_at', { ascending: false });
 
-      if (!matError && materialsData) {
-        materials = materialsData;
-      }
+      // De-duplicate materials by name or storage_path if assigned to multiple classes
+      const seen = new Set<string>();
+      materials = (materialsData || []).filter((m) => {
+        const key = m.storage_path || m.name;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      // 4. Fetch lessons for teacher's classes
+      const { data: lessonsData } = await admin
+        .from('lessons')
+        .select('id, class_id, title, content, created_at, materials(*)')
+        .in('class_id', classIds)
+        .order('created_at', { ascending: false });
+
+      lessons = lessonsData || [];
+
+      // 5. Fetch exercises for teacher's classes
+      const { data: exercisesData } = await admin
+        .from('exercises')
+        .select('id, class_id, title, description, due_date, max_score, attachments, created_at')
+        .in('class_id', classIds)
+        .order('created_at', { ascending: false });
+
+      exercises = exercisesData || [];
     }
   }
 
@@ -96,7 +135,7 @@ export default async function TeacherContentPage({
               <Link
                 href="/api/auth/google"
                 className={buttonVariants({
-                  className: "w-fit bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-2",
+                  className: 'w-fit bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-2',
                 })}
               >
                 <GoogleDriveIcon className="w-4 h-4" />
@@ -109,7 +148,10 @@ export default async function TeacherContentPage({
         <ContentManagerClient
           userEmail={userEmail}
           isDriveLinked={isDriveLinked}
+          classes={classes}
           initialMaterials={materials}
+          lessons={lessons}
+          exercises={exercises}
         />
       )}
     </div>

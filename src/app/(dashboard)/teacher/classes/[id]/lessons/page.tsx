@@ -1,62 +1,93 @@
-import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
-import { CreateLessonForm, UploadMaterialForm } from './client-components';
+import { createClient } from '@/infrastructure/auth/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { redirect } from 'next/navigation';
+import { ClassLessonsClient } from './ClassLessonsClient';
 
-export default async function TeacherLessonsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TeacherLessonsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-  const repos = await getRepositories();
-  const lessons = await repos.content.findLessonsByClass(id);
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // 1. Fetch current class
+  const { data: currentClass } = await admin
+    .from('classes')
+    .select('id, name, subject, color, teacher_id')
+    .eq('id', id)
+    .single();
+
+  if (!currentClass) {
+    return (
+      <div className="p-8 text-center text-zinc-500">
+        Không tìm thấy lớp học.
+      </div>
+    );
+  }
+
+  // 2. Fetch all classes of this teacher (for modal dropdown)
+  const { data: teacherClassesData } = await admin
+    .from('classes')
+    .select('id, name, subject, color')
+    .eq('teacher_id', user.id)
+    .order('created_at', { ascending: false });
+
+  const teacherClasses = teacherClassesData || [];
+  const teacherClassIds = teacherClasses.map((c) => c.id);
+
+  // 3. Fetch lessons for this class with materials
+  const { data: lessonsData } = await admin
+    .from('lessons')
+    .select('id, class_id, title, content, created_at, materials(*)')
+    .eq('class_id', id)
+    .order('created_at', { ascending: false });
+
+  // 4. Fetch exercises for this class
+  const { data: exercisesData } = await admin
+    .from('exercises')
+    .select('id, class_id, title, description, due_date, max_score, attachments, created_at')
+    .eq('class_id', id)
+    .order('created_at', { ascending: false });
+
+  // 5. Fetch library materials (de-duplicated) for "Chọn từ Kho Drive"
+  let libraryMaterials: any[] = [];
+  if (teacherClassIds.length > 0) {
+    const { data: matData } = await admin
+      .from('materials')
+      .select('*')
+      .in('class_id', teacherClassIds)
+      .order('created_at', { ascending: false });
+
+    const seen = new Set<string>();
+    libraryMaterials = (matData || []).filter((m) => {
+      const key = m.storage_path || m.name;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Quản lý Bài giảng & Tài liệu</h1>
-        <p className="text-zinc-500">Thêm và quản lý bài giảng, tài liệu cho lớp {id}</p>
-      </div>
-      
-      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
-      
-      <CreateLessonForm classId={id} />
-
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Danh sách bài giảng</h2>
-        {lessons.length === 0 ? (
-          <p className="text-gray-500 italic">Chưa có bài giảng nào.</p>
-        ) : (
-          <div className="space-y-6">
-            {lessons.map((lesson) => (
-              <div key={lesson.id} className="border rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-900">{lesson.title}</h3>
-                {lesson.content && (
-                  <p className="text-gray-700 mt-2 whitespace-pre-wrap">{lesson.content}</p>
-                )}
-                
-                <div className="mt-4">
-                  <h4 className="text-sm font-semibold text-gray-600 mb-2">Tài liệu đính kèm:</h4>
-                  {(!lesson.materials || lesson.materials.length === 0) ? (
-                    <p className="text-sm text-gray-500 italic">Chưa có tài liệu.</p>
-                  ) : (
-                    <ul className="list-disc pl-5 space-y-1">
-                      {lesson.materials.map((m) => (
-                        <li key={m.id} className="text-sm">
-                          <a href={`/api/materials/${m.id}`} className="text-blue-600 hover:underline">
-                            {m.name}
-                          </a>
-                          <span className="text-gray-500 text-xs ml-2">
-                            ({Math.round(m.sizeBytes / 1024)} KB)
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <UploadMaterialForm classId={id} lessonId={lesson.id} />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      </div>
-    </div>
+    <ClassLessonsClient
+      classId={id}
+      className={currentClass.name}
+      classSubject={currentClass.subject}
+      classes={teacherClasses}
+      lessons={lessonsData || []}
+      exercises={exercisesData || []}
+      libraryMaterials={libraryMaterials}
+    />
   );
 }
