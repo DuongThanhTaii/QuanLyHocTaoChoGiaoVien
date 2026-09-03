@@ -35,12 +35,22 @@ export interface ClassOption {
   color?: string | null;
 }
 
+// Files are sent through a Vercel Route Handler before reaching Google Drive.
+// Keep a small margin below the platform request-body limit so the user gets a
+// useful validation message instead of a non-JSON "Request Entity Too Large" response.
+const MAX_UPLOAD_SIZE_BYTES = 4 * 1024 * 1024;
+
+type UploadResponse = {
+  error?: string;
+  [key: string]: unknown;
+};
+
 interface UploadMaterialModalProps {
   isOpen: boolean;
   onClose: () => void;
   classes?: ClassOption[];
   preSelectedClassId?: string;
-  onSuccess?: (result?: any) => void;
+  onSuccess?: (result?: UploadResponse) => void;
 }
 
 export function UploadMaterialModal({
@@ -95,6 +105,13 @@ export function UploadMaterialModal({
   };
 
   const handleFileChange = (selectedFile: File) => {
+    if (selectedFile.size > MAX_UPLOAD_SIZE_BYTES) {
+      setFile(null);
+      setErrorMessage('Tệp tối đa 4 MB. Vui lòng chọn tệp nhỏ hơn hoặc nén tệp trước khi tải lên.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     setFile(selectedFile);
     setErrorMessage(null);
 
@@ -157,6 +174,11 @@ export function UploadMaterialModal({
       return;
     }
 
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      setErrorMessage('Tệp tối đa 4 MB. Vui lòng chọn tệp nhỏ hơn hoặc nén tệp trước khi tải lên.');
+      return;
+    }
+
     if (!title.trim()) {
       setErrorMessage('Vui lòng nhập tên bài giảng / bài tập.');
       return;
@@ -186,7 +208,18 @@ export function UploadMaterialModal({
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: UploadResponse;
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        if (response.status === 413 || /request entity too large/i.test(responseText)) {
+          throw new Error('Tệp quá lớn để tải lên. Vui lòng chọn tệp tối đa 4 MB hoặc nén tệp trước khi thử lại.');
+        }
+
+        throw new Error('Máy chủ trả về phản hồi không hợp lệ. Vui lòng thử lại sau ít phút.');
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Có lỗi xảy ra khi tải file lên.');
@@ -204,10 +237,11 @@ export function UploadMaterialModal({
         onSuccess(data);
       }
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMessage(err.message || 'Lỗi không xác định khi tải lên');
-      toast.error(err.message || 'Tải tài liệu thất bại');
+      const message = err instanceof Error ? err.message : 'Lỗi không xác định khi tải lên';
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setIsUploading(false);
     }
@@ -269,7 +303,7 @@ export function UploadMaterialModal({
                 Kéo thả file vào đây hoặc <span className="text-blue-600 dark:text-blue-400 hover:underline">chọn từ máy tính</span>
               </p>
               <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                Hỗ trợ PDF, Word, Excel, PowerPoint, MP4, Zip và hình ảnh
+                Hỗ trợ PDF, Word, Excel, PowerPoint, MP4, Zip và hình ảnh (tối đa 4 MB)
               </p>
             </div>
           ) : (
