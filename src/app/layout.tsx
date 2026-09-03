@@ -8,6 +8,7 @@ import { ThemeColorProvider } from "@/components/providers/theme-color-provider"
 
 const montserrat = Montserrat({
   variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin", "vietnamese"],
 });
 
@@ -29,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <body
         className={`${montserrat.variable} ${geistMono.variable} font-sans antialiased`}
       >

@@ -37,6 +37,11 @@ import { CreditCardIcon } from '../ui/credit-card';
 import { MessageSquareMoreIcon } from '../ui/message-square-more';
 import { ChartNoAxesColumnIncreasingIcon } from '../ui/chart-no-axes-column-increasing';
 import { FoldersIcon } from '../ui/folders';
+import { UsersIcon } from '../ui/users';
+import { UserIcon } from '../ui/user';
+import { SettingsIcon } from '../ui/settings';
+import SparklesIcon from '../ui/icons/sparkles-icon';
+import LayoutSidebarRightIcon from '../ui/icons/layout-sidebar-right-icon';
 
 interface SidebarItem {
   icon: ElementType;
@@ -76,7 +81,7 @@ const studentNav: SidebarItem[] = [
   { icon: CalendarDaysIcon, label: 'Thời khóa biểu', href: '/student/schedule' },
   { icon: CreditCardIcon, label: 'Học phí', href: '/student/invoices' },
   { icon: MessageSquareMoreIcon, label: 'Tin nhắn', href: '/student/chat' },
-  { icon: Users, label: 'Yêu cầu liên kết', href: '/student/requests' },
+  { icon: UsersIcon, label: 'Yêu cầu liên kết', href: '/student/requests' },
 ];
 
 const adminNav: SidebarItem[] = [
@@ -155,6 +160,18 @@ function isNavItemActive(item: SidebarItem, pathname: string) {
   return item.href === '/teacher' || item.href === '/parent' || item.href === '/student' || item.href === '/admin'
     ? pathname === item.href
     : pathname.startsWith(item.href);
+}
+
+function AccountMenuItem({ href, label, icon: Icon }: { href: string; label: string; icon: ElementType }) {
+  const iconAnimation = useSidebarIconAnimation();
+  return (
+    <Link href={href} className="cursor-pointer" onMouseEnter={iconAnimation.start} onMouseLeave={iconAnimation.stop}>
+      <DropdownMenuItem className="cursor-pointer gap-2.5 font-medium hover:bg-muted">
+        <Icon ref={iconAnimation.setIconRef} size={17} strokeWidth={1.6} className="size-[17px] shrink-0 text-muted-foreground" />
+        <span>{label}</span>
+      </DropdownMenuItem>
+    </Link>
+  );
 }
 
 function MobileNavItem({ item, pathname, badge }: { item: SidebarItem; pathname: string; badge?: number }) {
@@ -345,7 +362,7 @@ export default function DashboardLayout({
             title="Thu gọn menu"
             tabIndex={isCollapsed ? -1 : 0}
           >
-            <Menu className="w-5 h-5" />
+            <LayoutSidebarRightIcon size={20} strokeWidth={1.6} />
           </button>
         </div>
 
@@ -393,15 +410,9 @@ export default function DashboardLayout({
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
-                <Link href="/profile" className="cursor-pointer">
-                  <DropdownMenuItem className="hover:bg-muted cursor-pointer">Hồ sơ cá nhân</DropdownMenuItem>
-                </Link>
-                <Link href="/settings" className="cursor-pointer">
-                  <DropdownMenuItem className="hover:bg-muted cursor-pointer">Cài đặt hệ thống</DropdownMenuItem>
-                </Link>
-                <Link href="/pricing" className="cursor-pointer">
-                  <DropdownMenuItem className="hover:bg-muted cursor-pointer">Gói đăng ký (Pro)</DropdownMenuItem>
-                </Link>
+                <AccountMenuItem href="/profile" label="Hồ sơ cá nhân" icon={UserIcon} />
+                <AccountMenuItem href="/settings" label="Cài đặt hệ thống" icon={SettingsIcon} />
+                <AccountMenuItem href="/pricing" label="Gói đăng ký (Pro)" icon={SparklesIcon} />
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuGroup>
