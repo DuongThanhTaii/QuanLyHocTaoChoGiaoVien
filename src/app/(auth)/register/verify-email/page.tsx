@@ -1,8 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
+import { VerifyEmailResend } from './VerifyEmailResend';
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -30,17 +30,15 @@ export default async function VerifyEmailPage({
           </CardHeader>
           <CardContent>
             <p className="text-sm text-zinc-500">
-              Vui lòng mở email và nhấn "Xác thực email" để tiếp tục. 
+              Vui lòng mở email và nhấn &quot;Xác thực email&quot; để tiếp tục.
               Link có hiệu lực trong vòng 24 giờ.
             </p>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-2">
-            <Button variant="outline" className="w-full">
-              <Link href="/login">Về trang đăng nhập</Link>
-            </Button>
-            <div className="text-sm text-zinc-500 mt-4">
-              Không nhận được email? <span className="font-medium cursor-pointer hover:underline text-zinc-900">Gửi lại (TODO)</span>
-            </div>
+          <CardFooter className="flex flex-col space-y-3">
+            <Link href="/login" className="inline-flex h-9 w-full items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground">
+              Về trang đăng nhập
+            </Link>
+            <VerifyEmailResend email={email} />
           </CardFooter>
         </Card>
       </main>

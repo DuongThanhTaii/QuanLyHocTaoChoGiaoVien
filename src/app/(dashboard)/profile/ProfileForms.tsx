@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 import { VIETNAM_BANKS } from '@/lib/banks';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 const initialState = { error: '', success: false, message: '' };
 
@@ -415,9 +416,55 @@ function PhoneVerificationDialog({ open, onOpenChange, phone }: { open: boolean;
   const [token, setToken] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const sendOtp = async () => { setLoading(true); const result = await requestBankPhoneOtp(); setLoading(false); if (result.error) return toast.error(result.error); setSent(true); toast.success('Mã OTP đã được gửi đến số điện thoại của bạn.'); };
-  const verifyOtp = async () => { setLoading(true); const result = await verifyBankPhoneOtp(token); setLoading(false); if (result.error) return toast.error(result.error); toast.success('Đã xác thực số điện thoại.'); onOpenChange(false); window.location.reload(); };
-  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle>Xác thực số điện thoại</DialogTitle><DialogDescription>Để bảo vệ thông tin nhận tiền, hãy xác thực số {phone || 'đã cập nhật trong Hồ sơ'} trước khi thêm tài khoản ngân hàng.</DialogDescription></DialogHeader><div className="space-y-3"><Button type="button" variant="outline" className="w-full" disabled={loading} onClick={sendOtp}>{sent ? 'Gửi lại OTP' : 'Gửi mã OTP'}</Button>{sent && <><Label htmlFor="bank-phone-otp">Mã OTP gồm 6 chữ số</Label><Input id="bank-phone-otp" inputMode="numeric" maxLength={6} value={token} onChange={(event) => setToken(event.target.value.replace(/\D/g, ''))} placeholder="Nhập mã OTP" /></>}</div><DialogFooter>{sent && <Button type="button" disabled={loading || token.length < 6} onClick={verifyOtp}>{loading ? 'Đang xác thực...' : 'Xác thực và tiếp tục'}</Button>}</DialogFooter></DialogContent></Dialog>;
+  const sendOtp = async () => {
+    setLoading(true);
+    const result = await requestBankPhoneOtp();
+    setLoading(false);
+    if (result.error) return toast.error(result.error);
+    setToken('');
+    setSent(true);
+    toast.success('Mã OTP đã được gửi đến số điện thoại của bạn.');
+  };
+  const verifyOtp = async () => {
+    setLoading(true);
+    const result = await verifyBankPhoneOtp(token);
+    setLoading(false);
+    if (result.error) return toast.error(result.error);
+    toast.success('Đã xác thực số điện thoại.');
+    onOpenChange(false);
+    window.location.reload();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Xác thực số điện thoại</DialogTitle>
+          <DialogDescription>
+            Để bảo vệ thông tin nhận tiền, hãy xác thực số {phone || 'đã cập nhật trong Hồ sơ'} trước khi thêm tài khoản ngân hàng.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Button type="button" variant="outline" className="w-full" disabled={loading} onClick={sendOtp}>
+            {sent ? 'Gửi lại OTP' : 'Gửi mã OTP'}
+          </Button>
+          {sent && (
+            <div className="space-y-2">
+              <Label htmlFor="bank-phone-otp">Mã OTP gồm 6 chữ số</Label>
+              <InputOTP id="bank-phone-otp" maxLength={6} value={token} onChange={setToken} disabled={loading} containerClassName="justify-center">
+                <InputOTPGroup>
+                  {Array.from({ length: 6 }, (_, index) => <InputOTPSlot key={index} index={index} className="size-11 text-base" />)}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          {sent && <Button type="button" disabled={loading || token.length < 6} onClick={verifyOtp}>{loading ? 'Đang xác thực...' : 'Xác thực và tiếp tục'}</Button>}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function PayOSConfigForm({ profile }: { profile: any }) {
