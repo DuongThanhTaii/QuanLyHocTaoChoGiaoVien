@@ -221,6 +221,7 @@ export default function DashboardLayout({
   uiSettings?: { theme?: string; themeColor?: string }
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
   const mobileNavItems = navItems.slice(0, 4);
@@ -237,6 +238,13 @@ export default function DashboardLayout({
       sessionStorage.setItem('theme_synced', 'true');
     }
   }, [uiSettings, setTheme, setThemeColor]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isCollapsed]);
 
   const [unreadChatCount, setUnreadChatCount] = useState<number>(0);
 
@@ -333,8 +341,13 @@ export default function DashboardLayout({
                 className="flex items-center cursor-pointer shrink-0 border-none outline-none bg-transparent"
                 onClick={() => isCollapsed && setIsCollapsed(false)}
               >
-                  <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'ml-0 max-w-0 opacity-0' : 'ml-0 max-w-[190px] opacity-100'}`}>
-                    <img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-12 w-[180px] max-w-none object-contain object-left" />
+                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+                    <div className="absolute bottom-1 z-0 h-1.5 w-8 translate-y-1 rounded-[50%] bg-black/30 blur-[2px]" />
+                    <video ref={videoRef} src="/logo.webm" className="relative z-10 h-full w-full scale-110 object-contain pointer-events-none select-none" muted playsInline onContextMenu={(event) => event.preventDefault()} controlsList="nodownload" />
+                    <div className="absolute inset-0 z-20 cursor-pointer bg-transparent" onContextMenu={(event) => event.preventDefault()} />
+                  </div>
+                  <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'ml-0 max-w-0 opacity-0' : 'ml-1 max-w-[150px] opacity-100'}`}>
+                    <img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-9 w-[150px] max-w-none object-contain object-left" />
                   </div>
               </TooltipTrigger>
               {isCollapsed && (
