@@ -37,6 +37,18 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
 
+  // Restrictions are enforced at the edge as well as in admin actions. This
+  // prevents an already-issued browser session from accessing the dashboard.
+  if (user && !isAuthRoute) {
+    const { data: isRestricted, error: restrictionError } = await supabase.rpc('is_account_restricted', {
+      target_user_id: user.id,
+    })
+    if (!restrictionError && isRestricted) {
+      await supabase.auth.signOut()
+      return NextResponse.redirect(new URL('/login?reason=restricted', request.url))
+    }
+  }
+
   if (user && isAuthRoute) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
