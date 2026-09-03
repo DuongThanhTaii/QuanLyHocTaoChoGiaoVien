@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ThemeColorProvider } from "@/components/providers/theme-color-provider";
+import { PwaManager } from "@/components/providers/PwaManager";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -22,6 +23,23 @@ import { InitialCatLoader } from "@/components/shared/InitialCatLoader";
 export const metadata: Metadata = {
   title: "Mari",
   description: "Hệ thống quản lý gia sư",
+  applicationName: "Mari",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Mari",
+  },
+  icons: {
+    icon: "/images/empty_states/logo.png",
+    apple: "/images/empty_states/logo.png",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#171717",
 };
 
 export default function RootLayout({
@@ -38,6 +56,7 @@ export default function RootLayout({
           <ThemeColorProvider>
             <TooltipProvider>
               <InitialCatLoader />
+              <PwaManager />
               {children}
               <Toaster />
             </TooltipProvider>
