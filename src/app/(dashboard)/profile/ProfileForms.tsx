@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword } from './actions';
+import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword, requestBankPhoneOtp, verifyBankPhoneOtp } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -342,10 +342,11 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
   );
 }
 
-export function AddBankAccountForm() {
+export function AddBankAccountForm({ phone, phoneVerified }: { phone?: string; phoneVerified?: boolean }) {
   const [state, formAction, isPending] = useActionState(addBankAccount as any, initialState);
   const [key, setKey] = useState(Date.now()); // to reset form
   const [selectedBank, setSelectedBank] = useState<string>('');
+  const [otpOpen, setOtpOpen] = useState(false);
 
   useEffect(() => {
     if (state?.success && state?.message) {
@@ -363,13 +364,13 @@ export function AddBankAccountForm() {
     <Card>
       <CardHeader>
         <CardTitle>Thêm tài khoản mới</CardTitle>
-        <CardDescription>Nhập chính xác thông tin ngân hàng của bạn.</CardDescription>
+        <CardDescription>{phoneVerified ? 'Nhập chính xác thông tin ngân hàng của bạn.' : 'Bạn cần xác thực OTP số điện thoại trước khi thêm tài khoản nhận tiền.'}</CardDescription>
       </CardHeader>
       <form action={formAction} key={key}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="bankName">Ngân hàng</Label>
-            <Select name="bankName" required value={selectedBank} onValueChange={(val) => setSelectedBank(val || '')}>
+            <Select name="bankName" required disabled={!phoneVerified} value={selectedBank} onValueChange={(val) => setSelectedBank(val || '')}>
               <SelectTrigger className="w-full h-12">
                 {bankInfo ? (
                   <div className="flex items-center gap-2">
@@ -394,21 +395,29 @@ export function AddBankAccountForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="accountNumber">Số tài khoản</Label>
-            <Input id="accountNumber" name="accountNumber" className="h-12 text-lg" required />
+            <Input id="accountNumber" name="accountNumber" className="h-12 text-lg" required disabled={!phoneVerified} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="accountName">Tên chủ tài khoản (In hoa không dấu)</Label>
-            <Input id="accountName" name="accountName" className="h-12 text-lg uppercase" placeholder="NGUYEN VAN A" required />
+            <Input id="accountName" name="accountName" className="h-12 text-lg uppercase" placeholder="NGUYEN VAN A" required disabled={!phoneVerified} />
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isPending} className="w-full h-12 text-md">
-            {isPending ? 'Đang thêm...' : 'Thêm tài khoản'}
-          </Button>
+          {phoneVerified ? <Button type="submit" disabled={isPending} className="w-full h-12 text-md">{isPending ? 'Đang thêm...' : 'Thêm tài khoản'}</Button> : <Button type="button" onClick={() => setOtpOpen(true)} className="w-full h-12 text-md">Xác thực số điện thoại</Button>}
         </CardFooter>
       </form>
+      <PhoneVerificationDialog open={otpOpen} onOpenChange={setOtpOpen} phone={phone} />
     </Card>
   );
+}
+
+function PhoneVerificationDialog({ open, onOpenChange, phone }: { open: boolean; onOpenChange: (open: boolean) => void; phone?: string }) {
+  const [token, setToken] = useState('');
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const sendOtp = async () => { setLoading(true); const result = await requestBankPhoneOtp(); setLoading(false); if (result.error) return toast.error(result.error); setSent(true); toast.success('Mã OTP đã được gửi đến số điện thoại của bạn.'); };
+  const verifyOtp = async () => { setLoading(true); const result = await verifyBankPhoneOtp(token); setLoading(false); if (result.error) return toast.error(result.error); toast.success('Đã xác thực số điện thoại.'); onOpenChange(false); window.location.reload(); };
+  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle>Xác thực số điện thoại</DialogTitle><DialogDescription>Để bảo vệ thông tin nhận tiền, hãy xác thực số {phone || 'đã cập nhật trong Hồ sơ'} trước khi thêm tài khoản ngân hàng.</DialogDescription></DialogHeader><div className="space-y-3"><Button type="button" variant="outline" className="w-full" disabled={loading} onClick={sendOtp}>{sent ? 'Gửi lại OTP' : 'Gửi mã OTP'}</Button>{sent && <><Label htmlFor="bank-phone-otp">Mã OTP gồm 6 chữ số</Label><Input id="bank-phone-otp" inputMode="numeric" maxLength={6} value={token} onChange={(event) => setToken(event.target.value.replace(/\D/g, ''))} placeholder="Nhập mã OTP" /></>}</div><DialogFooter>{sent && <Button type="button" disabled={loading || token.length < 6} onClick={verifyOtp}>{loading ? 'Đang xác thực...' : 'Xác thực và tiếp tục'}</Button>}</DialogFooter></DialogContent></Dialog>;
 }
 
 export function PayOSConfigForm({ profile }: { profile: any }) {

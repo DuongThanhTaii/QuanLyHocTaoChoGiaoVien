@@ -11,7 +11,6 @@ import { useThemeColor } from '../providers/theme-color-provider';
 import {
   Users,
   Calendar,
-  LogOut,
   MoreVertical,
   Menu,
   MoreHorizontal,
@@ -40,6 +39,7 @@ import { FoldersIcon } from '../ui/folders';
 import { UsersIcon } from '../ui/users';
 import { UserIcon } from '../ui/user';
 import { SettingsIcon } from '../ui/settings';
+import { LogoutIcon } from '../ui/logout';
 import SparklesIcon from '../ui/icons/sparkles-icon';
 import LayoutSidebarRightIcon from '../ui/icons/layout-sidebar-right-icon';
 
@@ -172,6 +172,18 @@ function AccountMenuItem({ href, label, icon: Icon }: { href: string; label: str
       </DropdownMenuItem>
     </Link>
   );
+}
+
+function LogoutMenuItem() {
+  const iconAnimation = useSidebarIconAnimation();
+  return <form action={logout} onMouseEnter={iconAnimation.start} onMouseLeave={iconAnimation.stop}>
+    <button type="submit" className="w-full text-left">
+      <DropdownMenuItem className="w-full cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive">
+        <LogoutIcon ref={iconAnimation.setIconRef} size={17} className="mr-2 size-[17px] shrink-0" />
+        Đăng xuất
+      </DropdownMenuItem>
+    </button>
+  </form>;
 }
 
 function MobileNavItem({ item, pathname, badge }: { item: SidebarItem; pathname: string; badge?: number }) {
@@ -416,14 +428,7 @@ export default function DashboardLayout({
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuGroup>
-                <form action={logout}>
-                  <button type="submit" className="w-full text-left">
-                    <DropdownMenuItem className="text-destructive hover:bg-destructive/10 cursor-pointer w-full focus:text-destructive focus:bg-destructive/10">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Đăng xuất
-                    </DropdownMenuItem>
-                  </button>
-                </form>
+                <LogoutMenuItem />
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -28,6 +28,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
   }
 
   const { fullName, phone } = parsed.data;
+  const { data: existingProfile } = await supabase.from('profiles').select('phone').eq('id', user.id).maybeSingle();
 
   // Update auth metadata
   await supabase.auth.updateUser({
@@ -39,7 +40,8 @@ export async function updateProfile(prevState: any, formData: FormData) {
     .from('profiles')
     .update({ 
       full_name: fullName,
-      phone: phone
+      phone: phone,
+      ...(existingProfile?.phone !== phone ? { phone_verified_at: null } : {})
     })
     .eq('id', user.id);
 
@@ -87,12 +89,50 @@ const BankAccountSchema = z.object({
   accountName: z.string().min(1, 'Vui lòng nhập tên chủ tài khoản'),
 });
 
+function normalizeVietnamPhone(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('84')) return `+${digits}`;
+  if (digits.startsWith('0')) return `+84${digits.slice(1)}`;
+  return `+${digits}`;
+}
+
+export async function requestBankPhoneOtp() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Vui lòng đăng nhập lại.' };
+  const { data: profile, error } = await supabase.from('profiles').select('phone').eq('id', user.id).single();
+  if (error || !profile?.phone) return { error: 'Hãy cập nhật số điện thoại trong Hồ sơ trước.' };
+  const phone = normalizeVietnamPhone(profile.phone);
+  const { error: otpError } = await supabase.auth.updateUser({ phone });
+  if (otpError) return { error: otpError.message };
+  return { success: true, phone };
+}
+
+export async function verifyBankPhoneOtp(token: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Vui lòng đăng nhập lại.' };
+  const { data: profile, error } = await supabase.from('profiles').select('phone').eq('id', user.id).single();
+  if (error || !profile?.phone) return { error: 'Không tìm thấy số điện thoại.' };
+  const { error: verifyError } = await supabase.auth.verifyOtp({ phone: normalizeVietnamPhone(profile.phone), token: token.trim(), type: 'phone_change' });
+  if (verifyError) return { error: 'Mã OTP không đúng hoặc đã hết hạn.' };
+  const { error: updateError } = await supabase.from('profiles').update({ phone_verified_at: new Date().toISOString() }).eq('id', user.id);
+  if (updateError) return { error: updateError.message };
+  revalidatePath('/profile');
+  return { success: true };
+}
+
 export async function addBankAccount(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return { error: 'Unauthorized' };
+  }
+
+  const { data: profile, error: profileError } = await supabase.from('profiles').select('phone, phone_verified_at').eq('id', user.id).single();
+  if (profileError || !profile?.phone_verified_at) {
+    return { error: 'Vui lòng xác thực OTP số điện thoại trước khi thêm tài khoản ngân hàng.' };
   }
 
   const rawData = {

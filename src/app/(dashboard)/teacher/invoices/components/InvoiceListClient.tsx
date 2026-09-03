@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ import { RecordPaymentModal } from './RecordPaymentModal';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { deleteInvoiceAction, cancelInvoiceAction } from '../actions';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Props {
   invoices: any[];
@@ -45,6 +47,12 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [paymentInvoice, setPaymentInvoice] = useState<any | null>(null);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const [bankReminder, setBankReminder] = useState<'custom' | 'batch' | null>(null);
+
+  const openInvoiceFlow = (flow: 'custom' | 'batch') => {
+    if (!bankAccount) { setBankReminder(flow); return; }
+    if (flow === 'custom') setOpenCustomModal(true); else setOpenBatchModal(true);
+  };
 
   // Time & Period Filter State
   const now = new Date();
@@ -293,14 +301,14 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
 
           <Button
             variant="outline"
-            onClick={() => setOpenCustomModal(true)}
+            onClick={() => openInvoiceFlow('custom')}
             className="h-9 px-3 text-xs font-medium border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
           >
             <Plus className="mr-1.5 h-3.5 w-3.5 text-blue-600" /> Tạo HĐ Theo Yêu Cầu
           </Button>
 
           <Button
-            onClick={() => setOpenBatchModal(true)}
+            onClick={() => openInvoiceFlow('batch')}
             className="h-9 px-3.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-xs"
           >
             <Receipt className="mr-1.5 h-3.5 w-3.5" /> Sinh Hóa đơn Tự động
@@ -668,6 +676,9 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
         }}
         onSuccess={() => window.location.reload()}
       />
+      <Dialog open={bankReminder !== null} onOpenChange={(open) => !open && setBankReminder(null)}>
+        <DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle>Chưa có tài khoản nhận tiền</DialogTitle><DialogDescription>Hóa đơn vẫn có thể được tạo, nhưng phụ huynh sẽ chưa có mã VietQR và thông tin chuyển khoản để thanh toán tự động.</DialogDescription></DialogHeader><div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Thiết lập tài khoản ngân hàng yêu cầu xác thực OTP số điện thoại để bảo vệ thông tin nhận tiền.</div><DialogFooter className="gap-2 sm:gap-2"><Button variant="outline" onClick={() => { const flow = bankReminder; setBankReminder(null); if (flow === 'custom') setOpenCustomModal(true); else if (flow === 'batch') setOpenBatchModal(true); }}>Vẫn tiếp tục</Button><Link href="/profile" className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90">Thiết lập tài khoản</Link></DialogFooter></DialogContent>
+      </Dialog>
     </div>
   );
 }

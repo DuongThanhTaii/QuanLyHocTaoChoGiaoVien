@@ -6,7 +6,7 @@ import { PRICING_PLANS } from "@/config/landing-data";
 import { MaxWidthWrapper } from "@/components/global/max-width-wrapper";
 import { AnimationContainer } from "@/components/global/animation-container";
 import { MagicBadge } from "@/components/ui/magic-badge";
-import { Check, Sparkles, ArrowRight, HelpCircle } from "lucide-react";
+import { Check, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const PricingSection = () => {
@@ -136,11 +136,7 @@ export const PricingSection = () => {
                   {/* CTA Button */}
                   <Link
                     href={
-                      plan.popular
-                        ? "/register"
-                        : plan.tier === "starter"
-                          ? "/register"
-                          : "#contact"
+                      plan.tier === "free" ? "/register" : "/pricing"
                     }
                     className={cn(
                       "w-full py-3 rounded-2xl font-bold text-sm text-center flex items-center justify-center gap-2 transition-all duration-200 active:scale-95",
