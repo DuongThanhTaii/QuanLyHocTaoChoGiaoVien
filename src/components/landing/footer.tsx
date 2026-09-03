@@ -19,14 +19,14 @@ export const Footer = () => {
               <div className="w-8 h-8 rounded-xl overflow-hidden shadow-xs flex items-center justify-center">
                 <Image
                   src="/images/empty_states/logo.png"
-                  alt="Gia Sư Pro"
+                  alt="Mari"
                   width={32}
                   height={32}
                   className="w-full h-full object-contain"
                 />
               </div>
               <span className="text-xl font-black text-slate-900 dark:text-white">
-                GiaSư<span className="text-orange-500">Pro</span>
+                Mari
               </span>
             </Link>
 
@@ -142,7 +142,7 @@ export const Footer = () => {
         {/* Copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-zinc-500 pt-6">
           <p>
-            &copy; {new Date().getFullYear()} Gia Sư Pro Inc. Bảo lưu mọi quyền.
+            &copy; {new Date().getFullYear()} Mari. Bảo lưu mọi quyền.
           </p>
           <p className="flex items-center gap-1">
             Được thiết kế với <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> dành riêng cho Thầy/Cô Việt Nam

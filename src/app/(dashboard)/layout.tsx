@@ -2,6 +2,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ReactNode } from 'react';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
+import { getUserBillingContext } from '@/lib/billing/server';
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -37,12 +38,14 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const role = roleData?.role || 'teacher'; // fallback
   const userName = profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user?.email?.split('@')[0] || '';
   const userEmail = user?.email || '';
+  const billingContext = await getUserBillingContext(user.id).catch(() => null);
 
   return (
     <DashboardLayout 
       userRole={role} 
       userName={userName} 
       userEmail={userEmail}
+      subscriptionPlanName={billingContext?.plan.code !== 'free' ? billingContext?.plan.name : undefined}
       uiSettings={profile?.ui_settings}
     >
       {children}

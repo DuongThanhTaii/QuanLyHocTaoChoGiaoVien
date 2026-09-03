@@ -20,17 +20,17 @@ interface CatMascotProps {
 const CAT_IMAGES: Record<CatVariant, { src: string; alt: string; aspect: string }> = {
   stand: {
     src: "/images/empty_states/cat_stand.png",
-    alt: "Gia Sư Pro Mascot Mèo Đứng",
+    alt: "Mari Mascot Mèo Đứng",
     aspect: "aspect-[300/420]",
   },
   sitdown: {
     src: "/images/empty_states/cat_sitdown.png",
-    alt: "Gia Sư Pro Mascot Mèo Ngồi",
+    alt: "Mari Mascot Mèo Ngồi",
     aspect: "aspect-[300/380]",
   },
   sleep: {
     src: "/images/empty_states/empty_cat.png",
-    alt: "Gia Sư Pro Mascot Mèo Ngủ Thảnh Thơi",
+    alt: "Mari Mascot Mèo Ngủ Thảnh Thơi",
     aspect: "aspect-[16/10]",
   },
 };

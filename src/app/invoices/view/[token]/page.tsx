@@ -103,7 +103,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
     }];
   }
 
-  const brandName = templateSnapshot?.brandName || teacher?.full_name || 'GiasuPro Education';
+  const brandName = templateSnapshot?.brandName || teacher?.full_name || 'Mari Education';
   const logoUrl = templateSnapshot?.logoUrl || null;
   const contactPhone = templateSnapshot?.contactPhone || teacher?.phone || '';
   const contactEmail = templateSnapshot?.contactEmail || teacher?.email || '';
@@ -322,7 +322,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         </Card>
 
         <div className="text-center text-xs text-zinc-400">
-          Nền tảng Quản lý Lớp học & Học phí Thông minh • GiasuPro
+          Nền tảng Quản lý Lớp học & Học phí Thông minh • Mari
         </div>
 
       </div>

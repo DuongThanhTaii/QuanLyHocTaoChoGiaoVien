@@ -35,7 +35,7 @@ export const FAQSection = () => {
 
           <AnimationContainer delay={0.15}>
             <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-zinc-300">
-              Mọi điều bạn cần biết về cách thức hoạt động, độ bảo mật và chi phí của Gia Sư Pro.
+              Mọi điều bạn cần biết về cách thức hoạt động, độ bảo mật và chi phí của Mari.
             </p>
           </AnimationContainer>
         </div>

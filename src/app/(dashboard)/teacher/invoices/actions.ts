@@ -124,7 +124,7 @@ export async function generateBatchInvoicesAction(params: {
     .single();
 
   const templateSnapshot = {
-    brandName: template?.brand_name || profile?.full_name || 'GiasuPro Teacher',
+    brandName: template?.brand_name || profile?.full_name || 'Mari Teacher',
     logoUrl: template?.logo_url || null,
     contactPhone: template?.contact_phone || profile?.phone || '',
     contactEmail: template?.contact_email || profile?.email || '',
@@ -188,7 +188,7 @@ export async function createCustomInvoiceAction(params: {
     .single();
 
   const templateSnapshot = {
-    brandName: template?.brand_name || profile?.full_name || 'GiasuPro Teacher',
+    brandName: template?.brand_name || profile?.full_name || 'Mari Teacher',
     logoUrl: template?.logo_url || null,
     contactPhone: template?.contact_phone || profile?.phone || '',
     contactEmail: template?.contact_email || profile?.email || '',

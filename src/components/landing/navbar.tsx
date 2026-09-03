@@ -67,7 +67,7 @@ export const Navbar = ({ user }: NavbarProps) => {
           <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-sm shadow-orange-500/10 group-hover:scale-105 transition-transform flex items-center justify-center">
             <Image
               src="/images/empty_states/logo.png"
-              alt="Gia Sư Pro Logo"
+              alt="Mari Logo"
               width={36}
               height={36}
               priority

@@ -42,7 +42,7 @@ export const DashboardMockup = () => {
           <div className="flex items-center justify-center flex-1 max-w-sm mx-auto">
             <div className="flex items-center gap-1.5 px-3 py-1 text-xs text-slate-500 dark:text-zinc-400 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full w-full justify-center">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-mono truncate">https://giasupro.vn/teacher/dashboard</span>
+              <span className="font-mono truncate">mari.vn/teacher/dashboard</span>
             </div>
           </div>
 
@@ -60,7 +60,7 @@ export const DashboardMockup = () => {
             <div className="relative w-full h-full min-h-[380px] sm:min-h-[500px]">
               <Image
                 src={imageSources[imgSrcIndex]}
-                alt="Gia Sư Pro Dashboard Preview"
+              alt="Mari Dashboard Preview"
                 width={1400}
                 height={850}
                 quality={95}

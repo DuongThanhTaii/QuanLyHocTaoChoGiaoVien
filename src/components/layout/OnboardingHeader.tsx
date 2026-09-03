@@ -9,7 +9,7 @@ export function OnboardingHeader() {
   // Determine current step based on path
   let currentStep = 3;
   let title = "Vai trò của bạn là gì?";
-  let subtitle = "Chọn vai trò phù hợp để chúng tôi thiết lập GiaSu Pro cho bạn.";
+  let subtitle = "Chọn vai trò phù hợp để chúng tôi thiết lập Mari cho bạn.";
   
   if (pathname.includes('/register/verify-email')) {
     currentStep = 2;
@@ -18,7 +18,7 @@ export function OnboardingHeader() {
   } else if (pathname.includes('/register')) {
     currentStep = 1;
     title = "Tạo tài khoản mới";
-    subtitle = "Bắt đầu hành trình của bạn với GiaSu Pro ngay hôm nay.";
+    subtitle = "Bắt đầu hành trình của bạn với Mari ngay hôm nay.";
   } else if (pathname !== '/onboarding') {
     // Nếu không phải trang /onboarding gốc mà là các trang con (VD: /onboarding/teacher)
     currentStep = 4;

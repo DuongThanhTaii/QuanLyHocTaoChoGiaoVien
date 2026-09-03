@@ -81,7 +81,7 @@ export function InvoiceDetailModal({
 
   const studentName = invoice.students?.full_name || invoice.profiles?.full_name || 'Học sinh';
   const className = invoice.classes?.name || 'Lớp học';
-  const brandName = templateSnapshot?.brandName || 'GiasuPro Education';
+  const brandName = templateSnapshot?.brandName || 'Mari Education';
   const logoUrl = templateSnapshot?.logoUrl || null;
   const contactPhone = templateSnapshot?.contactPhone || '';
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã tin tưởng đồng hành cùng thầy cô!';

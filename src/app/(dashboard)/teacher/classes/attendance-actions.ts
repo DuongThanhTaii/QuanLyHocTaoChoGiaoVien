@@ -159,5 +159,6 @@ export async function createMakeupSession(formData: FormData) {
   }
 
   revalidatePath(`/teacher/classes/${parsed.data.classId}/attendance`);
+  revalidatePath(`/teacher/classes/${parsed.data.classId}/evaluations`);
   return { success: true, sessionId: session.id };
 }

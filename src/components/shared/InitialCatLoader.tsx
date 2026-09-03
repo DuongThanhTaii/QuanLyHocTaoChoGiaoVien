@@ -67,7 +67,7 @@ export function InitialCatLoader() {
         {/* Logo & Tên hệ thống */}
         <div className="space-y-1.5">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            GiaSư<span className="font-light text-muted-foreground">Pro</span>
+            Mari
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground flex items-center justify-center gap-1.5">
             <span>Đang chuẩn bị không gian làm việc</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, CheckCircle2, Trash2 } from 'lucide-react';
+import { BellRing, CheckCircle2, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface Notification {
@@ -69,7 +69,7 @@ export function NotificationDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="relative p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300 mr-1">
-          <Bell className="w-5 h-5" />
+          <BellRing className="w-5 h-5" />
           {unreadCount > 0 && mounted && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm border-2 border-white dark:border-zinc-950">
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -101,7 +101,7 @@ export function NotificationDropdown() {
         <div className="max-h-[300px] overflow-y-auto">
           {notifications.length === 0 ? (
             <div className="py-8 text-center text-zinc-500 text-sm flex flex-col items-center">
-              <Bell className="w-8 h-8 text-zinc-300 dark:text-zinc-700 mb-2" />
+              <BellRing className="w-8 h-8 text-zinc-300 dark:text-zinc-700 mb-2" />
               Bạn không có thông báo nào.
             </div>
           ) : (

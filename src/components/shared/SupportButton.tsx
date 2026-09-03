@@ -104,7 +104,7 @@ export function SupportButton({ isCollapsed = false, variant = 'sidebar' }: Supp
             Trung tâm Hỗ trợ & Trợ giúp
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Đội ngũ GiaSưPro luôn sẵn sàng giải đáp thắc mắc và hỗ trợ kỹ thuật cho bạn
+            Đội ngũ Mari luôn sẵn sàng giải đáp thắc mắc và hỗ trợ kỹ thuật cho bạn
           </DialogDescription>
         </DialogHeader>
 

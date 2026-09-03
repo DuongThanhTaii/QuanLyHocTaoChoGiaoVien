@@ -199,7 +199,7 @@ export const TESTIMONIALS = [
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
     rating: 5,
     content:
-      "Trước đây tôi quản lý 6 lớp với hơn 150 em học sinh, mỗi đầu tháng là ác mộng với việc kiểm tra tin nhắn chuyển khoản học phí. Từ ngày dùng tính năng VietQR tự động của Gia Sư Pro, tôi tiết kiệm được ít nhất 2 ngày mỗi tháng. Phụ huynh ai cũng khen chuyên nghiệp!",
+      "Trước đây tôi quản lý 6 lớp với hơn 150 em học sinh, mỗi đầu tháng là ác mộng với việc kiểm tra tin nhắn chuyển khoản học phí. Từ ngày dùng tính năng VietQR tự động của Mari, tôi tiết kiệm được ít nhất 2 ngày mỗi tháng. Phụ huynh ai cũng khen chuyên nghiệp!",
   },
   {
     name: "Cô Nguyễn Thu Trang",
@@ -232,9 +232,9 @@ export const TESTIMONIALS = [
 
 export const FAQS = [
   {
-    question: "Gia Sư Pro có cần cài đặt phần mềm phức tạp không?",
+    question: "Mari có cần cài đặt phần mềm phức tạp không?",
     answer:
-      "Hoàn toàn không. Gia Sư Pro là nền tảng web hiện đại (Cloud SaaS), bạn có thể truy cập mượt mà trên mọi thiết bị: máy tính bàn, laptop, iPad, điện thoại iPhone/Android chỉ qua trình duyệt web.",
+      "Hoàn toàn không. Mari là nền tảng web hiện đại (Cloud SaaS), bạn có thể truy cập mượt mà trên mọi thiết bị: máy tính bàn, laptop, iPad, điện thoại iPhone/Android chỉ qua trình duyệt web.",
   },
   {
     question: "Tính năng tự động hóa học phí qua VietQR hoạt động như thế nào?",
@@ -250,7 +250,7 @@ export const FAQS = [
     question:
       "Tôi có thể chuyển danh sách học sinh từ file Excel cũ sang không?",
     answer:
-      "Có! Gia Sư Pro hỗ trợ tính năng Import từ file Excel sẵn có. Bạn chỉ cần tải file danh sách học sinh hiện tại lên, hệ thống sẽ tự động phân loại và khởi tạo đầy đủ dữ liệu trong vòng vài chục giây.",
+      "Có! Mari hỗ trợ tính năng Import từ file Excel sẵn có. Bạn chỉ cần tải file danh sách học sinh hiện tại lên, hệ thống sẽ tự động phân loại và khởi tạo đầy đủ dữ liệu trong vòng vài chục giây.",
   },
   {
     question: "Dữ liệu học sinh và thông tin liên lạc có được bảo mật không?",

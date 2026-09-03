@@ -1,11 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Sparkles, Smile, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { saveSessionEvaluation } from '../../evaluation-actions';
 import { toast } from 'sonner';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { createMakeupSession } from '../../attendance-actions';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 type Student = {
   id: string;
@@ -18,6 +26,9 @@ type EvaluationManagerProps = {
   students: Student[];
   dateString: string;
   timeRange: string;
+  selectedDateStr: string;
+  isScheduled: boolean;
+  scheduleDays: number[];
   initialEvaluations?: Record<string, { rating: string; feedback: string }>;
 };
 
@@ -34,8 +45,20 @@ export function EvaluationManager({
   students,
   dateString,
   timeRange,
+  selectedDateStr,
+  isScheduled,
+  scheduleDays,
   initialEvaluations = {}
 }: EvaluationManagerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [makeupStart, setMakeupStart] = useState('19:00');
+  const [makeupEnd, setMakeupEnd] = useState('21:00');
+  const [makeupNote, setMakeupNote] = useState('');
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [evaluationsState, setEvaluationsState] = useState<Record<string, { rating: string; feedback: string }>>(
     students.reduce((acc, s) => {
       const init = initialEvaluations[s.id];
@@ -43,6 +66,28 @@ export function EvaluationManager({
     }, {})
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const selectedDate = new Date(selectedDateStr);
+  const formattedDate = format(selectedDate, 'dd/MM/yyyy');
+  const dayName = format(selectedDate, 'EEEE', { locale: vi });
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('date', format(date, 'yyyy-MM-dd'));
+    router.push(`${pathname}?${params.toString()}`);
+    setIsCalendarOpen(false);
+  };
+  const handleCreateMakeupSession = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsCreatingSession(true);
+    const formData = new FormData();
+    formData.append('classId', classId); formData.append('date', selectedDateStr);
+    formData.append('startTime', makeupStart); formData.append('endTime', makeupEnd); formData.append('note', makeupNote);
+    const result = await createMakeupSession(formData);
+    setIsCreatingSession(false);
+    if (result?.success) { toast.success('Tạo buổi học bù thành công'); setIsDialogOpen(false); window.location.reload(); }
+    else toast.error('Không thể tạo buổi học', { description: result?.error });
+  };
 
   const handleRatingChange = (studentId: string, rating: string) => {
     setEvaluationsState(prev => {
@@ -146,7 +191,13 @@ export function EvaluationManager({
     <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900">Đánh giá buổi học ngày {dateString}</h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-lg font-semibold text-zinc-900">Đánh giá buổi học</h2>
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild><Button variant="outline" size="sm" className="h-9 font-medium"><Calendar className="mr-2 h-4 w-4" />{dayName}, {formattedDate}</Button></PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={selectedDate} onSelect={handleDateSelect} locale={vi} modifiers={{ scheduled: (date) => scheduleDays.includes(date.getDay()) }} modifiersStyles={{ scheduled: { fontWeight: 'bold', textDecoration: 'underline' } }} /></PopoverContent>
+            </Popover>
+          </div>
           <p className="text-sm text-zinc-500">Đánh giá thái độ, kết quả học tập và để lại nhận xét cho phụ huynh.</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -154,11 +205,22 @@ export function EvaluationManager({
             <Smile className="w-4 h-4 mr-2 text-green-600" />
             Đánh dấu tất cả Tốt
           </Button>
-          <Button onClick={handleSaveAll} disabled={isSubmitting || students.length === 0}>
+          <Button onClick={handleSaveAll} disabled={isSubmitting || students.length === 0 || !sessionId}>
             {isSubmitting ? 'Đang lưu...' : 'Lưu đánh giá'}
           </Button>
         </div>
       </div>
+
+      {!isScheduled && !sessionId && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
+          <p className="font-semibold">Ngày {formattedDate} không có lịch cố định</p>
+          <p className="mt-1 text-amber-800">Bạn có thể tạo buổi học bù để đánh giá học sinh cho ngày này.</p>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild><Button size="sm" className="mt-3 bg-amber-600 text-white hover:bg-amber-700">Tạo buổi học bù</Button></DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]"><form onSubmit={handleCreateMakeupSession}><DialogHeader><DialogTitle>Tạo buổi học bù</DialogTitle><DialogDescription>Khởi tạo buổi học để đánh giá cho ngày {formattedDate}.</DialogDescription></DialogHeader><div className="grid gap-4 py-4"><label className="grid grid-cols-4 items-center gap-4 text-sm font-medium">Bắt đầu<Input type="time" value={makeupStart} onChange={(e) => setMakeupStart(e.target.value)} className="col-span-3" required /></label><label className="grid grid-cols-4 items-center gap-4 text-sm font-medium">Kết thúc<Input type="time" value={makeupEnd} onChange={(e) => setMakeupEnd(e.target.value)} className="col-span-3" required /></label><label className="grid grid-cols-4 items-center gap-4 text-sm font-medium">Ghi chú<Input value={makeupNote} onChange={(e) => setMakeupNote(e.target.value)} placeholder="Ví dụ: Dạy bù cho T2" className="col-span-3" /></label></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Hủy</Button><Button type="submit" disabled={isCreatingSession}>{isCreatingSession ? 'Đang tạo...' : 'Lưu buổi học'}</Button></DialogFooter></form></DialogContent>
+          </Dialog>
+        </div>
+      )}
 
       <div className="bg-zinc-50 p-4 rounded-lg flex justify-between items-center border border-zinc-100">
         <div>

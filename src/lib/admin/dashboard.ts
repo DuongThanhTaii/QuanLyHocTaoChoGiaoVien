@@ -48,7 +48,7 @@ export async function getAdminDashboard() {
     admin.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'trial').gte('trial_ends_at', now.toISOString()).lte('trial_ends_at', sevenDaysAhead.toISOString()),
     optionalCount(admin.from('account_restrictions').select('*', { count: 'exact', head: true }).is('revoked_at', null).lte('starts_at', now.toISOString()).or(`ends_at.is.null,ends_at.gt.${now.toISOString()}`)),
     optionalRows(admin.from('admin_audit_logs').select('id, action, resource_type, resource_id, outcome, created_at, actor:profiles!admin_audit_logs_actor_id_fkey(full_name,email)').order('created_at', { ascending: false }).limit(8)),
-    admin.from('system_config').select('value').eq('key', 'BILLING_ENABLED').maybeSingle(),
+    admin.from('billing_settings').select('mode').eq('singleton', true).maybeSingle(),
   ]);
 
   for (const [label, result] of [['người dùng', users], ['giáo viên', activeTeachers], ['lớp học', activeClasses], ['ghi danh', activeEnrollments], ['trial', trialsEndingSoon]] as const) {
@@ -69,7 +69,7 @@ export async function getAdminDashboard() {
     platformRevenue30d,
     trialsEndingSoon: trialsEndingSoon.count ?? 0,
     activeRestrictions,
-    billingEnabled: billingConfig.data?.value === 'true',
+    billingEnabled: billingConfig.data?.mode === 'paid',
     recentAudit,
   };
 }

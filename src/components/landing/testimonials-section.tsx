@@ -32,7 +32,7 @@ export const TestimonialsSection = () => {
 
           <AnimationContainer delay={0.15}>
             <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-zinc-300 md:whitespace-nowrap">
-              Cùng lắng nghe chia sẻ từ những người đang dùng Gia Sư Pro mỗi
+              Cùng lắng nghe chia sẻ từ những người đang dùng Mari mỗi
               ngày để tối ưu hóa việc dạy và học.
             </p>
           </AnimationContainer>

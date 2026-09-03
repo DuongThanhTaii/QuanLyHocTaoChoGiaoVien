@@ -86,7 +86,7 @@ const studentNav: SidebarItem[] = [
 
 const adminNav: SidebarItem[] = [
   { icon: LayoutDashboardIcon, label: 'Tổng quan', href: '/admin' },
-  { icon: Users, label: 'Người dùng', href: '/admin/users' },
+  { icon: UsersIcon, label: 'Người dùng', href: '/admin/users' },
   { icon: ShieldCheck, label: 'Vai trò & quyền', href: '/admin/roles' },
   { icon: Tags, label: 'Gói & giá cước', href: '/admin/plans' },
   { icon: BadgeDollarSign, label: 'Subscription', href: '/admin/subscriptions' },
@@ -162,13 +162,13 @@ function isNavItemActive(item: SidebarItem, pathname: string) {
     : pathname.startsWith(item.href);
 }
 
-function AccountMenuItem({ href, label, icon: Icon }: { href: string; label: string; icon: ElementType }) {
+function AccountMenuItem({ href, label, icon: Icon, badge }: { href: string; label: string; icon: ElementType; badge?: string }) {
   const iconAnimation = useSidebarIconAnimation();
   return (
     <Link href={href} className="cursor-pointer" onMouseEnter={iconAnimation.start} onMouseLeave={iconAnimation.stop}>
       <DropdownMenuItem className="cursor-pointer gap-2.5 font-medium hover:bg-muted">
         <Icon ref={iconAnimation.setIconRef} size={17} strokeWidth={1.6} className="size-[17px] shrink-0 text-muted-foreground" />
-        <span>{label}</span>
+        <span className="flex-1">{label}</span>{badge && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">{badge}</span>}
       </DropdownMenuItem>
     </Link>
   );
@@ -210,16 +210,17 @@ export default function DashboardLayout({
   userRole = 'teacher', 
   userName = '', 
   userEmail = '',
+  subscriptionPlanName,
   uiSettings 
 }: { 
   children: ReactNode, 
   userRole?: string, 
   userName?: string, 
   userEmail?: string,
+  subscriptionPlanName?: string,
   uiSettings?: { theme?: string; themeColor?: string }
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
   const mobileNavItems = navItems.slice(0, 4);
@@ -289,13 +290,6 @@ export default function DashboardLayout({
     };
   }, [pathname]);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(e => console.log("Video auto-play prevented:", e));
-    }
-  }, [isCollapsed]);
-
   // Greeting Logic
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -339,26 +333,8 @@ export default function DashboardLayout({
                 className="flex items-center cursor-pointer shrink-0 border-none outline-none bg-transparent"
                 onClick={() => isCollapsed && setIsCollapsed(false)}
               >
-                  <div className="w-14 h-14 flex items-center justify-center shrink-0 relative transition-transform duration-300">
-                    {/* Floor shadow */}
-                    <div className="absolute bottom-1 w-8 h-1.5 bg-black/30 rounded-[50%] blur-[2px] z-0 translate-y-1" />
-                    
-                    <video 
-                      ref={videoRef}
-                      src="/logo.webm" 
-                      className="w-full h-full object-contain scale-110 relative z-10 pointer-events-none select-none"
-                      muted 
-                      playsInline
-                      onContextMenu={(e) => e.preventDefault()}
-                      controlsList="nodownload"
-                    />
-                    {/* Overlay to block extensions like IDM from attaching download buttons */}
-                    <div className="absolute inset-0 z-20 bg-transparent cursor-pointer" onContextMenu={(e) => e.preventDefault()} />
-                  </div>
-                  <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[150px] opacity-100 ml-1'}`}>
-                    <div className="text-foreground font-bold text-xl tracking-tight">
-                      GiaSư<span className="font-light text-muted-foreground">Pro</span>
-                    </div>
+                  <div className={`flex items-center overflow-hidden transition-all duration-300 ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[190px] opacity-100 ml-1'}`}>
+                    <img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-12 w-auto max-w-[180px] object-contain" />
                   </div>
               </TooltipTrigger>
               {isCollapsed && (
@@ -402,7 +378,7 @@ export default function DashboardLayout({
               <div className={`flex items-center transition-all duration-300 overflow-hidden ${isCollapsed ? 'max-w-0 opacity-0 ml-0' : 'max-w-[200px] opacity-100 ml-3'}`}>
                 <span className="flex flex-col flex-1 overflow-hidden leading-tight gap-0.5">
                   <span className="truncate font-medium text-foreground">{userName || 'Người dùng'}</span>
-                  <span className="truncate text-xs text-muted-foreground font-normal">{userEmail || 'user@giasupro.vn'}</span>
+                  <span className="truncate text-xs text-muted-foreground font-normal">{userEmail || 'user@mari.vn'}</span>
                 </span>
                 <MoreVertical className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
               </div>
@@ -424,7 +400,7 @@ export default function DashboardLayout({
                 <DropdownMenuSeparator className="bg-border" />
                 <AccountMenuItem href="/profile" label="Hồ sơ cá nhân" icon={UserIcon} />
                 <AccountMenuItem href="/settings" label="Cài đặt hệ thống" icon={SettingsIcon} />
-                <AccountMenuItem href="/pricing" label="Gói đăng ký (Pro)" icon={SparklesIcon} />
+                <AccountMenuItem href="/pricing" label="Gói đăng ký" icon={SparklesIcon} badge={subscriptionPlanName} />
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuGroup>
@@ -451,7 +427,7 @@ export default function DashboardLayout({
             </Button>
             <div className="flex items-center gap-2 lg:hidden">
               <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">G</div>
-              <span className="font-semibold tracking-tight">GiaSưPro</span>
+              <span className="font-semibold tracking-tight">Mari</span>
             </div>
             <h2 className="text-foreground font-medium text-lg hidden sm:block">
               {greeting}, <span className="font-semibold text-primary">{displayName}</span>
@@ -495,7 +471,7 @@ export default function DashboardLayout({
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent side="left" className="w-[min(20rem,86vw)] gap-0 p-0">
           <SheetHeader className="border-b px-5 py-5 pr-12">
-            <SheetTitle className="flex items-center gap-2 text-lg"><span className="grid size-8 place-items-center rounded-lg bg-primary text-sm text-primary-foreground">G</span>GiaSưPro</SheetTitle>
+            <SheetTitle className="flex items-center gap-2 text-lg"><img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-9 w-auto max-w-[130px] object-contain" /></SheetTitle>
             <SheetDescription>Điều hướng tài khoản {userRole === 'teacher' ? 'giáo viên' : userRole === 'parent' ? 'phụ huynh' : userRole === 'student' ? 'học sinh' : 'quản trị viên'}.</SheetDescription>
           </SheetHeader>
           <div className="flex-1 space-y-1 overflow-y-auto p-3">

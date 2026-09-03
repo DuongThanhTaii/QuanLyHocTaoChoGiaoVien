@@ -106,7 +106,7 @@ export const ProcessSection = () => {
               <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-300">
                 Không còn cảnh thức khuya rà soát từng giao dịch ngân hàng,
                 không còn sợ sót điểm danh hay thất lạc sổ sách. Mọi công việc
-                quản lý hành chính đã được Gia Sư Pro tự động hóa chu toàn.
+                quản lý hành chính đã được Mari tự động hóa chu toàn.
               </p>
             </div>
 

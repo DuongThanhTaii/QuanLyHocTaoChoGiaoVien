@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 import { InitialCatLoader } from "@/components/shared/InitialCatLoader";
 
 export const metadata: Metadata = {
-  title: "Gia Sư Pro",
+  title: "Mari",
   description: "Hệ thống quản lý gia sư",
 };
 

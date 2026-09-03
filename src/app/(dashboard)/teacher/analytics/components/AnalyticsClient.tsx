@@ -1154,7 +1154,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                     Điền Doanh thu
                   </h4>
                   <p className="text-zinc-500">
-                    Điền số tiền doanh thu từ Bảng kê Excel của GiasuPro vào mục{" "}
+                    Điền số tiền doanh thu từ Bảng kê Excel của Mari vào mục{" "}
                     <i>Dịch vụ không chịu thuế GTGT</i> (Thuế suất TNCN 2%).
                   </p>
                 </div>
