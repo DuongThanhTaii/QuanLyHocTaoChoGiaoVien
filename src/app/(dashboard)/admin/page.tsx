@@ -17,7 +17,7 @@ export default async function AdminDashboardPage() {
   const metrics = [
     { label: 'Tổng người dùng', value: data.users.toLocaleString('vi-VN'), detail: `${data.activeEnrollments} lượt ghi danh đang hoạt động`, icon: Users },
     { label: 'Giáo viên hoạt động', value: data.activeTeachers.toLocaleString('vi-VN'), detail: `${data.activeClasses} lớp đang mở`, icon: GraduationCap },
-    { label: 'Học phí 30 ngày', value: currency.format(data.tuitionRevenue30d), detail: 'Khoản giáo viên thu từ học viên', icon: WalletCards },
+    { label: 'Doanh thu gói 30 ngày', value: currency.format(data.platformRevenue30d), detail: `Học phí giáo viên thu: ${currency.format(data.tuitionRevenue30d)}`, icon: WalletCards },
     { label: 'Cần xử lý', value: String(data.trialsEndingSoon + data.activeRestrictions), detail: `${data.trialsEndingSoon} trial sắp hết · ${data.activeRestrictions} tài khoản bị hạn chế`, icon: Ban },
   ];
   return (

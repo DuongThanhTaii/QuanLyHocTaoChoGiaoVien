@@ -1,59 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
-import { Money } from '@/domains/shared/value-objects';
+import { getServiceClient } from '@/lib/admin/server';
+import { verifyPayOSWebhook } from '@/lib/billing/payos';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    
-    // Check if it is a webhook confirmation request (first time setup)
-    if (body.data && body.desc === 'success') {
-      // In a real app we'd verify the signature, but for setup confirmation we can return 200 OK.
+    const rawBody = await req.text();
+    const body = JSON.parse(rawBody) as { code?: string; data?: Record<string, unknown>; signature?: string };
+    if (!body.data || !verifyPayOSWebhook(body.data, body.signature)) {
+      return NextResponse.json({ success: false, message: 'Webhook signature is invalid.' }, { status: 400 });
     }
+    const admin = getServiceClient();
+    const eventHash = crypto.createHash('sha256').update(rawBody).digest('hex');
+    const { error: eventError } = await admin.from('payment_webhook_events').insert({
+      event_hash: eventHash, signature: body.signature, payload: body, verified: true,
+    });
+    if (eventError?.code === '23505') return NextResponse.json({ success: true, duplicate: true });
+    if (eventError) throw new Error(eventError.message);
 
-    // Usually PayOS sends { code, desc, data, signature }
-    const { code, data, signature } = body;
+    const orderCode = Number(body.data.orderCode);
+    const amount = Number(body.data.amount);
+    const { data: order, error: orderError } = await admin.from('platform_orders').select('id, amount, status').eq('order_code', orderCode).maybeSingle();
+    // PayOS sends a signed sample event while confirming the webhook URL.
+    if (!order && !orderError) return NextResponse.json({ success: true, confirmation: true });
+    if (orderError || !order) throw new Error(orderError?.message || 'Không tìm thấy đơn thanh toán nền tảng.');
+    if (Number(order.amount) !== amount) throw new Error('Số tiền webhook không khớp đơn hàng.');
+    if (body.code !== '00' || body.data.code !== '00') return NextResponse.json({ success: true, ignored: true });
 
-    if (code !== '00') {
-      return NextResponse.json({ success: false, message: 'Invalid code' });
-    }
-
-    if (!data) {
-      return NextResponse.json({ success: false, message: 'No data' }, { status: 400 });
-    }
-
-    // The payment status
-    if (data.desc === 'success') {
-      const orderCode = data.orderCode; // e.g., numeric ID matching invoice ID or invoice Number
-      const amount = data.amount;
-      const transactionRef = data.reference;
-
-      // Extract invoice ID from orderCode (if we stored it) or look up by payment_token
-      const repos = await getRepositories();
-      const invoice = await repos.invoices.findByPaymentToken(orderCode.toString());
-
-      if (!invoice) {
-        return NextResponse.json({ success: false, message: 'Invoice not found' }, { status: 404 });
-      }
-
-      // Mark as paid
-      const payResult = invoice.markAsPaid(
-        new Money(amount),
-        'vietqr',
-        transactionRef
-      );
-
-      if (payResult.isSuccess()) {
-        await repos.invoices.save(invoice);
-        return NextResponse.json({ success: true });
-      }
-      
-      return NextResponse.json({ success: false, message: 'Payment processing failed' });
-    }
-
-    return NextResponse.json({ success: true, message: 'Ignored' });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, message: err.message }, { status: 500 });
+    const { error: activationError } = await admin.rpc('activate_platform_order', {
+      target_order_code: orderCode, transaction_reference: String(body.data.reference || body.data.paymentLinkId || ''),
+    });
+    if (activationError) throw new Error(activationError.message);
+    await admin.from('payment_webhook_events').update({ processed_at: new Date().toISOString() }).eq('event_hash', eventHash);
+    return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    return NextResponse.json({ success: false, message: err instanceof Error ? err.message : 'Webhook processing failed.' }, { status: 500 });
   }
 }

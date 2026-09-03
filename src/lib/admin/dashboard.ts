@@ -33,6 +33,7 @@ export async function getAdminDashboard() {
     activeClasses,
     activeEnrollments,
     paidInvoices,
+    paidPlatformOrders,
     trialsEndingSoon,
     activeRestrictions,
     recentAudit,
@@ -43,6 +44,7 @@ export async function getAdminDashboard() {
     admin.from('classes').select('*', { count: 'exact', head: true }).eq('is_active', true),
     admin.from('enrollments').select('*', { count: 'exact', head: true }).eq('status', 'ACTIVE'),
     admin.from('invoices').select('total_amount').eq('status', 'paid').gte('paid_at', thirtyDaysAgo.toISOString()),
+    optionalRows(admin.from('platform_orders').select('amount').eq('status', 'paid').gte('paid_at', thirtyDaysAgo.toISOString())),
     admin.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'trial').gte('trial_ends_at', now.toISOString()).lte('trial_ends_at', sevenDaysAhead.toISOString()),
     optionalCount(admin.from('account_restrictions').select('*', { count: 'exact', head: true }).is('revoked_at', null).lte('starts_at', now.toISOString()).or(`ends_at.is.null,ends_at.gt.${now.toISOString()}`)),
     optionalRows(admin.from('admin_audit_logs').select('id, action, resource_type, resource_id, outcome, created_at, actor:profiles!admin_audit_logs_actor_id_fkey(full_name,email)').order('created_at', { ascending: false }).limit(8)),
@@ -56,6 +58,7 @@ export async function getAdminDashboard() {
   if (billingConfig.error) throw new Error(`Không thể đọc cấu hình billing: ${billingConfig.error.message}`);
 
   const tuitionRevenue30d = (paidInvoices.data ?? []).reduce((sum, invoice) => sum + Number(invoice.total_amount ?? 0), 0);
+  const platformRevenue30d = paidPlatformOrders.reduce((sum, order) => sum + Number(order.amount ?? 0), 0);
 
   return {
     users: users.count ?? 0,
@@ -63,6 +66,7 @@ export async function getAdminDashboard() {
     activeClasses: activeClasses.count ?? 0,
     activeEnrollments: activeEnrollments.count ?? 0,
     tuitionRevenue30d,
+    platformRevenue30d,
     trialsEndingSoon: trialsEndingSoon.count ?? 0,
     activeRestrictions,
     billingEnabled: billingConfig.data?.value === 'true',
