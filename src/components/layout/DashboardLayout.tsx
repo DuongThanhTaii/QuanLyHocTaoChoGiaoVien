@@ -101,7 +101,7 @@ function NavItem({
 }) {
   const iconAnimation = useSidebarIconAnimation();
   // Logic to determine active state
-  const isActive = item.href === '/teacher' || item.href === '/parent' || item.href === '/student' 
+  const isActive = item.href === '/teacher' || item.href === '/parent' || item.href === '/student' || item.href === '/admin'
     ? pathname === item.href 
     : pathname.startsWith(item.href);
 
@@ -152,7 +152,7 @@ function NavItem({
 }
 
 function isNavItemActive(item: SidebarItem, pathname: string) {
-  return item.href === '/teacher' || item.href === '/parent' || item.href === '/student'
+  return item.href === '/teacher' || item.href === '/parent' || item.href === '/student' || item.href === '/admin'
     ? pathname === item.href
     : pathname.startsWith(item.href);
 }
