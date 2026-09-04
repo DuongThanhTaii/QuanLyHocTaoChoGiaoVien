@@ -19,9 +19,9 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffaf0]">
-      <OnboardingHeader className="bg-[#fffaf0]" />
-      <main className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden bg-[#fffaf0] px-4 py-8">
+    <div className="mari-animated-background flex min-h-screen flex-col bg-[linear-gradient(135deg,#fffaf0_0%,#fff1c9_48%,#ffe2b5_100%)]">
+      <OnboardingHeader className="bg-transparent" />
+      <main className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden bg-transparent px-4 py-8">
         <div className="pointer-events-none absolute inset-0 text-[#eea76a] opacity-20" aria-hidden="true">
           <PawPrint className="absolute left-[7%] top-[13%] size-9 -rotate-[28deg]" />
           <PawPrint className="absolute left-[15%] top-[27%] size-6 -rotate-[12deg]" />
