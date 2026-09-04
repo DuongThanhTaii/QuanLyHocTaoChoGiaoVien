@@ -121,7 +121,7 @@ export function TeacherProductTour({ userRole, uiSettings }: { userRole: string;
 
   return <AnimatePresence>
     {active && <>
-      <motion.div className="fixed inset-0 z-40 bg-zinc-950/60" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-hidden="true" />
+      <motion.div className="fixed inset-0 z-30 bg-transparent" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-hidden="true" />
       {targetRect && <motion.div
         className="pointer-events-none fixed z-40 rounded-xl border-2 border-orange-300 bg-transparent shadow-[0_0_0_9999px_rgba(9,9,11,0.6)]"
         initial={reduceMotion ? false : { opacity: 0 }}

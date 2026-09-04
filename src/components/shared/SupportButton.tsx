@@ -101,7 +101,7 @@ export function SupportButton({ isCollapsed = false, variant = 'sidebar', canRep
         </div>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[calc(100dvh-4rem)] overflow-y-auto sm:max-w-xl">
         <DialogHeader className="space-y-1 text-left">
           <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
             Trung tâm Hỗ trợ & Trợ giúp
