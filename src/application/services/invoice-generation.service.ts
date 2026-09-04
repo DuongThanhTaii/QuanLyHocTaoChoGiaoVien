@@ -3,7 +3,7 @@ import { IAttendanceRepository } from '../ports/attendance.repository';
 import { IEnrollmentRepository } from '../ports/enrollment.repository';
 import { IClassRepository } from '../ports/class.repository';
 import { Result } from '../../domains/shared/result';
-import { Invoice, InvoiceLineItem, InvoiceTemplateSnapshot, PaymentMethod } from '../../domains/payment/entities/invoice';
+import { Invoice, InvoiceAttendanceSession, InvoiceLineItem, InvoiceTemplateSnapshot, PaymentMethod } from '../../domains/payment/entities/invoice';
 import { Money } from '../../domains/shared/value-objects';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { NotificationService } from './notification.service';
@@ -236,6 +236,7 @@ export class InvoiceService {
       extraFee?: number;
       notes?: string;
       lineItems?: Array<{ description: string; quantity: number; unitPrice: number; amount: number }>;
+      attendanceLog?: InvoiceAttendanceSession[];
     }>;
     templateSnapshot?: InvoiceTemplateSnapshot;
   }): Promise<Result<Invoice[]>> {
@@ -245,6 +246,12 @@ export class InvoiceService {
     const periodStart = new Date(year, month - 1, 1);
     const periodEnd = new Date(year, month, 0);
     const resolvedDueDate = dueDate || new Date(year, month, 10);
+
+    // Only invoices charged per session carry the attendance evidence.
+    const { data: classData } = this.supabase
+      ? await this.supabase.from('classes').select('fee_type').eq('id', classId).maybeSingle()
+      : { data: null };
+    const isPerSession = (classData?.fee_type || 'per_session') === 'per_session';
 
     for (const item of items) {
       const unitPrice = item.unitPrice || 0;
@@ -288,7 +295,8 @@ export class InvoiceService {
         taxRate: 0,
         dueDate: resolvedDueDate,
         notes: item.notes,
-        templateSnapshot
+        templateSnapshot,
+        attendanceLog: isPerSession ? item.attendanceLog : undefined
       });
 
       if (invResult.isSuccess()) {

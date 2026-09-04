@@ -12,6 +12,7 @@ export class SupabaseInvoiceRepository implements IInvoiceRepository {
     let lineItems: InvoiceLineItem[] = [];
     let customNotes: string | null = null;
     let templateSnapshot: any = null;
+    let attendanceLog: any[] = [];
     let paymentToken: string = row.payment_token || row.id.replace(/-/g, '');
     let extraFeeAmount = Number(row.extra_fee) || 0;
 
@@ -22,6 +23,7 @@ export class SupabaseInvoiceRepository implements IInvoiceRepository {
           lineItems = parsed.line_items || [];
           customNotes = parsed.custom_notes || parsed.notes || null;
           templateSnapshot = parsed.template_snapshot || parsed.template || null;
+          attendanceLog = parsed.attendance_log || [];
           if (parsed.payment_token) paymentToken = parsed.payment_token;
           if (parsed.extra_fee) extraFeeAmount = Number(parsed.extra_fee);
         } else if (row.notes.startsWith('[')) {
@@ -80,7 +82,8 @@ export class SupabaseInvoiceRepository implements IInvoiceRepository {
       _paymentMethod: row.payment_method as PaymentMethod | null,
       _paymentReference: row.payment_reference || null,
       _notes: customNotes,
-      _templateSnapshot: templateSnapshot
+      _templateSnapshot: templateSnapshot,
+      _attendanceLog: attendanceLog
     });
 
     return invoice;
@@ -180,7 +183,8 @@ export class SupabaseInvoiceRepository implements IInvoiceRepository {
       extra_fee: extraFee,
       payment_token: paymentToken,
       custom_notes: anyInv.notes || anyInv._notes || null,
-      template_snapshot: anyInv.templateSnapshot || anyInv._templateSnapshot || null
+      template_snapshot: anyInv.templateSnapshot || anyInv._templateSnapshot || null,
+      attendance_log: anyInv.attendanceLog || anyInv._attendanceLog || []
     });
 
     return {

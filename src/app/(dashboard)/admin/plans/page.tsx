@@ -1,19 +1,28 @@
-import { Save, SlidersHorizontal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { getAdminBillingOverview } from '@/lib/billing/server';
-import { updateBillingMode, updatePlan } from './actions';
+import { PlansEditor } from './plans-editor';
 
 const money = new Intl.NumberFormat('vi-VN');
 
 export default async function PlansPage() {
   const data = await getAdminBillingOverview();
-  return <div className="space-y-6">
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div><h1 className="text-2xl font-bold tracking-tight">Gói & thanh toán</h1><p className="mt-1 text-sm text-muted-foreground">Giá mới áp dụng cho đơn mới; gói đã thanh toán luôn giữ giá tại thời điểm mua.</p></div><form action={updateBillingMode} className="flex items-center gap-2 rounded-lg border bg-background p-2"><select name="mode" defaultValue={data.settings.mode} className="h-9 rounded-md border bg-background px-2 text-sm"><option value="paid">Thu phí đang bật</option><option value="free_access">Mở quyền miễn phí</option></select><Button size="sm"><SlidersHorizontal className="mr-2 size-4" />Áp dụng</Button></form></div>
-    <div className="grid gap-4 sm:grid-cols-3"><Metric label="Doanh thu gói tháng này" value={`${money.format(data.revenueThisMonth)} đ`} /><Metric label="Subscription đang hiệu lực" value={String(data.activeSubscriptions)} /><Metric label="Đơn đang chờ thanh toán" value={String(data.pendingOrders)} /></div>
-    <div className="grid gap-5 xl:grid-cols-2">{data.plans.map((plan) => { const tone = plan.code === 'free' ? 'border-emerald-300 bg-emerald-100/80 dark:border-emerald-700 dark:bg-emerald-950/60' : plan.code === 'pro' ? 'border-blue-300 bg-blue-100/80 dark:border-blue-700 dark:bg-blue-950/60' : plan.code === 'max' ? 'border-violet-300 bg-violet-100/80 dark:border-violet-700 dark:bg-violet-950/60' : 'border-amber-300 bg-amber-100/80 dark:border-amber-700 dark:bg-amber-950/60'; return <form key={plan.id} action={updatePlan}><Card className={tone}><CardHeader><div className="flex items-start justify-between gap-3"><div><CardTitle>{plan.code === 'enterprise' ? 'Doanh nghiệp' : plan.name}</CardTitle><CardDescription className="mt-1">{plan.code === 'enterprise' ? 'Dùng cho báo giá và hợp đồng riêng.' : 'Quota được kiểm tra tại database.'}</CardDescription></div><Badge variant={plan.isActive ? 'secondary' : 'outline'}>{plan.isActive ? 'Đang bán' : 'Tạm ẩn'}</Badge></div></CardHeader><CardContent className="space-y-4"><input type="hidden" name="planId" value={plan.id} /><div className="grid gap-3 sm:grid-cols-2"><Field label="Tên gói" name="name" defaultValue={plan.name} /><Field label="Trạng thái" name="isActive" type="select" defaultValue={String(plan.isActive)} options={[["true","Đang bán"],["false","Tạm ẩn"]]} /><Field label="Giá tháng (đ)" name="monthlyPrice" type="number" defaultValue={plan.monthlyPrice} /><Field label="Giá năm (đ)" name="yearlyPrice" type="number" defaultValue={plan.yearlyPrice} /><Field label="Lớp hoạt động" name="maxClasses" type="number" defaultValue={plan.entitlements.maxClasses ?? 0} /><Field label="Học sinh / lớp" name="maxStudentsPerClass" type="number" defaultValue={plan.entitlements.maxStudentsPerClass ?? 0} /><Field label="Chat hoạt động" name="maxActiveConversations" type="number" defaultValue={plan.entitlements.maxActiveConversations ?? 0} /><Field label="Lưu trữ (GB)" name="maxStorageGb" type="number" defaultValue={plan.entitlements.maxStorageGb ?? 0} /></div><label className="grid gap-1.5 text-sm font-medium">Mô tả<textarea name="description" defaultValue={plan.description ?? ''} className="min-h-16 rounded-md border bg-background px-3 py-2 text-sm font-normal" /></label><Button className="w-full"><Save className="mr-2 size-4" />Lưu thay đổi</Button></CardContent></Card></form>; })}</div>
-  </div>;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Gói & thanh toán</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Giá mới áp dụng cho đơn mới; gói đã thanh toán luôn giữ giá tại thời điểm mua.</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Metric label="Doanh thu gói tháng này" value={`${money.format(data.revenueThisMonth)} đ`} />
+        <Metric label="Subscription đang hiệu lực" value={String(data.activeSubscriptions)} />
+        <Metric label="Đơn đang chờ thanh toán" value={String(data.pendingOrders)} />
+      </div>
+      <PlansEditor plans={data.plans} billingMode={data.settings.mode} />
+    </div>
+  );
 }
-function Metric({ label, value }: { label: string; value: string }) { return <Card><CardContent className="p-5"><p className="text-xs font-medium text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></CardContent></Card>; }
-function Field({ label, name, type = 'text', defaultValue, options }: { label: string; name: string; type?: 'text'|'number'|'select'; defaultValue: string|number; options?: [string,string][] }) { return <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">{label}{type === 'select' ? <select name={name} defaultValue={String(defaultValue)} className="h-9 rounded-md border bg-background px-2 text-sm text-foreground">{options?.map(([value,text]) => <option key={value} value={value}>{text}</option>)}</select> : <input name={name} type={type} min={type === 'number' ? 0 : undefined} defaultValue={defaultValue} className="h-9 rounded-md border bg-background px-2 text-sm text-foreground" />}</label>; }
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return <Card><CardContent className="p-5"><p className="text-xs font-medium text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></CardContent></Card>;
+}

@@ -16,6 +16,13 @@ export interface InvoiceLineItem {
   amount: Money;
 }
 
+/** Snapshot of the sessions used to calculate a per-session tuition invoice. */
+export interface InvoiceAttendanceSession {
+  date: string;
+  title?: string;
+  status: 'present' | 'late';
+}
+
 export interface InvoiceTemplateSnapshot {
   brandName?: string;
   logoUrl?: string;
@@ -62,7 +69,8 @@ export class Invoice extends AggregateRoot {
     private _paymentMethod: PaymentMethod | null = null,
     private _paymentReference: string | null = null,
     private _notes: string | null = null,
-    private _templateSnapshot: InvoiceTemplateSnapshot | null = null
+    private _templateSnapshot: InvoiceTemplateSnapshot | null = null,
+    private _attendanceLog: InvoiceAttendanceSession[] = []
   ) {
     super(id);
   }
@@ -81,6 +89,7 @@ export class Invoice extends AggregateRoot {
     dueDate?: Date;
     notes?: string;
     templateSnapshot?: InvoiceTemplateSnapshot;
+    attendanceLog?: InvoiceAttendanceSession[];
   }): Result<Invoice> {
     if (props.lineItems.length === 0) {
       return Result.fail(new DomainError("Hóa đơn phải có ít nhất một mục chi phí"));
@@ -124,7 +133,8 @@ export class Invoice extends AggregateRoot {
       null,
       null,
       props.notes || null,
-      props.templateSnapshot || null
+      props.templateSnapshot || null,
+      props.attendanceLog || []
     );
 
     return Result.ok(invoice);
@@ -188,4 +198,5 @@ export class Invoice extends AggregateRoot {
   get paymentReference() { return this._paymentReference; }
   get notes() { return this._notes; }
   get templateSnapshot() { return this._templateSnapshot; }
+  get attendanceLog() { return this._attendanceLog; }
 }

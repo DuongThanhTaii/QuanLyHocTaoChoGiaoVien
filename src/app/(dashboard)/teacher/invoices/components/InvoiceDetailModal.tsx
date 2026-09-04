@@ -50,6 +50,7 @@ export function InvoiceDetailModal({
   let lineItems: any[] = [];
   let customNotes: string | null = null;
   let templateSnapshot: any = null;
+  let attendanceLog: Array<{ date: string; title?: string; status: string }> = [];
   let paymentToken = invoice.payment_token || invoice.id.replace(/-/g, '');
 
   if (invoice.notes) {
@@ -59,6 +60,7 @@ export function InvoiceDetailModal({
         lineItems = parsed.line_items || [];
         customNotes = parsed.custom_notes || null;
         templateSnapshot = parsed.template_snapshot || null;
+        attendanceLog = parsed.attendance_log || [];
         if (parsed.payment_token) paymentToken = parsed.payment_token;
       } else if (invoice.notes.startsWith('[')) {
         lineItems = JSON.parse(invoice.notes);
@@ -86,6 +88,7 @@ export function InvoiceDetailModal({
   const contactPhone = templateSnapshot?.contactPhone || '';
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã tin tưởng đồng hành cùng thầy cô!';
   const themeColor = templateSnapshot?.themeColor || '#3B82F6';
+  const showAttendanceLog = templateSnapshot?.showAttendanceLog !== false;
 
   const isPaid = invoice.status === 'paid';
   const isOverdue = invoice.status === 'overdue';
@@ -280,6 +283,29 @@ export function InvoiceDetailModal({
                 </TableBody>
               </Table>
             </div>
+
+            {showAttendanceLog && attendanceLog.length > 0 && (
+              <div className="border border-blue-100 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    Buổi học đã tham gia
+                  </h3>
+                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                    {attendanceLog.length} buổi tính phí
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {attendanceLog.map((session, index) => (
+                    <span key={`${session.date}-${index}`} className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-blue-100 dark:border-blue-900 px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-200">
+                      <span className="font-semibold">{new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span>
+                      {session.title && <span className="text-zinc-400">• {session.title}</span>}
+                      {session.status === 'late' && <span className="text-amber-600">(đi trễ)</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Tổng kết tài chính & VietQR */}
             <div className="flex flex-col gap-8 pt-4">

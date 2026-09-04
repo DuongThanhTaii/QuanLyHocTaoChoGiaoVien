@@ -35,7 +35,8 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
       classes:class_id (
         id,
         name,
-        subject
+        subject,
+        fee_type
       ),
       profiles:teacher_id (
         id,
@@ -76,6 +77,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   let lineItems: any[] = [];
   let customNotes: string | null = null;
   let templateSnapshot: any = null;
+  let attendanceLog: Array<{ date: string; title?: string; status: string }> = [];
 
   if (invoice.notes) {
     try {
@@ -84,6 +86,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         lineItems = parsed.line_items || [];
         customNotes = parsed.custom_notes || null;
         templateSnapshot = parsed.template_snapshot || null;
+        attendanceLog = parsed.attendance_log || [];
       } else if (invoice.notes.startsWith('[')) {
         lineItems = JSON.parse(invoice.notes);
       } else {
@@ -110,6 +113,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã đồng hành cùng thầy cô!';
   const themeColor = templateSnapshot?.themeColor || '#3B82F6';
   const showAttendance = templateSnapshot?.showAttendanceLog !== false;
+  const isPerSessionInvoice = classroom?.fee_type === 'per_session';
 
   const isPaid = invoice.status === 'paid';
 
@@ -122,18 +126,26 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
     memo: `${invoice.invoice_number}`
   }) : null;
 
-  // Lấy danh sách điểm danh chi tiết nếu bật hiển thị
-  let attendanceList: any[] = [];
-  if (showAttendance) {
+  // Older invoices have no snapshot, so reconstruct their attendance from the
+  // session date (not the date the teacher happened to mark attendance).
+  if (showAttendance && isPerSessionInvoice && attendanceLog.length === 0) {
     const { data: attData } = await supabaseAdmin
       .from('attendance_records')
-      .select('session_id, status, note, class_sessions(session_date, title)')
+      .select('session_id, status, class_sessions!inner(session_date, title)')
       .eq('student_id', invoice.student_id)
       .eq('class_id', invoice.class_id)
-      .gte('marked_at', invoice.period_start)
-      .lte('marked_at', invoice.period_end + 'T23:59:59');
+      .in('status', ['present', 'late', 'PRESENT', 'LATE'])
+      .gte('class_sessions.session_date', invoice.period_start)
+      .lte('class_sessions.session_date', invoice.period_end);
 
-    attendanceList = attData || [];
+    attendanceLog = (attData || []).map((record: any) => {
+      const session = Array.isArray(record.class_sessions) ? record.class_sessions[0] : record.class_sessions;
+      return {
+        date: session?.session_date,
+        title: session?.title || undefined,
+        status: String(record.status).toLowerCase()
+      };
+    }).filter((session: any) => session.date);
   }
 
   return (
@@ -253,6 +265,27 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
                 </TableBody>
               </Table>
             </div>
+
+            {showAttendance && isPerSessionInvoice && attendanceLog.length > 0 && (
+              <div className="rounded-2xl border border-blue-100 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/20 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    Chi tiết buổi học tính phí
+                  </h3>
+                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">{attendanceLog.length} buổi</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {attendanceLog.map((session, index) => (
+                    <span key={`${session.date}-${index}`} className="inline-flex items-center gap-1.5 rounded-lg border border-blue-100 dark:border-blue-900 bg-white dark:bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-200">
+                      <span className="font-semibold">{new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span>
+                      {session.title && <span className="text-zinc-400">• {session.title}</span>}
+                      {session.status === 'late' && <span className="text-amber-600">(đi trễ)</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Chi tiết Tổng tiền */}
             <div className="bg-zinc-50 dark:bg-zinc-950 p-5 rounded-2xl border border-zinc-100 dark:border-zinc-800 space-y-3 text-sm shadow-sm">

@@ -136,7 +136,16 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
         unitPrice: Number(item.unitPrice) || 0,
         discount: Number(item.discount) || 0,
         extraFee: Number(item.extraFee) || 0,
-        notes: item.notes || undefined
+        notes: item.notes || undefined,
+        // Snapshot only sessions the student actually attended. This is printed
+        // on the invoice so the parent can reconcile per-session tuition.
+        attendanceLog: (item.sessionDetails || [])
+          .filter((session: any) => ['present', 'late'].includes(String(session.status).toLowerCase()))
+          .map((session: any) => ({
+            date: session.date,
+            title: session.title,
+            status: String(session.status).toLowerCase()
+          }))
       }));
 
     setGenerating(true);
