@@ -82,7 +82,7 @@ export default async function TeacherInvoicesPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour-id="teacher-invoices">
       <InvoiceListClient
         invoices={invoicesWithBillingSessions}
         classes={classesData || []}

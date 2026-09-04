@@ -7,7 +7,7 @@ import { ListSkeleton } from '@/components/skeletons/ListSkeleton';
 export default function TeacherRoot() {
   return (
     <div className="space-y-6">
-      <div>
+      <div data-tour-id="teacher-dashboard">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tổng quan</h1>
         <p className="text-zinc-500">Chào mừng bạn quay trở lại. Đây là lịch trình hôm nay của bạn.</p>
       </div>

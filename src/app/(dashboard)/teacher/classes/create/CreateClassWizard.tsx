@@ -42,7 +42,7 @@ export function CreateClassWizard() {
   }, [state]);
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-6" data-tour-id="teacher-create-class-form">
       <div className={step === 1 ? '' : 'hidden'}>
         <Card className="border-zinc-200 shadow-sm">
           <CardHeader>

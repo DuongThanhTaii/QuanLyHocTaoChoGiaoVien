@@ -38,7 +38,7 @@ export function ClassListClient({ classes }: ClassListClientProps) {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Link href="/teacher/classes/create">
+          <Link href="/teacher/classes/create" data-tour-id="teacher-create-class">
             <Button className="bg-zinc-900 hover:bg-zinc-800 text-white whitespace-nowrap">
               <PlusCircle className="mr-2 h-4 w-4" /> Tạo lớp mới
             </Button>

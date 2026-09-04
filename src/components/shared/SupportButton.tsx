@@ -12,7 +12,8 @@ import {
 import { 
   Phone, 
   ExternalLink, 
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import BrandChromeIcon from '@/components/ui/icons/brand-chrome-icon';
 import type { AnimatedIconHandle } from '@/components/ui/types';
@@ -20,6 +21,7 @@ import type { AnimatedIconHandle } from '@/components/ui/types';
 interface SupportButtonProps {
   isCollapsed?: boolean;
   variant?: 'sidebar' | 'floating';
+  canReplayTour?: boolean;
 }
 
 const SUPPORT_CONFIG = {
@@ -70,7 +72,7 @@ function HotlineLogo() {
   );
 }
 
-export function SupportButton({ isCollapsed = false, variant = 'sidebar' }: SupportButtonProps) {
+export function SupportButton({ isCollapsed = false, variant = 'sidebar', canReplayTour = false }: SupportButtonProps) {
   const [open, setOpen] = useState(false);
   const iconRef = useRef<AnimatedIconHandle | null>(null);
   const setIconRef = useCallback((node: AnimatedIconHandle | null) => { iconRef.current = node; }, []);
@@ -88,6 +90,7 @@ export function SupportButton({ isCollapsed = false, variant = 'sidebar' }: Supp
               ? 'fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
               : 'group relative mb-2 flex w-full items-center overflow-hidden rounded-md px-3 py-2.5 text-left text-sm font-medium text-muted-foreground outline-none transition-all duration-300 hover:bg-muted hover:text-foreground'}
             title={isCollapsed ? "Hỗ trợ" : undefined}
+            data-tour-id="teacher-support"
           />
         }
       >
@@ -109,6 +112,17 @@ export function SupportButton({ isCollapsed = false, variant = 'sidebar' }: Supp
         </DialogHeader>
 
         <div className="grid gap-2.5 py-2">
+          {canReplayTour && <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              window.dispatchEvent(new Event('mari:start-teacher-tour'));
+            }}
+            className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50/70 p-3 text-left transition-colors hover:bg-orange-100 dark:border-orange-900/50 dark:bg-orange-950/20 dark:hover:bg-orange-950/35"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm"><Sparkles className="size-5" /></span>
+            <span><span className="block text-sm font-medium text-foreground">Hướng dẫn sử dụng</span><span className="block text-xs text-muted-foreground">Xem lại tour thiết lập lớp học với Mari</span></span>
+          </button>}
           {/* Zalo */}
           <a
             href={SUPPORT_CONFIG.zalo}

@@ -20,6 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 import { NotificationDropdown } from './NotificationDropdown';
 import { SupportButton } from '../shared/SupportButton';
+import { TeacherProductTour } from '../tour/TeacherProductTour';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
 import { Button } from '../ui/button';
 
@@ -115,6 +116,7 @@ function NavItem({
   return (
     <Link
       href={item.href}
+      data-tour-id={item.href === '/teacher/classes' ? 'teacher-classes-nav' : item.href === '/teacher/schedule' ? 'teacher-schedule-nav' : item.href === '/teacher/invoices' ? 'teacher-invoices-nav' : undefined}
       title={isCollapsed ? `${item.label}${hasBadge ? ` ${badge}` : ''}` : undefined}
       onMouseEnter={iconAnimation.start}
       onMouseLeave={iconAnimation.stop}
@@ -218,7 +220,7 @@ export default function DashboardLayout({
   userName?: string, 
   userEmail?: string,
   subscriptionPlanName?: string,
-  uiSettings?: { theme?: string; themeColor?: string }
+  uiSettings?: { theme?: string; themeColor?: string; tours?: { teacher_setup_v1?: { eligibleAt?: string; completedAt?: string } } }
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -383,7 +385,7 @@ export default function DashboardLayout({
         {/* Footer Section (Settings & Profile) */}
         <div className="p-3 border-t border-border bg-card/50 backdrop-blur-sm transition-all duration-300">
           
-          <SupportButton isCollapsed={isCollapsed} />
+          <SupportButton isCollapsed={isCollapsed} canReplayTour={userRole === 'teacher'} />
           
           <DropdownMenu>
             <DropdownMenuTrigger className={`outline-none w-full flex items-center px-1.5 py-1.5 text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-300 cursor-pointer text-left border border-transparent hover:border-border overflow-hidden`}>
@@ -497,7 +499,7 @@ export default function DashboardLayout({
             ))}
           </div>
           <div className="space-y-2 border-t p-3">
-            <SupportButton isCollapsed={false} />
+            <SupportButton isCollapsed={false} canReplayTour={userRole === 'teacher'} />
             <Link 
               href="/profile" 
               onClick={() => setIsMobileMenuOpen(false)}
@@ -510,6 +512,7 @@ export default function DashboardLayout({
         </SheetContent>
       </Sheet>
       </div>
+      <TeacherProductTour userRole={userRole} uiSettings={uiSettings} />
     </TooltipProvider>
   );
 }

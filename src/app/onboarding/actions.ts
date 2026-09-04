@@ -41,10 +41,32 @@ export async function completeTeacherOnboarding(prevState: any, formData: FormDa
   const result = TeacherProfileSchema.safeParse({ fullName, phone })
   if (!result.success) return { error: 'Invalid input' }
 
+  const { data: existingProfile, error: existingProfileError } = await admin
+    .from('profiles')
+    .select('ui_settings')
+    .eq('id', user.id)
+    .single()
+  if (existingProfileError) return { error: existingProfileError.message }
+
+  const currentSettings = (existingProfile?.ui_settings || {}) as Record<string, unknown>
+  const currentTours = (currentSettings.tours || {}) as Record<string, unknown>
+
   // 1. Update profiles (status = ACTIVE, full_name, role)
   const { error: profileError } = await admin
     .from('profiles')
-    .update({ full_name: fullName, phone: phone, status: 'ACTIVE', role: 'teacher' })
+    .update({
+      full_name: fullName,
+      phone: phone,
+      status: 'ACTIVE',
+      role: 'teacher',
+      ui_settings: {
+        ...currentSettings,
+        tours: {
+          ...currentTours,
+          teacher_setup_v1: { eligibleAt: new Date().toISOString() },
+        },
+      },
+    })
     .eq('id', user.id)
   
   if (profileError) return { error: profileError.message }
