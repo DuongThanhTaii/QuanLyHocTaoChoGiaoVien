@@ -1,138 +1,95 @@
 'use client';
 
-import { useActionState, useState } from 'react';
 import Image from 'next/image';
-import { register } from '../actions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { AlertCircle, Eye, EyeOff, PawPrint } from 'lucide-react';
-import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
+import { useActionState, useState } from 'react';
+import { Atom, BookOpen, Calculator, Eye, EyeOff, PencilLine, Sparkles } from 'lucide-react';
+import { register, type AuthActionState } from '../actions';
+import { SupportButton } from '@/components/shared/SupportButton';
+import { GoogleSignInButton } from '../login/GoogleSignInButton';
 
-const initialState = { error: '' };
+const initialState: AuthActionState = {};
+
+const backgroundIcons = [
+  { Icon: BookOpen, className: 'left-[5%] top-[11%] size-16 -rotate-12' },
+  { Icon: PencilLine, className: 'left-[23%] top-[7%] size-12 rotate-35' },
+  { Icon: Atom, className: 'left-[38%] top-[8%] size-14 rotate-12' },
+  { Icon: BookOpen, className: 'right-[5%] top-[22%] size-16 rotate-12' },
+  { Icon: PencilLine, className: 'right-[20%] top-[8%] size-12 rotate-35' },
+  { Icon: Calculator, className: 'right-[8%] bottom-[17%] size-16 rotate-12' },
+  { Icon: BookOpen, className: 'left-[8%] bottom-[15%] size-18 -rotate-12' },
+  { Icon: Atom, className: 'right-[25%] bottom-[7%] size-14 -rotate-12' },
+];
 
 export default function RegisterPage() {
-  const [state, formAction, isPending] = useActionState(register as any, initialState);
+  const [state, formAction, isPending] = useActionState(register, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="mari-animated-background flex min-h-screen flex-col bg-[linear-gradient(135deg,#fffaf0_0%,#fff1c9_48%,#ffe2b5_100%)]">
-      <OnboardingHeader className="bg-transparent" />
-      <main className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden bg-transparent px-4 py-8">
-        <div className="pointer-events-none absolute inset-0 text-[#eea76a] opacity-20" aria-hidden="true">
-          <PawPrint className="absolute left-[7%] top-[13%] size-9 -rotate-[28deg]" />
-          <PawPrint className="absolute left-[15%] top-[27%] size-6 -rotate-[12deg]" />
-          <PawPrint className="absolute left-[5%] bottom-[18%] size-11 rotate-[20deg]" />
-          <PawPrint className="absolute right-[16%] top-[14%] size-8 rotate-[18deg]" />
-          <PawPrint className="absolute right-[8%] top-[34%] size-6 rotate-[32deg]" />
-          <PawPrint className="absolute right-[31%] bottom-[12%] size-8 -rotate-[18deg]" />
-        </div>
-        <div className="pointer-events-none absolute -bottom-20 -right-14 h-72 w-72 rounded-full bg-[#ffe7a5]/55 blur-3xl" aria-hidden="true" />
+    <main className="mari-animated-background relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#fffaf0_0%,#fff1c9_48%,#ffe2b5_100%)] px-4 py-8 font-sans">
+      <div className="pointer-events-none absolute inset-0 opacity-20 text-[#d97932]" aria-hidden="true">
+        {backgroundIcons.map(({ Icon, className }, index) => <Icon key={index} className={`absolute stroke-[1.5] ${className}`} />)}
+      </div>
+      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/20 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-28 -right-20 h-80 w-80 rounded-full bg-orange-300/25 blur-3xl" aria-hidden="true" />
 
-        <form action={formAction} className="relative z-10 w-full max-w-md">
-          <Card className="border-zinc-200 shadow-sm">
-            <CardHeader className="space-y-1 text-center sr-only">
-              <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
-                Tạo tài khoản
-              </CardTitle>
-              <CardDescription className="text-zinc-500">
-                Điền thông tin bên dưới để đăng ký tài khoản mới
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-6">
-              {state?.error && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  {state.error}
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  placeholder="m@example.com" 
-                  required 
-                  className="bg-white"
-                />
+      <section className="relative z-10 w-full max-w-[690px]">
+        <div className="relative mx-auto w-full max-w-[410px] rounded-[24px] border border-white/90 bg-white/95 px-6 pb-7 pt-6 shadow-[0_18px_45px_rgba(137,77,33,0.24)] backdrop-blur sm:max-w-[450px] sm:px-8">
+          <div className="mb-3 flex justify-center">
+            <div className="relative h-12 w-32 overflow-hidden">
+              <Image src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" fill sizes="128px" className="object-contain mix-blend-multiply" priority />
+            </div>
+          </div>
+          <div className="text-center">
+            <h1 className="text-2xl font-extrabold tracking-tight text-[#a95123]">Tạo tài khoản</h1>
+            <p className="mt-1 text-xs text-zinc-500">Bắt đầu quản lý lớp học cùng Mari</p>
+          </div>
+
+          <form action={formAction} className="mt-5 space-y-3">
+            {state?.error && (
+              <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{state.error}</div>
+            )}
+            <label className="block text-xs font-semibold text-zinc-600" htmlFor="email">
+              Email
+              <input id="email" name="email" type="email" placeholder="tenban@email.com" required autoComplete="email" className="mt-1.5 h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
+            </label>
+            <div>
+              <label className="text-xs font-semibold text-zinc-600" htmlFor="password">Mật khẩu</label>
+              <div className="relative mt-1.5">
+                <input id="password" name="password" type={showPassword ? 'text' : 'password'} required minLength={6} autoComplete="new-password" className="h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 pr-10 text-sm text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a65b32] transition hover:text-[#ef7616]" aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Mật khẩu</Label>
-                <div className="relative">
-                  <Input 
-                    id="password" 
-                    name="password" 
-                    type={showPassword ? 'text' : 'password'} 
-                    required 
-                    className="bg-white pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-none transition-colors"
-                    tabIndex={-1}
-                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-zinc-600" htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+              <div className="relative mt-1.5">
+                <input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} required minLength={6} autoComplete="new-password" className="h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 pr-10 text-sm text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a65b32] transition hover:text-[#ef7616]" aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
+                  {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
-                <div className="relative">
-                  <Input 
-                    id="confirmPassword" 
-                    name="confirmPassword" 
-                    type={showConfirmPassword ? 'text' : 'password'} 
-                    required 
-                    className="bg-white pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-none transition-colors"
-                    tabIndex={-1}
-                    aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" disabled={isPending} className="relative w-full bg-zinc-900 hover:bg-zinc-800 text-white disabled:opacity-50">
-                {isPending ? 'Đang xử lý...' : 'Đăng ký'}
-                {!isPending && <PawPrint className="absolute right-4 size-5 text-[#f4b071]" aria-hidden="true" />}
-              </Button>
-              <div className="text-center text-sm text-zinc-500">
-                Đã có tài khoản?{' '}
-                <Link href="/login" className="inline-flex items-center gap-1 font-medium text-zinc-900 hover:underline">Đăng nhập <PawPrint className="size-4 text-[#9a5d32]" aria-hidden="true" /></Link>
-              </div>
-            </CardFooter>
-          </Card>
-        </form>
-        <Image
-          src="/images/empty_states/cat_sitdown.png"
-          alt="Mascot Mari ngồi"
-          width={300}
-          height={380}
-          priority
-          className="pointer-events-none absolute bottom-0 right-3 z-0 hidden h-auto w-40 drop-shadow-[0_10px_8px_rgba(141,83,30,0.22)] md:block lg:right-10 lg:w-48 xl:right-[7%] xl:w-56"
-        />
-      </main>
-    </div>
+              <p className="mt-1.5 text-[11px] text-zinc-500">Tối thiểu 6 ký tự.</p>
+            </div>
+            <button type="submit" disabled={isPending} className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-sm font-bold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] transition hover:brightness-105 active:translate-y-0.5 active:shadow-[0_3px_0_#d95508] disabled:cursor-not-allowed disabled:opacity-60">
+              <Sparkles className="size-4" /> {isPending ? 'Đang tạo tài khoản...' : 'Đăng ký'}
+            </button>
+          </form>
+
+          <div className="my-4 flex items-center gap-3 text-[11px] text-zinc-400"><span className="h-px flex-1 bg-zinc-200" />hoặc<span className="h-px flex-1 bg-zinc-200" /></div>
+          <GoogleSignInButton />
+
+          <p className="mt-5 text-center text-xs text-zinc-600">Đã có tài khoản? <Link href="/login" className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng nhập</Link></p>
+          <p className="mt-3 text-center text-[11px] leading-5 text-zinc-500">
+            Bằng việc đăng ký, bạn đồng ý với <Link href="/terms" className="font-medium text-[#a95123] hover:underline">Điều khoản sử dụng</Link> và <Link href="/privacy" className="font-medium text-[#a95123] hover:underline">Chính sách bảo mật</Link> của Mari.
+          </p>
+        </div>
+
+        <Image src="/images/empty_states/cat_stand.png" alt="Mascot Mari" width={280} height={390} priority className="pointer-events-none absolute -bottom-5 -left-12 hidden h-auto w-52 drop-shadow-[0_12px_8px_rgba(133,69,17,0.25)] lg:block" />
+      </section>
+      <SupportButton variant="floating" />
+    </main>
   );
 }
