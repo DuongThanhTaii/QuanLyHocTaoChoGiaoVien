@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
       <section className="relative z-10 w-full max-w-[410px] rounded-[24px] border border-white/90 bg-white/95 px-6 pb-7 pt-6 shadow-[0_18px_45px_rgba(137,77,33,0.24)] backdrop-blur sm:px-8">
         <div className="mb-5 flex justify-center">
           <div className="relative h-12 w-32 overflow-hidden">
-            <Image src="/images/empty_states/logo_text.webp" alt="Mari" fill sizes="128px" className="object-contain mix-blend-multiply" priority />
+            <Image src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" fill sizes="128px" className="object-contain mix-blend-multiply" priority />
           </div>
         </div>
 

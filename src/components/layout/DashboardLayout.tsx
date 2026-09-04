@@ -346,7 +346,7 @@ export default function DashboardLayout({
                     <div className="absolute inset-0 z-20 cursor-pointer bg-transparent" onContextMenu={(event) => event.preventDefault()} />
                   </div>
                   <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'ml-0 max-w-0 opacity-0' : 'ml-1 max-w-[150px] opacity-100'}`}>
-                    <img src="/images/empty_states/logo_text.webp" alt="Mari" className="ml-2 h-[50px] w-[150px] max-w-none object-contain object-left" />
+                    <img src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" className="ml-2 h-[50px] w-[150px] max-w-none object-contain object-left" />
                   </div>
               </TooltipTrigger>
               {isCollapsed && (
@@ -429,7 +429,7 @@ export default function DashboardLayout({
         <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-10">
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2 lg:hidden">
-              <img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-10 w-[140px] object-contain object-left" />
+              <img src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" className="h-10 w-[140px] object-contain object-left" />
             </div>
             <h2 className="text-foreground font-medium text-lg hidden sm:block">
               {greeting}, <span className="font-semibold text-primary">{displayName}</span>
@@ -473,7 +473,7 @@ export default function DashboardLayout({
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent side="left" className="w-[min(20rem,86vw)] gap-0 p-0">
           <SheetHeader className="border-b px-5 py-5 pr-12">
-            <SheetTitle className="flex items-center justify-start text-lg"><img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-9 w-auto max-w-[130px] object-contain" /></SheetTitle>
+            <SheetTitle className="flex items-center justify-start text-lg"><img src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" className="h-9 w-auto max-w-[130px] object-contain" /></SheetTitle>
           </SheetHeader>
           <div className="flex-1 space-y-1 overflow-y-auto p-3">
             {navItems.map((item) => (

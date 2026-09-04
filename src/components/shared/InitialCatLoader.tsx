@@ -45,10 +45,10 @@ export function InitialCatLoader() {
         <img
           src="/images/empty_states/cat_stand.png"
           alt="Mari"
-          className="h-auto w-[min(44vw,210px)] min-w-[128px] object-contain drop-shadow-[0_12px_14px_rgba(150,75,24,0.16)] sm:w-[min(32vw,230px)]"
+          className="h-auto w-[min(31vw,147px)] min-w-[90px] object-contain drop-shadow-[0_12px_14px_rgba(150,75,24,0.16)] sm:w-[min(22.4vw,161px)]"
         />
         <img
-          src="/images/empty_states/logo_text.webp"
+          src="/images/empty_states/logo_text.webp?v=20260904"
           alt="Mari"
           className="h-auto w-[min(66vw,230px)] object-contain"
         />

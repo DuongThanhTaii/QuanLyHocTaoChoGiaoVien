@@ -23,7 +23,12 @@ export function PwaManager() {
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+    if ('serviceWorker' in navigator) {
+      void navigator.serviceWorker
+        .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+        .then((registration) => registration.update())
+        .catch(() => {});
+    }
     const updateNetwork = () => setOffline(!navigator.onLine);
     updateNetwork();
     window.addEventListener('online', updateNetwork);

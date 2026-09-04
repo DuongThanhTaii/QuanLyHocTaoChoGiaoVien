@@ -1,8 +1,8 @@
-const CACHE_VERSION = 'mari-shell-v1';
+const CACHE_VERSION = 'mari-shell-v3';
 const PRECACHE_URLS = [
   '/offline.html',
   '/images/empty_states/logo.png',
-  '/images/empty_states/logo_text.webp',
+  '/images/empty_states/logo_text.webp?v=20260904',
 ];
 
 self.addEventListener('install', (event) => {
