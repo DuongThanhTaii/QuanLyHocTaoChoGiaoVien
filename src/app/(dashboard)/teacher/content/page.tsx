@@ -21,7 +21,6 @@ export default async function TeacherContentPage({
   const { data: { user } } = await supabase.auth.getUser();
 
   let isDriveLinked = false;
-  let userEmail = user?.email || '';
   let materials: any[] = [];
   let classes: any[] = [];
   let lessons: any[] = [];
@@ -126,7 +125,7 @@ export default async function TeacherContentPage({
                 <div>
                   <CardTitle className="text-lg">Liên kết Google Drive</CardTitle>
                   <CardDescription>
-                    Kết nối tài khoản Google Drive để lưu trữ và quản lý bài giảng, bài tập không giới hạn.
+                    Đăng nhập Google Drive để có thể tải và quản lý học liệu trên Mari.
                   </CardDescription>
                 </div>
               </div>
@@ -146,7 +145,6 @@ export default async function TeacherContentPage({
         </div>
       ) : (
         <ContentManagerClient
-          userEmail={userEmail}
           isDriveLinked={isDriveLinked}
           classes={classes}
           initialMaterials={materials}

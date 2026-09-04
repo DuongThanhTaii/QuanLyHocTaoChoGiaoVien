@@ -16,10 +16,24 @@ const RegisterSchema = z.object({
   password: z.string().min(6),
 })
 
-type AuthActionState = {
+export type AuthActionState = {
   error?: string
   success?: boolean
   message?: string
+}
+
+function getLoginErrorMessage(errorMessage: string) {
+  const normalizedMessage = errorMessage.toLowerCase()
+
+  if (normalizedMessage.includes('invalid login credentials')) {
+    return 'Email hoặc mật khẩu không chính xác.'
+  }
+
+  if (normalizedMessage.includes('email not confirmed')) {
+    return 'Email chưa được xác thực. Vui lòng kiểm tra hộp thư để xác thực tài khoản.'
+  }
+
+  return 'Không thể đăng nhập lúc này. Vui lòng thử lại.'
 }
 
 function getAuthCallbackUrl(headerList: Headers, nextPath = '/onboarding') {
@@ -43,7 +57,7 @@ export async function login(_prevState: AuthActionState, formData: FormData): Pr
 
   const result = LoginSchema.safeParse({ email, password })
   if (!result.success) {
-    return { error: 'Invalid input' }
+    return { error: 'Vui lòng nhập email hợp lệ và mật khẩu có ít nhất 6 ký tự.' }
   }
 
   const supabase = await createClient()
@@ -54,7 +68,7 @@ export async function login(_prevState: AuthActionState, formData: FormData): Pr
   })
 
   if (error) {
-    return { error: error.message }
+    return { error: getLoginErrorMessage(error.message) }
   }
 
   revalidatePath('/', 'layout')

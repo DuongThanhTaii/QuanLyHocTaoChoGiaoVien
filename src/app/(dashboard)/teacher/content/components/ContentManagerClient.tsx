@@ -69,7 +69,6 @@ export interface ExerciseRow {
 }
 
 interface ContentManagerClientProps {
-  userEmail: string;
   isDriveLinked: boolean;
   classes: ClassOption[];
   initialMaterials: MaterialRow[];
@@ -78,7 +77,6 @@ interface ContentManagerClientProps {
 }
 
 export function ContentManagerClient({
-  userEmail,
   isDriveLinked,
   classes,
   initialMaterials,
@@ -98,6 +96,7 @@ export function ContentManagerClient({
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const handleUploadSuccess = () => {
+    window.dispatchEvent(new Event('materials:changed'));
     router.refresh();
   };
 
@@ -119,7 +118,7 @@ export function ContentManagerClient({
     if (selectedIds.length === 0) return;
     if (
       !confirm(
-        `Bạn có chắc chắn muốn xóa ${selectedIds.length} tệp đã chọn? Thao tác này sẽ xóa các file trên Google Drive để giải phóng bộ nhớ.`
+        `Bạn có chắc chắn muốn xóa ${selectedIds.length} tệp đã chọn? Thao tác này sẽ xóa các học liệu khỏi hệ thống.`
       )
     ) {
       return;
@@ -136,8 +135,9 @@ export function ContentManagerClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Xóa thất bại');
 
-      toast.success(`Đã xóa ${selectedIds.length} tệp và giải phóng dung lượng Drive thành công!`);
+      toast.success(`Đã xóa ${selectedIds.length} tệp và cập nhật dung lượng thành công!`);
       setSelectedIds([]);
+      window.dispatchEvent(new Event('materials:changed'));
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || 'Lỗi khi xóa tệp');
@@ -166,6 +166,7 @@ export function ContentManagerClient({
 
       setMaterials((prev) => prev.filter((m) => m.id !== id));
       toast.success('Đã xóa tài liệu thành công!');
+      window.dispatchEvent(new Event('materials:changed'));
       router.refresh();
     } catch (err: any) {
       console.error(err);
@@ -273,21 +274,7 @@ export function ContentManagerClient({
         {isDriveLinked && (
           <div className="flex items-center gap-2.5 bg-white dark:bg-zinc-900 px-3.5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-xs w-fit">
             <GoogleDriveIcon className="w-5 h-5 shrink-0" />
-            <div className="text-sm">
-              <span className="text-zinc-500 mr-1.5">Đã kết nối:</span>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200 max-w-[200px] sm:max-w-xs truncate inline-block align-bottom">
-                {userEmail}
-              </span>
-            </div>
-            <Link
-              href="https://drive.google.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-1 text-zinc-400 hover:text-blue-600 transition-colors p-0.5 rounded"
-              title="Mở Google Drive"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </Link>
+            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Đã kết nối</span>
           </div>
         )}
       </div>

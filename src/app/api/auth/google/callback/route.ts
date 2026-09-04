@@ -21,9 +21,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing Google credentials in env' }, { status: 500 });
   }
 
-  const redirectUri = process.env.NODE_ENV === 'production' 
-    ? 'https://giasupro.taidt.id.vn/api/auth/google/callback'
-    : 'http://localhost:3000/api/auth/google/callback';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (process.env.NODE_ENV === 'production' ? 'https://mari.io.vn' : 'http://localhost:3000');
+  const redirectUri = `${appUrl.replace(/\/$/, '')}/api/auth/google/callback`;
 
   try {
     // 1. Exchange authorization code for refresh token
@@ -48,7 +47,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL(`/teacher/content?error=token_exchange_failed`, req.url));
     }
 
-    const { refresh_token, access_token } = tokens;
+    const { refresh_token } = tokens;
 
     // We MUST have a refresh token (if user already granted it before and prompt wasn't consent, it might be null, but we forced prompt=consent)
     if (!refresh_token) {

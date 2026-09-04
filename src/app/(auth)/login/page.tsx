@@ -4,10 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useActionState, useEffect, useState } from 'react';
 import { Atom, BookOpen, Calculator, Eye, EyeOff, PencilLine, Sparkles } from 'lucide-react';
-import { login } from '../actions';
+import { login, type AuthActionState } from '../actions';
 import { SupportButton } from '@/components/shared/SupportButton';
 
-const initialState = { error: '' };
+const initialState: AuthActionState = {};
 
 const backgroundIcons = [
   { Icon: BookOpen, className: 'left-[5%] top-[11%] size-16 -rotate-12' },
@@ -21,7 +21,9 @@ const backgroundIcons = [
 ];
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(login as any, initialState);
+  const [state, formAction, isPending] = useActionState(login, initialState);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordWasReset, setPasswordWasReset] = useState(false);
 
@@ -58,7 +60,7 @@ export default function LoginPage() {
             )}
             <label className="block text-xs font-semibold text-zinc-600" htmlFor="email">
               Email
-              <input id="email" name="email" type="email" placeholder="tenban@email.com" required autoComplete="email" className="mt-1.5 h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
+              <input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tenban@email.com" required autoComplete="email" className="mt-1.5 h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
             </label>
             <div>
               <div className="flex items-center justify-between">
@@ -66,7 +68,7 @@ export default function LoginPage() {
                 <Link href="/forgot-password" className="text-xs font-medium text-[#a95123] transition hover:text-[#ef7616] hover:underline">Quên mật khẩu?</Link>
               </div>
               <div className="relative mt-1.5">
-                <input id="password" name="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password" className="h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 pr-10 text-sm text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
+                <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} required autoComplete="current-password" className="h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 pr-10 text-sm text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a65b32] transition hover:text-[#ef7616]" aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>

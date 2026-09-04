@@ -30,7 +30,7 @@ export function PricingClient({ context, plans }: { context: UserBillingContext;
         const payload = await response.json().catch(() => ({}));
         if (response.ok && payload.status === 'paid') {
           router.refresh();
-          router.replace('/profile?upgraded=1');
+          router.replace('/pricing?upgraded=1');
           return;
         }
         if (payload.status && !['pending'].includes(payload.status)) {

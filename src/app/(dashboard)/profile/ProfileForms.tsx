@@ -29,11 +29,12 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
+import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle, Copy } from 'lucide-react';
 import { VIETNAM_BANKS } from '@/lib/banks';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 
 const initialState = { error: '', success: false, message: '' };
+const PAYOS_WEBHOOK_URL = 'https://mari.io.vn/api/webhooks/payos';
 
 export function BasicProfileForm({ profile }: { profile: any }) {
   const [state, formAction, isPending] = useActionState(updateProfile as any, initialState);
@@ -415,6 +416,15 @@ export function PayOSConfigForm({ profile }: { profile: any }) {
   const [showApiKey, setShowApiKey] = useState(false);
   const [showChecksum, setShowChecksum] = useState(false);
 
+  const copyWebhookUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(PAYOS_WEBHOOK_URL);
+      toast.success('Đã sao chép URL webhook PayOS.');
+    } catch {
+      toast.error('Không thể sao chép URL. Vui lòng sao chép thủ công.');
+    }
+  };
+
   useEffect(() => {
     if (state?.success && state?.message) {
       toast.success(state.message);
@@ -483,7 +493,10 @@ export function PayOSConfigForm({ profile }: { profile: any }) {
                     <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Thiết lập Webhook</h4>
                     <p className="text-sm text-zinc-500">Cũng tại trang Cài đặt của PayOS, tìm mục <strong>Cấu hình Webhook</strong>, dán đường dẫn dưới đây vào và bấm <strong>Xác nhận</strong>:</p>
                     <div className="flex items-center gap-2 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-md">
-                      <code className="text-xs text-blue-600 font-mono break-all">https://giasupro.taidt.id.vn/api/webhooks/payos</code>
+                      <code className="min-w-0 flex-1 text-xs text-blue-600 font-mono break-all">{PAYOS_WEBHOOK_URL}</code>
+                      <Button type="button" variant="outline" size="sm" onClick={copyWebhookUrl} className="shrink-0">
+                        <Copy className="mr-1.5 size-3.5" />Sao chép
+                      </Button>
                     </div>
                     <div className="bg-zinc-100 dark:bg-zinc-800 h-40 rounded-lg flex items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-700">
                       <span className="text-zinc-400 text-sm italic">Chèn hình ảnh minh họa bước 3 vào đây</span>

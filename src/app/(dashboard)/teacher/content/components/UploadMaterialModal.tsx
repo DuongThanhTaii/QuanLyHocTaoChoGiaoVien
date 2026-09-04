@@ -240,7 +240,7 @@ export function UploadMaterialModal({
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Tải tài liệu lên Google Drive
+                Tải học liệu lên
               </DialogTitle>
             </div>
           </div>
@@ -519,7 +519,7 @@ export function UploadMaterialModal({
               {isUploading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Đang tải lên Drive...
+                  Đang tải lên...
                 </>
               ) : (
                 <>

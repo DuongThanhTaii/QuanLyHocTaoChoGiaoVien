@@ -1,15 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     return NextResponse.json({ error: 'Missing GOOGLE_CLIENT_ID' }, { status: 500 });
   }
 
-  // Determine redirect URI based on environment
-  const redirectUri = process.env.NODE_ENV === 'production' 
-    ? 'https://giasupro.taidt.id.vn/api/auth/google/callback'
-    : 'http://localhost:3000/api/auth/google/callback';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (process.env.NODE_ENV === 'production' ? 'https://mari.io.vn' : 'http://localhost:3000');
+  const redirectUri = `${appUrl.replace(/\/$/, '')}/api/auth/google/callback`;
 
   // We request 'offline' access to get a refresh token
   // prompt=consent ensures we always get a refresh token when they link

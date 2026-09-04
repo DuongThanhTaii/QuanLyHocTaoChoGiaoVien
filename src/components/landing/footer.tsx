@@ -125,9 +125,9 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <span className="cursor-pointer hover:text-orange-600 transition-colors">
+                <Link href="/privacy" className="hover:text-orange-600 transition-colors">
                   Chính sách bảo mật
-                </span>
+                </Link>
               </li>
               <li>
                 <span className="cursor-pointer hover:text-orange-600 transition-colors">

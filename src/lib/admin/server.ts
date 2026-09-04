@@ -6,6 +6,7 @@ export type AdminPermission =
   | 'users.restrict'
   | 'roles.read'
   | 'roles.assign'
+  | 'roles.manage'
   | 'plans.read'
   | 'plans.manage'
   | 'subscriptions.read'

@@ -4,6 +4,27 @@ import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
+async function ensureMariHocLieuFolder(accessToken: string) {
+  const search = new URLSearchParams({
+    q: "name = 'MariHocLieu' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+    spaces: 'drive',
+    fields: 'files(id)',
+    pageSize: '1',
+  });
+  const existingResponse = await fetch(`https://www.googleapis.com/drive/v3/files?${search}`, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const existing = await existingResponse.json() as { files?: Array<{ id: string }> };
+  if (existingResponse.ok && existing.files?.[0]?.id) return existing.files[0].id;
+
+  const createResponse = await fetch('https://www.googleapis.com/drive/v3/files?fields=id', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'MariHocLieu', mimeType: 'application/vnd.google-apps.folder' }),
+  });
+  const folder = await createResponse.json() as { id?: string; error?: { message?: string } };
+  if (!createResponse.ok || !folder.id) throw new Error(folder.error?.message || 'Không thể tạo thư mục MariHocLieu trên Google Drive.');
+  return folder.id;
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Authenticate user
@@ -72,6 +93,7 @@ export async function POST(req: NextRequest) {
     }
 
     const accessToken = tokens.access_token;
+    const hocLieuFolderId = await ensureMariHocLieuFolder(accessToken);
 
     // 4. Parse form data
     const formData = await req.formData();
@@ -107,6 +129,7 @@ export async function POST(req: NextRequest) {
     const metadata = {
       name: title,
       description: description,
+      parents: [hocLieuFolderId],
     };
 
     const arrayBuffer = await file.arrayBuffer();
