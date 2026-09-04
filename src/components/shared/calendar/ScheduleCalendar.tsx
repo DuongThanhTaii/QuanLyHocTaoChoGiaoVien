@@ -114,22 +114,22 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
   const monthDays = eachDayOfInterval({ start: monthStartDay, end: monthEndDay });
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+    <div className="flex flex-col bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-border gap-4 bg-muted/20">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between p-3 sm:p-4 border-b border-border gap-3 bg-muted/20">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Button variant="outline" size="sm" onClick={today}>Hôm nay</Button>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={handlePrev} className="h-8 w-8"><ChevronLeft className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" onClick={handleNext} className="h-8 w-8"><ChevronRight className="h-4 w-4" /></Button>
           </div>
-          <h2 className="text-lg font-semibold ml-2 capitalize w-48">
+          <h2 className="text-base sm:text-lg font-semibold ml-1 sm:ml-2 capitalize truncate">
             {format(currentDate, 'MMMM yyyy', { locale: vi })}
           </h2>
         </div>
         
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-[140px]">
+        <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-[132px] sm:w-[140px] shrink-0">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="week">Tuần</TabsTrigger>
               <TabsTrigger value="month">Tháng</TabsTrigger>
@@ -137,7 +137,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
           </Tabs>
 
           <Select value={selectedClass} onValueChange={(val) => val && setSelectedClass(val)}>
-            <SelectTrigger className="w-[200px] h-9 bg-background">
+            <SelectTrigger className="min-w-0 flex-1 lg:w-[200px] h-9 bg-background">
               <SelectValue placeholder="Tất cả lớp học">
                 {selectedClass === 'all' ? 'Tất cả lớp học' : uniqueClasses.find(c => c.id === selectedClass)?.name || 'Tất cả lớp học'}
               </SelectValue>
@@ -153,8 +153,52 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
       </div>
 
       {/* Calendar Grid */}
-      <div className="flex-1 overflow-auto bg-muted/10">
-        <div className="min-w-[800px] h-full flex flex-col">
+      <div className="bg-muted/10">
+        {/* Compact agenda for phones and tablets. It avoids an oversized seven-column canvas. */}
+        <div className="lg:hidden p-3 sm:p-4">
+          {(() => {
+            const mobileDays = (viewMode === 'week' ? weekDays : monthDays).filter((day) => {
+              if (viewMode === 'month' && !isSameMonth(day, currentDate)) return false;
+              return getSlotsForDay(day).length > 0;
+            });
+
+            if (mobileDays.length === 0) {
+              return <div className="rounded-xl border border-dashed border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">Chưa có lịch học trong khoảng thời gian này.</div>;
+            }
+
+            return <div className="space-y-3">
+              {mobileDays.map((day) => {
+                const daySlots = getSlotsForDay(day);
+                const isToday = isSameDay(day, new Date());
+                return <section key={day.toISOString()} className="flex gap-3">
+                  <div className="w-[58px] shrink-0 pt-2 text-center">
+                    <p className={`text-[11px] font-semibold uppercase ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>{format(day, 'EEE', { locale: vi })}</p>
+                    <p className={`mt-0.5 text-xl font-bold leading-6 ${isToday ? 'text-primary' : 'text-foreground'}`}>{format(day, 'd')}</p>
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-2">
+                    {daySlots.map((slot) => <div
+                      key={slot.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleSlotClick(slot.class_id)}
+                      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleSlotClick(slot.class_id); }}
+                      className={`cursor-pointer rounded-xl border p-3 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${classColors.get(slot.class_id)}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 flex-1 text-sm font-semibold leading-5">{slot.title || slot.classes?.name || 'Buổi học'}</p>
+                        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap pt-0.5 text-[11px] font-medium opacity-90"><Clock className="size-3" />{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
+                      </div>
+                      {slot.room && <p className="mt-1 inline-flex items-center gap-1 text-[11px] opacity-80"><MapPin className="size-3" />{slot.room}</p>}
+                    </div>)}
+                  </div>
+                </section>;
+              })}
+            </div>;
+          })()}
+        </div>
+
+        {/* Full calendar for desktop. The grid height now follows its compact minimum instead of the viewport. */}
+        <div className="hidden lg:flex min-w-[800px] flex-col overflow-auto">
           {/* Header Row */}
           <div className="grid grid-cols-7 border-b border-border bg-card sticky top-0 z-10">
             {weekDays.map((day, i) => (
@@ -173,14 +217,14 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
 
           {/* Slots Grid */}
           {viewMode === 'week' ? (
-            <div className="grid grid-cols-7 flex-1 min-h-[400px]">
+            <div className="grid grid-cols-7 min-h-[230px]">
               {weekDays.map((day, i) => {
                 const daySlots = getSlotsForDay(day);
                 const isToday = isSameDay(day, new Date());
                 return (
                   <div key={i} className={`p-2 border-r border-border last:border-r-0 flex flex-col gap-2 ${isToday ? 'bg-primary/5 dark:bg-primary/10' : ''}`}>
                     {daySlots.map(slot => (
-                      <div 
+                      <div
                         key={slot.id} 
                         onClick={() => handleSlotClick(slot.class_id)}
                         className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all group ${classColors.get(slot.class_id)}`}
@@ -199,7 +243,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
               })}
             </div>
           ) : (
-            <div className="grid grid-cols-7 flex-1 min-h-0 auto-rows-[120px]">
+            <div className="grid grid-cols-7 auto-rows-[112px]">
               {monthDays.map((day, i) => {
                 const daySlots = getSlotsForDay(day);
                 const isToday = isSameDay(day, new Date());

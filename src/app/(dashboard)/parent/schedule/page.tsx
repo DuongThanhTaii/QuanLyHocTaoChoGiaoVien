@@ -55,12 +55,12 @@ export default async function ParentSchedulePage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-130px)]">
+    <div className="flex flex-col min-h-0">
       <div className="mb-4">
-        <h1 className="text-rxl font-bold tracking-tight text.zinc-900">Thời khóa biểu cụa con</h1>
-        <p className="text-zinc-500">Theo dõi lịch học các lúp của con trong tuần.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thời khóa biểu của con</h1>
+        <p className="text-zinc-500">Theo dõi lịch học các lớp của con trong tuần.</p>
       </div>
-      <div className="flex-1 min-h-0">
+      <div>
         <ScheduleCalendar slots={slots} userRole="parent" />
       </div>
     </div>

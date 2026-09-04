@@ -48,12 +48,12 @@ export default async function StudentSchedulePage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-130px)]">
+    <div className="flex flex-col min-h-0">
       <div className="mb-4">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thời khóa biểu học tập</h1>
         <p className="text-zinc-500">Lịch học các lớp của bạn trong tuần.</p>
       </div>
-      <div className="flex-1 min-h-0">
+      <div>
         <ScheduleCalendar slots={slots} userRole="student" />
       </div>
     </div>
