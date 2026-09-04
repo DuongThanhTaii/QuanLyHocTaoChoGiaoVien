@@ -33,6 +33,10 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+    const insertMaterial = async (material: Record<string, unknown>) => {
+      const { error } = await admin.from('materials').insert(material);
+      if (error) throw new Error(error.message);
+    };
 
     for (const classId of classIds) {
       if (type === 'LECTURE') {
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest) {
           .select()
           .single();
 
-        await admin.from('materials').insert({
+        await insertMaterial({
           lesson_id: newLesson?.id || null,
           class_id: classId,
           name: title,
@@ -74,7 +78,7 @@ export async function POST(req: NextRequest) {
           ],
         });
 
-        await admin.from('materials').insert({
+        await insertMaterial({
           class_id: classId,
           name: title,
           storage_path: storagePath,
@@ -86,8 +90,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, count: classIds.length });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Lỗi khi gán tài liệu vào lớp:', error);
-    return NextResponse.json({ error: error.message || 'Lỗi hệ thống khi gán bài vào lớp' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lỗi hệ thống khi gán bài vào lớp' }, { status: 500 });
   }
 }

@@ -35,3 +35,27 @@ export type UserBillingContext = {
     cancelAtPeriodEnd: boolean;
   } | null;
 };
+
+export type QuotaMetric = {
+  used: number;
+  limit: number | null;
+  remaining: number | null;
+  percent: number | null;
+  isNearLimit: boolean;
+  isExhausted: boolean;
+};
+
+export type UserQuotaSnapshot = {
+  classes: QuotaMetric;
+  conversations: QuotaMetric;
+  storage: QuotaMetric;
+  peakClass: {
+    name: string | null;
+    students: number;
+    limit: number | null;
+    remaining: number | null;
+    percent: number | null;
+    isNearLimit: boolean;
+    isExhausted: boolean;
+  };
+};

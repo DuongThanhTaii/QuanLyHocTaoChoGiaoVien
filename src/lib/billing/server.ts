@@ -1,5 +1,5 @@
 import { getServiceClient, requireAdminPermission } from '@/lib/admin/server';
-import type { BillingMode, BillingPlan, PlanCode, PlanEntitlements, UserBillingContext } from './types';
+import type { BillingMode, BillingPlan, PlanCode, PlanEntitlements, QuotaMetric, UserBillingContext, UserQuotaSnapshot } from './types';
 
 type PlanRow = { id: string; code: PlanCode; name: string; description: string | null; is_active: boolean; display_order: number };
 type EntitlementRow = {
@@ -67,6 +67,40 @@ export async function getUserBillingContext(userId: string): Promise<UserBilling
       currentPeriodEnd: subscriptionResult.data.current_period_end,
       cancelAtPeriodEnd: subscriptionResult.data.cancel_at_period_end,
     } : null,
+  };
+}
+
+function toQuotaMetric(used: number, limit: number | null): QuotaMetric {
+  const percent = limit === null ? null : limit === 0 ? (used > 0 ? 100 : 0) : Math.round((used / limit) * 100);
+  return {
+    used,
+    limit,
+    remaining: limit === null ? null : Math.max(0, limit - used),
+    percent,
+    isNearLimit: percent !== null && percent >= 80,
+    isExhausted: limit !== null && used >= limit,
+  };
+}
+
+export async function getUserQuotaSnapshot(userId: string): Promise<UserQuotaSnapshot> {
+  const admin = getServiceClient();
+  const { data, error } = await admin.rpc('get_billing_usage', { target_user_id: userId }).single();
+  if (error || !data) throw new Error(error?.message || 'Không thể tải hạn mức sử dụng.');
+  const usage = data as {
+    active_classes: number; active_conversations: number; storage_bytes: number | string;
+    peak_class_name: string | null; peak_class_students: number | null;
+    max_classes: number | null; max_students_per_class: number | null;
+    max_active_conversations: number | null; max_storage_gb: number | null;
+  };
+  const storageLimit = usage.max_storage_gb === null ? null : Number(usage.max_storage_gb) * 1024 * 1024 * 1024;
+  const peakStudents = Number(usage.peak_class_students ?? 0);
+  const peakLimit = usage.max_students_per_class === null ? null : Number(usage.max_students_per_class);
+  const peak = toQuotaMetric(peakStudents, peakLimit);
+  return {
+    classes: toQuotaMetric(Number(usage.active_classes), usage.max_classes === null ? null : Number(usage.max_classes)),
+    conversations: toQuotaMetric(Number(usage.active_conversations), usage.max_active_conversations === null ? null : Number(usage.max_active_conversations)),
+    storage: toQuotaMetric(Number(usage.storage_bytes), storageLimit),
+    peakClass: { name: usage.peak_class_name, students: peakStudents, limit: peakLimit, remaining: peak.remaining, percent: peak.percent, isNearLimit: peak.isNearLimit, isExhausted: peak.isExhausted },
   };
 }
 

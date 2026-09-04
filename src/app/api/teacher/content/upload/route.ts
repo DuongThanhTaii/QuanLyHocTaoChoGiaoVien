@@ -19,6 +19,10 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+    const insertMaterial = async (material: Record<string, unknown>) => {
+      const { error } = await admin.from('materials').insert(material);
+      if (error) throw new Error(error.message);
+    };
 
     const { data: profile, error: profileError } = await admin
       .from('profiles')
@@ -182,7 +186,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Attach material in materials table
-        await admin.from('materials').insert({
+        await insertMaterial({
           lesson_id: newLesson?.id || null,
           class_id: classId,
           name: title,
@@ -213,7 +217,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Also record in materials table so it shows in central library
-        await admin.from('materials').insert({
+        await insertMaterial({
           class_id: classId,
           name: title,
           storage_path: driveViewLink,
@@ -229,10 +233,10 @@ export async function POST(req: NextRequest) {
       driveFile: driveFileData,
       assignedClassesCount: classIds.length,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Unexpected error in content upload:', error);
     return NextResponse.json(
-      { error: error.message || 'Đã xảy ra lỗi máy chủ trong quá trình tải tài liệu' },
+      { error: error instanceof Error ? error.message : 'Đã xảy ra lỗi máy chủ trong quá trình tải tài liệu' },
       { status: 500 }
     );
   }

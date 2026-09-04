@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
 import { getServiceClient } from '@/lib/admin/server';
 import { verifyPayOSWebhook } from '@/lib/billing/payos';
@@ -32,6 +33,9 @@ export async function POST(req: NextRequest) {
     });
     if (activationError) throw new Error(activationError.message);
     await admin.from('payment_webhook_events').update({ processed_at: new Date().toISOString() }).eq('event_hash', eventHash);
+    revalidatePath('/pricing');
+    revalidatePath('/profile');
+    revalidatePath('/', 'layout');
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     return NextResponse.json({ success: false, message: err instanceof Error ? err.message : 'Webhook processing failed.' }, { status: 500 });
