@@ -164,7 +164,7 @@ export const DashboardMockup = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-orange-500 text-white flex flex-col items-center justify-center font-bold text-xs">
                           <span>17:30</span>
-                          <span className="text-[9px] font-normal">Hôm nay</span>
+                          <span className="w-full text-center text-[9px] font-normal">Hôm nay</span>
                         </div>
                         <div>
                           <p className="font-medium text-xs sm:text-sm text-slate-900 dark:text-white">
