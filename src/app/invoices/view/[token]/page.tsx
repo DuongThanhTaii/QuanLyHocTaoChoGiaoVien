@@ -113,7 +113,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã đồng hành cùng thầy cô!';
   const themeColor = templateSnapshot?.themeColor || '#3B82F6';
   const showAttendance = templateSnapshot?.showAttendanceLog !== false;
-  const isPerSessionInvoice = classroom?.fee_type === 'per_session';
+  const isPerSessionInvoice = classroom?.fee_type !== 'per_month' && classroom?.fee_type !== 'per_course';
 
   const isPaid = invoice.status === 'paid';
 
@@ -128,7 +128,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
 
   // Older invoices have no snapshot, so reconstruct their attendance from the
   // session date (not the date the teacher happened to mark attendance).
-  if (showAttendance && isPerSessionInvoice && attendanceLog.length === 0) {
+  if (isPerSessionInvoice && attendanceLog.length === 0) {
     const { data: attData } = await supabaseAdmin
       .from('attendance_records')
       .select('session_id, status, class_sessions!inner(session_date, title)')
@@ -146,6 +146,23 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         status: String(record.status).toLowerCase()
       };
     }).filter((session: any) => session.date);
+
+    if (attendanceLog.length === 0) {
+      const { data: sessions } = await supabaseAdmin
+        .from('class_sessions')
+        .select('session_date, title')
+        .eq('class_id', invoice.class_id)
+        .gte('session_date', invoice.period_start)
+        .lte('session_date', invoice.period_end)
+        .neq('status', 'CANCELLED')
+        .order('session_date', { ascending: true })
+        .limit(Number(invoice.sessions_count) || 100);
+      attendanceLog = (sessions || []).map((session: any) => ({
+        date: session.session_date,
+        title: session.title || undefined,
+        status: 'not_marked',
+      }));
+    }
   }
 
   return (
@@ -266,12 +283,12 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
               </Table>
             </div>
 
-            {showAttendance && isPerSessionInvoice && attendanceLog.length > 0 && (
+            {isPerSessionInvoice && attendanceLog.length > 0 && (
               <div className="rounded-2xl border border-blue-100 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/20 p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-blue-600" />
-                    Chi tiết buổi học tính phí
+                    Các buổi được tính học phí
                   </h3>
                   <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">{attendanceLog.length} buổi</span>
                 </div>
@@ -281,6 +298,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
                       <span className="font-semibold">{new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span>
                       {session.title && <span className="text-zinc-400">• {session.title}</span>}
                       {session.status === 'late' && <span className="text-amber-600">(đi trễ)</span>}
+                      {session.status === 'not_marked' && <span className="text-zinc-400">(theo lịch)</span>}
                     </span>
                   ))}
                 </div>

@@ -139,13 +139,18 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
         notes: item.notes || undefined,
         // Snapshot only sessions the student actually attended. This is printed
         // on the invoice so the parent can reconcile per-session tuition.
-        attendanceLog: (item.sessionDetails || [])
-          .filter((session: any) => ['present', 'late'].includes(String(session.status).toLowerCase()))
+        attendanceLog: (() => {
+          const sessions = item.sessionDetails || [];
+          const attendedSessions = sessions.filter((session: any) => ['present', 'late'].includes(String(session.status).toLowerCase()));
+          // When attendance has not been marked yet, preserve the scheduled
+          // sessions that are being charged so the invoice remains auditable.
+          return (attendedSessions.length > 0 ? attendedSessions : sessions.filter((session: any) => String(session.status).toLowerCase() === 'not_marked'))
           .map((session: any) => ({
             date: session.date,
             title: session.title,
             status: String(session.status).toLowerCase()
-          }))
+          }));
+        })()
       }));
 
     setGenerating(true);

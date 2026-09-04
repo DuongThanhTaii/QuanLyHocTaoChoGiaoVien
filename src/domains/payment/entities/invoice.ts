@@ -20,7 +20,7 @@ export interface InvoiceLineItem {
 export interface InvoiceAttendanceSession {
   date: string;
   title?: string;
-  status: 'present' | 'late';
+  status: 'present' | 'late' | 'not_marked';
 }
 
 export interface InvoiceTemplateSnapshot {

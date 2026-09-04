@@ -100,7 +100,7 @@ export async function generateBatchInvoicesAction(params: {
     discount?: number;
     extraFee?: number;
     notes?: string;
-    attendanceLog?: Array<{ date: string; title?: string; status: 'present' | 'late' }>;
+    attendanceLog?: Array<{ date: string; title?: string; status: 'present' | 'late' | 'not_marked' }>;
   }>;
 }) {
   const { user, supabase } = await getAuthenticatedTeacher();

@@ -72,6 +72,10 @@ export function InvoiceDetailModal({
     }
   }
 
+  if (attendanceLog.length === 0 && Array.isArray(invoice.billingSessions)) {
+    attendanceLog = invoice.billingSessions;
+  }
+
   if (lineItems.length === 0) {
     lineItems = [{
       description: 'Học phí khóa học',
@@ -89,6 +93,8 @@ export function InvoiceDetailModal({
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã tin tưởng đồng hành cùng thầy cô!';
   const themeColor = templateSnapshot?.themeColor || '#3B82F6';
   const showAttendanceLog = templateSnapshot?.showAttendanceLog !== false;
+  const classroom = Array.isArray(invoice.classes) ? invoice.classes[0] : invoice.classes;
+  const isPerSessionInvoice = classroom?.fee_type === 'per_session' || Array.isArray(invoice.billingSessions);
 
   const isPaid = invoice.status === 'paid';
   const isOverdue = invoice.status === 'overdue';
@@ -284,15 +290,15 @@ export function InvoiceDetailModal({
               </Table>
             </div>
 
-            {showAttendanceLog && attendanceLog.length > 0 && (
+            {(isPerSessionInvoice || showAttendanceLog) && attendanceLog.length > 0 && (
               <div className="border border-blue-100 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-blue-600" />
-                    Buổi học đã tham gia
+                    Các buổi được tính học phí
                   </h3>
                   <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                    {attendanceLog.length} buổi tính phí
+                    {attendanceLog.length} buổi
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -301,6 +307,7 @@ export function InvoiceDetailModal({
                       <span className="font-semibold">{new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span>
                       {session.title && <span className="text-zinc-400">• {session.title}</span>}
                       {session.status === 'late' && <span className="text-amber-600">(đi trễ)</span>}
+                      {session.status === 'not_marked' && <span className="text-zinc-400">(theo lịch)</span>}
                     </span>
                   ))}
                 </div>
