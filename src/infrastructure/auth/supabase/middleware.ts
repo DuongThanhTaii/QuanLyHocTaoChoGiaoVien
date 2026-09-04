@@ -39,6 +39,7 @@ export async function updateSession(request: NextRequest) {
   const isLoginOrRegisterRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
   const isForgotPasswordRoute = request.nextUrl.pathname.startsWith('/forgot-password')
   const isRecoveryRoute = request.nextUrl.pathname.startsWith('/reset-password') || request.nextUrl.pathname.startsWith('/auth/callback')
+  const isPublicLegalRoute = request.nextUrl.pathname === '/privacy' || request.nextUrl.pathname === '/terms'
   const isAuthRoute = isLoginOrRegisterRoute || isForgotPasswordRoute
   const isPublicAuthRoute = isAuthRoute || isRecoveryRoute
 
@@ -58,7 +59,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  if (!user && !isPublicAuthRoute && request.nextUrl.pathname !== '/') {
+  if (!user && !isPublicAuthRoute && !isPublicLegalRoute && request.nextUrl.pathname !== '/') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
