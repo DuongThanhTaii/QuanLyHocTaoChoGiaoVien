@@ -115,12 +115,12 @@ export const Footer = () => {
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
               <li>
-                <Link href="#faq" className="hover:text-orange-600 transition-colors">
+                <Link href="/#faq" className="hover:text-orange-600 transition-colors">
                   Trung tâm trợ giúp (FAQ)
                 </Link>
               </li>
               <li>
-                <Link href="#pricing" className="hover:text-orange-600 transition-colors">
+                <Link href="/#pricing" className="hover:text-orange-600 transition-colors">
                   Bảng giá & Gói dịch vụ
                 </Link>
               </li>
