@@ -80,6 +80,9 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-5 text-center text-xs text-zinc-600">Chưa có tài khoản? <Link href="/register" className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng ký ngay</Link></p>
+          <p className="mt-3 text-center text-[11px] leading-5 text-zinc-500">
+            Bằng việc đăng nhập, bạn đồng ý với <Link href="/terms" className="font-medium text-[#a95123] hover:underline">Điều khoản sử dụng</Link> và <Link href="/privacy" className="font-medium text-[#a95123] hover:underline">Chính sách bảo mật</Link> của Mari.
+          </p>
         </div>
 
         <Image src="/images/empty_states/cat_stand.png" alt="Mascot Mari" width={280} height={390} priority className="pointer-events-none absolute -bottom-5 -left-12 hidden h-auto w-52 drop-shadow-[0_12px_8px_rgba(133,69,17,0.25)] lg:block" />
