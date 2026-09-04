@@ -36,7 +36,11 @@ export async function updateSession(request: NextRequest) {
   }
 
   const isEmailVerificationRoute = request.nextUrl.pathname.startsWith('/register/verify-email')
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
+  const isLoginOrRegisterRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
+  const isForgotPasswordRoute = request.nextUrl.pathname.startsWith('/forgot-password')
+  const isRecoveryRoute = request.nextUrl.pathname.startsWith('/reset-password') || request.nextUrl.pathname.startsWith('/auth/callback')
+  const isAuthRoute = isLoginOrRegisterRoute || isForgotPasswordRoute
+  const isPublicAuthRoute = isAuthRoute || isRecoveryRoute
 
   // Restrictions are enforced at the edge as well as in admin actions. This
   // prevents an already-issued browser session from accessing the dashboard.
@@ -54,7 +58,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  if (!user && !isAuthRoute && request.nextUrl.pathname !== '/') {
+  if (!user && !isPublicAuthRoute && request.nextUrl.pathname !== '/') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

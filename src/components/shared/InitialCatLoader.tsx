@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 export function InitialCatLoader() {
   const [show, setShow] = useState(false);
   const [isFading, setIsFading] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     // Kiểm tra xem người dùng đã truy cập trong phiên này chưa
@@ -16,13 +15,7 @@ export function InitialCatLoader() {
       // Đánh dấu đã truy cập trong session hiện tại
       sessionStorage.setItem("giasupro_visited_session", "true");
 
-      // Tự động phát video
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play().catch(() => {});
-      }
-
-      // Giữ màn hình chào khoảng 1.4 giây để người dùng thưởng thức animation con mèo
+      // Giữ màn hình chào đủ lâu để nhận diện Mari trước khi vào app.
       const fadeTimer = setTimeout(() => {
         setIsFading(true);
       }, 1400);
@@ -48,31 +41,17 @@ export function InitialCatLoader() {
       }`}
       style={{ willChange: "opacity" }}
     >
-      <div className="flex flex-col items-center gap-4 text-center px-4">
-        {/* Desktop: loading animation */}
-        <div className="relative hidden h-44 w-44 items-center justify-center lg:flex sm:h-52 sm:w-52">
-          <video
-            ref={videoRef}
-            src="/loading.webm"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-contain pointer-events-none"
-            controlsList="nodownload"
-            onContextMenu={(e) => e.preventDefault()}
-          />
-        </div>
-
-        {/* Mobile/tablet: use the static logo as the loading mark */}
-        <div className="flex items-center justify-center lg:hidden">
-          <img src="/images/empty_states/logo_text.webp" alt="Mari" className="h-auto w-[min(76vw,280px)] object-contain" />
-        </div>
-
-        <div className="text-center">
-          <img src="/images/empty_states/logo_text.webp" alt="Mari" className="mx-auto hidden h-[50px] w-[180px] object-contain lg:block" />
-        </div>
-
+      <div className="flex w-full flex-col items-center justify-center gap-3 px-6 text-center sm:gap-4">
+        <img
+          src="/images/empty_states/cat_stand.png"
+          alt="Mari"
+          className="h-auto w-[min(44vw,210px)] min-w-[128px] object-contain drop-shadow-[0_12px_14px_rgba(150,75,24,0.16)] sm:w-[min(32vw,230px)]"
+        />
+        <img
+          src="/images/empty_states/logo_text.webp"
+          alt="Mari"
+          className="h-auto w-[min(66vw,230px)] object-contain"
+        />
       </div>
     </div>
   );

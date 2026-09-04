@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const response = await updateSession(request)
 
   // Skip role check for auth routes and static paths
-  if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register') || request.nextUrl.pathname.startsWith('/onboarding') || request.nextUrl.pathname === '/') {
+  if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register') || request.nextUrl.pathname.startsWith('/forgot-password') || request.nextUrl.pathname.startsWith('/reset-password') || request.nextUrl.pathname.startsWith('/auth/callback') || request.nextUrl.pathname.startsWith('/onboarding') || request.nextUrl.pathname === '/') {
     return response;
   }
 

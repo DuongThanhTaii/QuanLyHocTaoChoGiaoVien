@@ -22,18 +22,19 @@ type AuthActionState = {
   message?: string
 }
 
-function getAuthCallbackUrl(headerList: Headers) {
+function getAuthCallbackUrl(headerList: Headers, nextPath = '/onboarding') {
   const configuredUrl = process.env.NEXT_PUBLIC_APP_URL
+  const next = encodeURIComponent(nextPath)
   if (configuredUrl) {
-    return `${configuredUrl.replace(/\/$/, '')}/auth/callback?next=/onboarding`
+    return `${configuredUrl.replace(/\/$/, '')}/auth/callback?next=${next}`
   }
 
   const host = headerList.get('x-forwarded-host') ?? headerList.get('host')
   const protocol = headerList.get('x-forwarded-proto') ?? (host?.startsWith('localhost') ? 'http' : 'https')
 
   return host
-    ? `${protocol}://${host}/auth/callback?next=/onboarding`
-    : 'http://localhost:3000/auth/callback?next=/onboarding'
+    ? `${protocol}://${host}/auth/callback?next=${next}`
+    : `http://localhost:3000/auth/callback?next=${next}`
 }
 
 export async function login(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
@@ -114,6 +115,60 @@ export async function resendEmailVerification(_prevState: AuthActionState, formD
   }
 
   return { success: true, message: 'Đã gửi lại email xác thực. Hãy kiểm tra cả mục Spam.' }
+}
+
+export async function requestPasswordReset(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const email = formData.get('email') as string
+  const result = z.string().email().safeParse(email)
+
+  if (!result.success) {
+    return { error: 'Vui lòng nhập địa chỉ email hợp lệ.' }
+  }
+
+  const supabase = await createClient()
+  const callbackUrl = getAuthCallbackUrl(await headers(), '/reset-password')
+  const { error } = await supabase.auth.resetPasswordForEmail(result.data, {
+    redirectTo: callbackUrl,
+  })
+
+  // Always return a generic success state to avoid exposing which emails have accounts.
+  if (error) {
+    console.error('Password reset request failed:', error.message)
+  }
+
+  return {
+    success: true,
+    message: 'Nếu email này có tài khoản Mari, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu. Hãy kiểm tra cả mục Spam.',
+  }
+}
+
+export async function updatePassword(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+
+  if (password !== confirmPassword) {
+    return { error: 'Xác nhận mật khẩu chưa khớp.' }
+  }
+
+  const result = z.string().min(8, 'Mật khẩu cần có ít nhất 8 ký tự.').safeParse(password)
+  if (!result.success) {
+    return { error: result.error.issues[0]?.message ?? 'Mật khẩu chưa hợp lệ.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Liên kết đặt lại mật khẩu đã hết hạn. Vui lòng yêu cầu một liên kết mới.' }
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: result.data })
+  if (error) {
+    return { error: error.message }
+  }
+
+  await supabase.auth.signOut()
+  revalidatePath('/', 'layout')
+  redirect('/login?reset=success')
 }
 
 export async function logout() {

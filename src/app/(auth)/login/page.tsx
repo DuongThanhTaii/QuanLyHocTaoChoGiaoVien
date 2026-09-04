@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { Atom, BookOpen, Calculator, Eye, EyeOff, PencilLine, Sparkles } from 'lucide-react';
 import { login } from '../actions';
 import { SupportButton } from '@/components/shared/SupportButton';
@@ -23,6 +23,11 @@ const backgroundIcons = [
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(login as any, initialState);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordWasReset, setPasswordWasReset] = useState(false);
+
+  useEffect(() => {
+    setPasswordWasReset(new URLSearchParams(window.location.search).get('reset') === 'success');
+  }, []);
 
   return (
     <main className="mari-animated-background relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#fffaf0_0%,#fff1c9_48%,#ffe2b5_100%)] px-4 py-8 font-sans">
@@ -45,6 +50,9 @@ export default function LoginPage() {
           </div>
 
           <form action={formAction} className="mt-5 space-y-3">
+            {passwordWasReset && (
+              <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">Mật khẩu đã được cập nhật. Hãy đăng nhập bằng mật khẩu mới.</div>
+            )}
             {state?.error && (
               <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{state.error}</div>
             )}
@@ -55,7 +63,7 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-zinc-600" htmlFor="password">Mật khẩu</label>
-                <Link href="#" className="text-xs font-medium text-[#a95123] transition hover:text-[#ef7616] hover:underline">Quên mật khẩu?</Link>
+                <Link href="/forgot-password" className="text-xs font-medium text-[#a95123] transition hover:text-[#ef7616] hover:underline">Quên mật khẩu?</Link>
               </div>
               <div className="relative mt-1.5">
                 <input id="password" name="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password" className="h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 pr-10 text-sm text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
