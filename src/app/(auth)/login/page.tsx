@@ -6,6 +6,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { Atom, BookOpen, Calculator, Eye, EyeOff, PencilLine, Sparkles } from 'lucide-react';
 import { login, type AuthActionState } from '../actions';
 import { SupportButton } from '@/components/shared/SupportButton';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 const initialState: AuthActionState = {};
 
@@ -78,6 +79,9 @@ export default function LoginPage() {
               <Sparkles className="size-4" /> {isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
           </form>
+
+          <div className="my-4 flex items-center gap-3 text-[11px] text-zinc-400"><span className="h-px flex-1 bg-zinc-200" />hoặc<span className="h-px flex-1 bg-zinc-200" /></div>
+          <GoogleSignInButton />
 
           <p className="mt-5 text-center text-xs text-zinc-600">Chưa có tài khoản? <Link href="/register" className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng ký ngay</Link></p>
         </div>

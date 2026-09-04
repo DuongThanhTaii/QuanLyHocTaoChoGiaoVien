@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { sendFirebasePush } from '@/lib/firebase/admin';
 
 // Giao diện dữ liệu thông báo
 export interface NotificationData {
@@ -6,7 +7,7 @@ export interface NotificationData {
   title: string;
   content: string;
   type: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export class NotificationService {
@@ -54,24 +55,13 @@ export class NotificationService {
       return;
     }
 
-    // 2. Tích hợp firebase-admin để gửi thông báo
-    // TODO: Cài đặt và cấu hình firebase-admin
-    // Tạm thời giả lập
-    console.log(`[FCM Mock] Sending push notification to user ${userId} with ${tokens.length} devices.`);
-    console.log(`[FCM Mock] Title: ${title}`);
-    console.log(`[FCM Mock] Body: ${body}`);
-    
-    /* 
-    const fcmTokens = tokens.map(t => t.token);
-    await admin.messaging().sendMulticast({
-      tokens: fcmTokens,
-      notification: { title, body }
-    });
-    */
+    const fcmTokens = tokens.map((item) => item.token);
+    const { invalidTokens } = await sendFirebasePush(fcmTokens, title, body);
+    if (invalidTokens.length) await this.supabaseAdmin.from('user_fcm_tokens').delete().in('token', invalidTokens);
   }
 
   // Hàm tổng hợp gửi thông báo đa kênh
-  async notifyUser(userId: string, email: string | null, title: string, content: string, type: string, metadata?: any) {
+  async notifyUser(userId: string, email: string | null, title: string, content: string, type: string, metadata?: Record<string, unknown>) {
     // 1. In-App
     await this.createInAppNotification({ userId, title, content, type, metadata });
     

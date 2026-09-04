@@ -30,7 +30,7 @@ export default function PrivacyPage() {
 
       <article className="mx-auto max-w-4xl px-5 py-12 sm:py-16">
         <div className="border-l-4 border-orange-500 bg-orange-50 px-5 py-4 text-sm leading-6 text-slate-700 dark:bg-orange-950/30 dark:text-zinc-200">
-          Mari chỉ yêu cầu kết nối Google Drive khi giáo viên chủ động dùng chức năng tải lên và quản lý học liệu. Bạn vẫn có thể sử dụng các chức năng khác của Mari mà không kết nối Google Drive.
+          Khi bạn chọn đăng nhập bằng Google, Mari xin quyền Google Drive một lần để giáo viên có thể tải và quản lý học liệu ngay sau khi đăng nhập. Bạn vẫn có thể đăng nhập bằng email và mật khẩu, sau đó chỉ kết nối Drive khi cần dùng Học liệu.
         </div>
 
         <div className="mt-12 space-y-12 leading-7 text-slate-700 dark:text-zinc-300">

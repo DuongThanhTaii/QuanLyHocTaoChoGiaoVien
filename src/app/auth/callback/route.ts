@@ -10,8 +10,11 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      if (data.session?.provider_refresh_token && data.user) {
+        await supabase.from('profiles').update({ google_refresh_token: data.session.provider_refresh_token }).eq('id', data.user.id)
+      }
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

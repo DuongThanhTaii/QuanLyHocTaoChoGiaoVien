@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ThemeColorProvider } from "@/components/providers/theme-color-provider";
 import { PwaManager } from "@/components/providers/PwaManager";
+import { PushNotificationManager } from "@/components/providers/PushNotificationManager";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -57,6 +58,7 @@ export default function RootLayout({
             <TooltipProvider>
               <InitialCatLoader />
               <PwaManager />
+              <PushNotificationManager />
               {children}
               <Toaster />
             </TooltipProvider>

@@ -1,4 +1,5 @@
 const CACHE_VERSION = 'mari-shell-v3';
+try { importScripts('/api/push/worker-config'); } catch (_) {}
 const PRECACHE_URLS = [
   '/offline.html',
   '/images/empty_states/logo.png',
