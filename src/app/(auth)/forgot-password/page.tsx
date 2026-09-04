@@ -3,13 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { ArrowLeft, Mail, Send } from 'lucide-react';
-import { requestPasswordReset } from '../actions';
+import { ArrowLeft, Send } from 'lucide-react';
+import { requestPasswordReset, type AuthActionState } from '../actions';
 
-const initialState: { error?: string; success?: boolean; message?: string } = { error: '' };
+const initialState: AuthActionState = {};
 
 export default function ForgotPasswordPage() {
-  const [state, formAction, isPending] = useActionState(requestPasswordReset as any, initialState);
+  const [state, formAction, isPending] = useActionState(requestPasswordReset, initialState);
 
   return (
     <main className="mari-animated-background relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#fffaf0_0%,#fff1c9_48%,#ffe2b5_100%)] px-4 py-8 font-sans">
@@ -24,8 +24,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="text-center">
-          <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-[#fff0dc] text-[#d86618]"><Mail className="size-5" /></span>
-          <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-[#a95123]">Quên mật khẩu?</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-[#a95123]">Quên mật khẩu?</h1>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Nhập email đã đăng ký. Mari sẽ gửi liên kết an toàn để bạn đặt lại mật khẩu.</p>
         </div>
 

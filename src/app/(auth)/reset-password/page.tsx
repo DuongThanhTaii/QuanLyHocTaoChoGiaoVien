@@ -3,13 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
-import { ArrowLeft, Eye, EyeOff, KeyRound, Sparkles } from 'lucide-react';
-import { updatePassword } from '../actions';
+import { ArrowLeft, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { updatePassword, type AuthActionState } from '../actions';
 
-const initialState: { error?: string; success?: boolean; message?: string } = { error: '' };
+const initialState: AuthActionState = {};
 
 export default function ResetPasswordPage() {
-  const [state, formAction, isPending] = useActionState(updatePassword as any, initialState);
+  const [state, formAction, isPending] = useActionState(updatePassword, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -26,8 +26,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="text-center">
-          <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-[#fff0dc] text-[#d86618]"><KeyRound className="size-5" /></span>
-          <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-[#a95123]">Tạo mật khẩu mới</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-[#a95123]">Tạo mật khẩu mới</h1>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Chọn mật khẩu mới có tối thiểu 8 ký tự để bảo vệ tài khoản Mari của bạn.</p>
         </div>
 
