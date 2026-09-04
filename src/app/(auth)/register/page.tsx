@@ -1,13 +1,14 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import Image from 'next/image';
 import { register } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, PawPrint } from 'lucide-react';
 import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 
 const initialState = { error: '' };
@@ -18,10 +19,20 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col bg-[#fffaf0]">
       <OnboardingHeader />
-      <main className="flex-1 flex items-start justify-center px-4 py-8 relative min-h-0">
-        <form action={formAction} className="w-full max-w-md">
+      <main className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden bg-[#fffaf0] px-4 py-8">
+        <div className="pointer-events-none absolute inset-0 text-[#eea76a] opacity-20" aria-hidden="true">
+          <PawPrint className="absolute left-[7%] top-[13%] size-9 -rotate-[28deg]" />
+          <PawPrint className="absolute left-[15%] top-[27%] size-6 -rotate-[12deg]" />
+          <PawPrint className="absolute left-[5%] bottom-[18%] size-11 rotate-[20deg]" />
+          <PawPrint className="absolute right-[16%] top-[14%] size-8 rotate-[18deg]" />
+          <PawPrint className="absolute right-[8%] top-[34%] size-6 rotate-[32deg]" />
+          <PawPrint className="absolute right-[31%] bottom-[12%] size-8 -rotate-[18deg]" />
+        </div>
+        <div className="pointer-events-none absolute -bottom-20 -right-14 h-72 w-72 rounded-full bg-[#ffe7a5]/55 blur-3xl" aria-hidden="true" />
+
+        <form action={formAction} className="relative z-10 w-full max-w-md">
           <Card className="border-zinc-200 shadow-sm">
             <CardHeader className="space-y-1 text-center sr-only">
               <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
@@ -114,6 +125,14 @@ export default function RegisterPage() {
             </CardFooter>
           </Card>
         </form>
+        <Image
+          src="/images/empty_states/cat_sitdown.png"
+          alt="Mascot Mari ngồi"
+          width={300}
+          height={380}
+          priority
+          className="pointer-events-none absolute bottom-0 right-3 z-0 hidden h-auto w-40 drop-shadow-[0_10px_8px_rgba(141,83,30,0.22)] md:block lg:right-10 lg:w-48 xl:right-[7%] xl:w-56"
+        />
       </main>
     </div>
   );
