@@ -38,6 +38,7 @@ import { TagsIcon } from '../ui/tags-icon';
 import { BadgeDollarSignIcon } from '../ui/badge-dollar-sign-icon';
 import { UserIcon } from '../ui/user';
 import { SettingsIcon } from '../ui/settings';
+import InfoCircleIcon from '../ui/info-circle-icon';
 import { LogoutIcon } from '../ui/logout';
 import SparklesIcon from '../ui/icons/sparkles-icon';
 import LayoutSidebarRightIcon from '../ui/icons/layout-sidebar-right-icon';
@@ -413,6 +414,12 @@ export default function DashboardLayout({
                 <AccountMenuItem href="/profile" label="Hồ sơ cá nhân" icon={UserIcon} />
                 <AccountMenuItem href="/settings" label="Cài đặt hệ thống" icon={SettingsIcon} />
                 <AccountMenuItem href="/pricing" label="Gói đăng ký" icon={SparklesIcon} badge={subscriptionPlanName} />
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">Pháp lý</DropdownMenuLabel>
+                <AccountMenuItem href="/terms" label="Điều khoản sử dụng" icon={InfoCircleIcon} />
+                <AccountMenuItem href="/privacy" label="Chính sách bảo mật" icon={ShieldCheckIcon} />
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuGroup>

@@ -142,10 +142,10 @@ export function SupportButton({ isCollapsed = false, variant = 'sidebar' }: Supp
               <MessengerLogo />
               <div>
                 <div className="text-sm font-medium text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex items-center gap-1.5">
-                  Chat qua Facebook Messenger
+                  Chat với Mari
                   <ExternalLink className="w-3.5 h-3.5 opacity-60" />
                 </div>
-                <div className="text-xs text-muted-foreground">Fanpage chính thức GiaSưPro</div>
+                <div className="text-xs text-muted-foreground">Fanpage chính thức Mari</div>
               </div>
             </div>
           </a>
