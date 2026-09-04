@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(112deg,#ffd0b7_0%,#ffe8a8_100%)] px-4 py-8 font-sans">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fffaf0] px-4 py-8 font-sans">
       <div className="pointer-events-none absolute inset-0 opacity-20 text-[#d97932]">
         {backgroundIcons.map(({ Icon, className }, index) => <Icon key={index} className={`absolute stroke-[1.5] ${className}`} />)}
       </div>
