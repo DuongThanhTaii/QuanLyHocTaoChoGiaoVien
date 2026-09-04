@@ -11,6 +11,16 @@ import { AssignToClassModal } from './AssignToClassModal';
 import { DriveStorageWidget } from './DriveStorageWidget';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   ExternalLink,
   PlusCircle,
   FolderPlus,
@@ -94,6 +104,8 @@ export function ContentManagerClient({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [materialPendingDeletion, setMaterialPendingDeletion] = useState<MaterialRow | null>(null);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
   const handleUploadSuccess = () => {
     window.dispatchEvent(new Event('materials:changed'));
@@ -116,14 +128,7 @@ export function ContentManagerClient({
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (
-      !confirm(
-        `Bạn có chắc chắn muốn xóa ${selectedIds.length} tệp đã chọn? Thao tác này sẽ xóa các học liệu khỏi hệ thống.`
-      )
-    ) {
-      return;
-    }
-
+    setIsBulkDeleteConfirmOpen(false);
     setIsBulkDeleting(true);
     try {
       const res = await fetch('/api/teacher/content/delete', {
@@ -146,11 +151,8 @@ export function ContentManagerClient({
     }
   };
 
-  const handleDeleteMaterial = async (id: string, title: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa tài liệu "${title}" khỏi hệ thống?`)) {
-      return;
-    }
-
+  const handleDeleteMaterial = async (id: string) => {
+    setMaterialPendingDeletion(null);
     setDeletingId(id);
     try {
       const res = await fetch('/api/teacher/content/delete', {
@@ -325,7 +327,7 @@ export function ContentManagerClient({
                   variant="destructive"
                   size="sm"
                   disabled={isBulkDeleting}
-                  onClick={handleBulkDelete}
+                  onClick={() => setIsBulkDeleteConfirmOpen(true)}
                   className="h-7 text-xs shadow-xs"
                 >
                   {isBulkDeleting ? (
@@ -423,9 +425,7 @@ export function ContentManagerClient({
                         </div>
 
                         <div className="min-w-0">
-                          <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate">
-                            {item.name}
-                          </p>
+                          {item.storage_path ? <Link href={item.storage_path} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-semibold text-zinc-900 transition hover:text-blue-600 hover:underline dark:text-zinc-100 dark:hover:text-blue-400" title="Mở tệp trên Google Drive">{item.name}</Link> : <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</p>}
                           <div className="flex items-center gap-3 text-xs text-zinc-400 mt-1">
                             <span>{formatFileSize(item.size_bytes)}</span>
                             <span>•</span>
@@ -465,7 +465,7 @@ export function ContentManagerClient({
                           variant="ghost"
                           size="sm"
                           disabled={deletingId === item.id}
-                          onClick={() => handleDeleteMaterial(item.id, item.name)}
+                          onClick={() => setMaterialPendingDeletion(item)}
                           className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
                           title="Xóa tài liệu"
                         >
@@ -755,6 +755,32 @@ export function ContentManagerClient({
           )}
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={materialPendingDeletion !== null} onOpenChange={(open) => !open && setMaterialPendingDeletion(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa tài liệu?</AlertDialogTitle>
+            <AlertDialogDescription>Tài liệu “{materialPendingDeletion?.name}” sẽ bị xóa khỏi Mari và Google Drive. Thao tác này không thể hoàn tác.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingId !== null}>Hủy</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" disabled={!materialPendingDeletion || deletingId !== null} onClick={() => materialPendingDeletion && handleDeleteMaterial(materialPendingDeletion.id)}>{deletingId ? 'Đang xóa...' : 'Xóa tài liệu'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isBulkDeleteConfirmOpen} onOpenChange={setIsBulkDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa {selectedIds.length} tệp đã chọn?</AlertDialogTitle>
+            <AlertDialogDescription>Các học liệu được chọn sẽ bị xóa khỏi Mari và Google Drive. Thao tác này không thể hoàn tác.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBulkDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" disabled={isBulkDeleting || selectedIds.length === 0} onClick={handleBulkDelete}>{isBulkDeleting ? 'Đang xóa...' : 'Xóa các tệp'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Upload Modal */}
       <UploadMaterialModal
