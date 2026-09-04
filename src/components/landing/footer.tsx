@@ -130,9 +130,9 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <span className="cursor-pointer hover:text-orange-600 transition-colors">
+                <Link href="/terms" className="hover:text-orange-600 transition-colors">
                   Điều khoản sử dụng
-                </span>
+                </Link>
               </li>
             </ul>
           </div>
