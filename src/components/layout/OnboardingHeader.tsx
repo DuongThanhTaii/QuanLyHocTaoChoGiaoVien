@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Check } from 'lucide-react';
 
-export function OnboardingHeader() {
+export function OnboardingHeader({ className = 'bg-white' }: { className?: string }) {
   const pathname = usePathname();
   
   // Determine current step based on path
@@ -34,7 +34,7 @@ export function OnboardingHeader() {
   ];
 
   return (
-    <header className="w-full bg-white px-6 pt-8 pb-4 flex flex-col items-center justify-center z-50">
+    <header className={`w-full ${className} px-6 pt-8 pb-4 flex flex-col items-center justify-center z-50`}>
       {/* Stepper */}
       <div className="flex items-center w-full max-w-md mb-8">
         {steps.map((step, index) => {

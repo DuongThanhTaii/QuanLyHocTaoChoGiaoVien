@@ -20,7 +20,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fffaf0]">
-      <OnboardingHeader />
+      <OnboardingHeader className="bg-[#fffaf0]" />
       <main className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden bg-[#fffaf0] px-4 py-8">
         <div className="pointer-events-none absolute inset-0 text-[#eea76a] opacity-20" aria-hidden="true">
           <PawPrint className="absolute left-[7%] top-[13%] size-9 -rotate-[28deg]" />
@@ -113,14 +113,13 @@ export default function RegisterPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" disabled={isPending} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white disabled:opacity-50">
+              <Button type="submit" disabled={isPending} className="relative w-full bg-zinc-900 hover:bg-zinc-800 text-white disabled:opacity-50">
                 {isPending ? 'Đang xử lý...' : 'Đăng ký'}
+                {!isPending && <PawPrint className="absolute right-4 size-5 text-[#f4b071]" aria-hidden="true" />}
               </Button>
               <div className="text-center text-sm text-zinc-500">
                 Đã có tài khoản?{' '}
-                <Link href="/login" className="font-medium text-zinc-900 hover:underline">
-                  Đăng nhập
-                </Link>
+                <Link href="/login" className="inline-flex items-center gap-1 font-medium text-zinc-900 hover:underline">Đăng nhập <PawPrint className="size-4 text-[#9a5d32]" aria-hidden="true" /></Link>
               </div>
             </CardFooter>
           </Card>
