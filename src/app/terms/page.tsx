@@ -23,75 +23,98 @@ export default function TermsPage() {
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-orange-700 transition hover:text-orange-800 dark:text-orange-300"><ArrowLeft className="size-4" />Về trang chủ</Link>
           <p className="mt-10 text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">Mari · mari.io.vn</p>
           <h1 className="mt-3 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">Điều khoản sử dụng</h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-zinc-300">Các điều khoản này quy định cách bạn sử dụng Mari để quản lý lớp học, học liệu, điểm danh, trao đổi và học phí.</p>
-          <p className="mt-6 text-sm text-slate-500 dark:text-zinc-400">Cập nhật lần cuối: {updatedAt}</p>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-zinc-300">Quy định về việc sử dụng Mari để quản lý lớp học, học liệu, điểm danh, trao đổi, học phí và các gói dịch vụ trên nền tảng.</p>
+          <p className="mt-6 text-sm text-slate-500 dark:text-zinc-400">Ngày hiệu lực và cập nhật lần cuối: {updatedAt}</p>
         </div>
       </section>
 
       <article className="mx-auto max-w-4xl px-5 py-12 sm:py-16">
         <div className="border-l-4 border-orange-500 bg-orange-50 px-5 py-4 text-sm leading-6 text-slate-700 dark:bg-orange-950/30 dark:text-zinc-200">
-          Bằng việc tạo tài khoản, truy cập hoặc sử dụng Mari, bạn xác nhận đã đọc, hiểu và đồng ý với Điều khoản sử dụng này cùng <Link href="/privacy" className="font-medium text-orange-700 underline underline-offset-2 dark:text-orange-300">Chính sách bảo mật</Link>.
+          Bằng việc tạo tài khoản, đăng nhập hoặc tiếp tục sử dụng Mari, bạn xác nhận đã đọc, hiểu và đồng ý với Điều khoản này cùng <Link href="/privacy" className="font-medium text-orange-700 underline underline-offset-2 dark:text-orange-300">Chính sách bảo mật</Link>.
         </div>
 
         <div className="mt-12 space-y-12 leading-7 text-slate-700 dark:text-zinc-300">
-          <TermsSection title="1. Phạm vi áp dụng và chấp thuận">
-            <p>Mari là nền tảng số hỗ trợ giáo viên, học sinh, phụ huynh và tổ chức giáo dục quản lý hoạt động lớp học. Các điều khoản này áp dụng cho website, ứng dụng, tính năng và nội dung do Mari cung cấp.</p>
-            <p>Nếu bạn sử dụng Mari thay mặt cho trường học, trung tâm hoặc tổ chức khác, bạn cam kết có thẩm quyền đại diện và ràng buộc tổ chức đó với các điều khoản này.</p>
+          <TermsSection title="1. Phạm vi áp dụng">
+            <p>Điều khoản này áp dụng cho website, ứng dụng, tài khoản, chức năng và nội dung do Mari cung cấp. Nếu bạn sử dụng Mari thay mặt cho trường học, trung tâm hoặc tổ chức khác, bạn xác nhận mình có thẩm quyền chấp thuận Điều khoản này cho tổ chức đó.</p>
+            <p>Trong trường hợp có điều khoản riêng cho một gói dịch vụ, chương trình khuyến mại hoặc tích hợp bên thứ ba, điều khoản riêng sẽ được áp dụng cho phạm vi tương ứng và được ưu tiên khi có khác biệt.</p>
           </TermsSection>
 
-          <TermsSection title="2. Tài khoản và bảo mật">
+          <TermsSection title="2. Giải thích thuật ngữ">
             <ul className="list-disc space-y-2 pl-5">
-              <li>Bạn cung cấp thông tin đăng ký chính xác, đầy đủ và cập nhật khi có thay đổi.</li>
-              <li>Bạn tự chịu trách nhiệm bảo mật mật khẩu, thiết bị và mọi hoạt động phát sinh từ tài khoản của mình; hãy thông báo ngay cho Mari khi nghi ngờ có truy cập trái phép.</li>
-              <li>Không được chuyển nhượng, cho thuê, bán hoặc dùng chung tài khoản trái với mục đích được Mari cho phép.</li>
-              <li>Người dùng chưa đủ tuổi tự giao kết theo quy định pháp luật cần sử dụng Mari với sự đồng ý và giám sát phù hợp của cha mẹ hoặc người giám hộ.</li>
+              <li><strong>Mari</strong> là nền tảng phần mềm hỗ trợ quản lý học tập và lớp học tại {SITE_CONFIG.url}.</li>
+              <li><strong>Người dùng</strong> gồm giáo viên, học sinh, phụ huynh, nhân sự của tổ chức giáo dục và người được chủ tài khoản cho phép sử dụng Mari.</li>
+              <li><strong>Nội dung người dùng</strong> là dữ liệu, học liệu, hình ảnh, tin nhắn, thông tin lớp, đánh giá, hóa đơn và dữ liệu khác do người dùng nhập, tạo hoặc tải lên.</li>
+              <li><strong>Gói dịch vụ</strong> là quyền truy cập có thể kèm hạn mức và tính năng theo thông tin công bố tại thời điểm đăng ký/thanh toán.</li>
             </ul>
           </TermsSection>
 
-          <TermsSection title="3. Vai trò và trách nhiệm của người dùng">
-            <p>Giáo viên hoặc đơn vị tổ chức lớp chịu trách nhiệm về nội dung giảng dạy, lịch học, điểm danh, thông tin lớp, mức học phí, hóa đơn, thông báo và việc giải quyết các thỏa thuận trực tiếp với học sinh/phụ huynh.</p>
-            <p>Người dùng chỉ nhập, tải lên hoặc chia sẻ dữ liệu mà mình có quyền hợp pháp để sử dụng. Giáo viên/đơn vị tổ chức phải có cơ sở pháp lý phù hợp để xử lý thông tin của học sinh, phụ huynh và người liên quan, bao gồm việc thông báo và xin sự đồng ý khi pháp luật yêu cầu.</p>
-            <p>Mari cung cấp công cụ quản lý; Mari không phải là cơ sở giáo dục, không bảo đảm kết quả học tập và không là bên cung ứng dịch vụ dạy học giữa giáo viên với học sinh/phụ huynh.</p>
+          <TermsSection title="3. Vai trò của Mari và giao dịch giữa các bên">
+            <p>Mari là công cụ phần mềm hỗ trợ vận hành lớp học. Mari không phải là cơ sở giáo dục, không tuyển sinh, không bảo đảm kết quả học tập và không là bên ký kết hợp đồng dạy học giữa giáo viên/đơn vị tổ chức với học sinh hoặc phụ huynh.</p>
+            <p>Giáo viên hoặc đơn vị tổ chức tự chịu trách nhiệm về chất lượng giảng dạy, lịch học, điểm danh, nội dung học liệu, mức học phí, hóa đơn, nghĩa vụ thuế và mọi thỏa thuận trực tiếp với học sinh/phụ huynh. Mari không nhận giữ hộ học phí giữa các bên; việc chuyển khoản qua VietQR hoặc ngân hàng là giao dịch trực tiếp theo thông tin do người lập hóa đơn thiết lập.</p>
           </TermsSection>
 
-          <TermsSection title="4. Học phí, hóa đơn và thanh toán">
-            <p>Giáo viên/đơn vị tổ chức tự thiết lập học phí, kỳ tính phí, các khoản giảm trừ/phụ thu và thông tin nhận tiền. Hóa đơn hiển thị trên Mari là bản ghi hỗ trợ đối soát giữa các bên; người lập hóa đơn chịu trách nhiệm về tính chính xác, căn cứ thu và nghĩa vụ thuế liên quan.</p>
-            <p>Khi Mari cung cấp gói dịch vụ trả phí, giá, chu kỳ và điều kiện áp dụng sẽ được hiển thị trước khi bạn xác nhận thanh toán. Giá mới chỉ áp dụng theo thông tin được công bố tại thời điểm giao dịch; các quyền/gói đã thanh toán được áp dụng theo bản ghi giao dịch tương ứng, trừ khi pháp luật yêu cầu khác.</p>
-            <p>Thanh toán qua ngân hàng, VietQR hoặc đối tác thanh toán có thể chịu điều khoản riêng của ngân hàng/đối tác đó. Mari không lưu thông tin đăng nhập ngân hàng của bạn.</p>
-          </TermsSection>
-
-          <TermsSection title="5. Nội dung, học liệu và quyền sở hữu trí tuệ">
-            <p>Bạn giữ quyền đối với nội dung mình tạo hoặc tải lên, đồng thời cấp cho Mari quyền cần thiết, không độc quyền và giới hạn trong việc lưu trữ, sao chép kỹ thuật, hiển thị và truyền tải nội dung để vận hành dịch vụ theo lựa chọn của bạn.</p>
-            <p>Bạn cam kết học liệu, hình ảnh, tài liệu và nội dung khác không vi phạm quyền sở hữu trí tuệ, quyền riêng tư hoặc quyền hợp pháp của bất kỳ bên nào. Thương hiệu, giao diện, mã nguồn và tài sản của Mari thuộc Mari hoặc bên cấp phép, trừ khi có thỏa thuận khác bằng văn bản.</p>
-          </TermsSection>
-
-          <TermsSection title="6. Hành vi không được phép">
+          <TermsSection title="4. Tài khoản, độ tuổi và bảo mật">
             <ul className="list-disc space-y-2 pl-5">
-              <li>Vi phạm pháp luật; giả mạo danh tính; lừa đảo; quấy rối; phát tán nội dung xâm hại trẻ em, bạo lực, thù ghét hoặc trái pháp luật.</li>
-              <li>Truy cập trái phép, dò quét, phá hoại, can thiệp hệ thống; phát tán mã độc; khai thác dữ liệu người dùng khác khi chưa được phép.</li>
-              <li>Sử dụng Mari để gửi thư rác, quảng cáo không được yêu cầu hoặc thu thập dữ liệu cá nhân trái phép.</li>
-              <li>Sao chép, sửa đổi, phân phối hoặc khai thác dịch vụ Mari ngoài phạm vi pháp luật và điều khoản này cho phép.</li>
+              <li>Bạn phải cung cấp thông tin chính xác, đầy đủ và cập nhật. Không được mạo danh, dùng thông tin sai lệch hoặc xâm phạm tài khoản của người khác.</li>
+              <li>Bạn có trách nhiệm bảo mật mật khẩu, thiết bị và mọi hoạt động phát sinh từ tài khoản. Khi nghi ngờ tài khoản bị truy cập trái phép, hãy đổi mật khẩu và liên hệ Mari ngay.</li>
+              <li>Người chưa đủ tuổi tự giao kết theo quy định pháp luật chỉ sử dụng Mari với sự đồng ý và giám sát phù hợp của cha mẹ hoặc người giám hộ.</li>
+              <li>Không được bán, cho thuê, chuyển nhượng hoặc chia sẻ thông tin đăng nhập trái phép. Chủ tài khoản tổ chức có trách nhiệm quản lý quyền của các thành viên được mời.</li>
             </ul>
           </TermsSection>
 
-          <TermsSection title="7. Dữ liệu cá nhân và quyền riêng tư">
-            <p>Việc Mari thu thập, sử dụng, lưu trữ và bảo vệ dữ liệu cá nhân được mô tả trong <Link href="/privacy" className="font-medium text-orange-700 underline underline-offset-4 dark:text-orange-300">Chính sách bảo mật</Link>. Khi dùng tính năng kết nối Google Drive, quyền truy cập và cách dùng dữ liệu Drive được áp dụng theo chính sách đó và sự cho phép chủ động của bạn.</p>
+          <TermsSection title="5. Dữ liệu lớp học và trách nhiệm của người dùng">
+            <p>Bạn chỉ được nhập, tải lên, chia sẻ hoặc công bố dữ liệu mà mình có quyền hợp pháp để sử dụng. Giáo viên/đơn vị tổ chức phải bảo đảm có căn cứ phù hợp để xử lý thông tin của học sinh, phụ huynh và người liên quan, bao gồm việc thông báo và xin đồng ý khi pháp luật yêu cầu.</p>
+            <p>Hóa đơn, nhật ký điểm danh và báo cáo trên Mari là dữ liệu hỗ trợ quản lý/đối soát. Người lập chịu trách nhiệm kiểm tra tính chính xác trước khi gửi, in hoặc dùng cho mục đích kế toán, thuế hay giải quyết tranh chấp.</p>
           </TermsSection>
 
-          <TermsSection title="8. Tạm ngừng hoặc chấm dứt dịch vụ">
-            <p>Mari có thể giới hạn, tạm ngừng hoặc chấm dứt quyền truy cập khi có căn cứ hợp lý cho thấy bạn vi phạm điều khoản, gây rủi ro bảo mật, theo yêu cầu của cơ quan có thẩm quyền hoặc để bảo vệ người dùng và hệ thống. Khi phù hợp, Mari sẽ thông báo cho bạn về biện pháp áp dụng.</p>
-            <p>Bạn có thể ngừng sử dụng dịch vụ bất kỳ lúc nào. Việc xóa tài khoản/dữ liệu có thể chịu thời gian lưu giữ cần thiết cho bảo mật, giải quyết tranh chấp và nghĩa vụ pháp lý.</p>
+          <TermsSection title="6. Nội dung người dùng và học liệu">
+            <p>Bạn giữ quyền đối với Nội dung người dùng của mình. Bạn cấp cho Mari quyền không độc quyền, giới hạn trong phạm vi cần thiết để lưu trữ, sao chép kỹ thuật, hiển thị và truyền tải nội dung nhằm cung cấp các chức năng mà bạn lựa chọn.</p>
+            <p>Không được đăng hoặc tải lên nội dung vi phạm pháp luật, quyền sở hữu trí tuệ, quyền riêng tư, quyền trẻ em; nội dung lừa đảo, bạo lực, khiêu dâm, thù ghét, quấy rối, thư rác hoặc thông tin sai sự thật gây thiệt hại cho người khác. Mari có thể gỡ nội dung hoặc áp dụng biện pháp với tài khoản vi phạm.</p>
           </TermsSection>
 
-          <TermsSection title="9. Tuyên bố và giới hạn trách nhiệm">
-            <p>Mari nỗ lực duy trì dịch vụ an toàn, ổn định và chính xác, nhưng dịch vụ được cung cấp trên cơ sở phù hợp với khả năng thực tế. Mari không cam kết dịch vụ luôn không gián đoạn hoặc không có lỗi; tuy nhiên, Mari sẽ có biện pháp hợp lý để khắc phục sự cố.</p>
-            <p>Trong phạm vi pháp luật cho phép, Mari không chịu trách nhiệm cho thiệt hại phát sinh từ nội dung, thỏa thuận, học phí hoặc hành vi giữa giáo viên, học sinh, phụ huynh và bên thứ ba. Quy định này không loại trừ các trách nhiệm mà pháp luật không cho phép loại trừ.</p>
+          <TermsSection title="7. Gói dịch vụ, thanh toán, gia hạn và hoàn tiền">
+            <p>Giá, chu kỳ, hạn mức, ưu đãi và điều kiện của từng Gói dịch vụ được hiển thị trước khi bạn xác nhận thanh toán. Gói được kích hoạt sau khi Mari hoặc đối tác thanh toán ghi nhận giao dịch thành công theo trạng thái hiển thị trên hệ thống.</p>
+            <p>Bạn có thể ngừng gia hạn hoặc hủy Gói dịch vụ theo lựa chọn được Mari cung cấp. Quyền của gói đang hoạt động tiếp tục đến hết chu kỳ đã thanh toán, trừ khi Điều khoản, quy định pháp luật hoặc lý do bảo mật yêu cầu khác.</p>
+            <p>Khoản phí đã thanh toán cho gói đã kích hoạt không được hoàn lại, trừ trường hợp pháp luật yêu cầu, Mari thông báo chính sách khác, hoặc lỗi thuộc hệ thống Mari khiến bạn không thể sử dụng dịch vụ trong thời gian đáng kể và Mari không khắc phục được trong thời hạn hợp lý. Yêu cầu hỗ trợ hoàn tiền cần được gửi kèm thông tin giao dịch để Mari xem xét.</p>
           </TermsSection>
 
-          <TermsSection title="10. Khiếu nại, thay đổi điều khoản và luật áp dụng">
-            <p>Mọi phản ánh hoặc khiếu nại về dịch vụ, vui lòng liên hệ Mari tại <a className="font-medium text-orange-700 underline underline-offset-4 dark:text-orange-300" href={`mailto:${SITE_CONFIG.contact.email}`}>{SITE_CONFIG.contact.email}</a> hoặc hotline {SITE_CONFIG.contact.hotline}. Mari sẽ tiếp nhận và phản hồi trong thời hạn hợp lý.</p>
-            <p>Mari có thể cập nhật Điều khoản khi cần thiết. Với thay đổi quan trọng, Mari sẽ công bố trên trang này và cập nhật ngày hiệu lực. Việc tiếp tục sử dụng dịch vụ sau ngày hiệu lực thể hiện sự chấp thuận của bạn, trừ khi pháp luật quy định khác.</p>
-            <p>Điều khoản này được điều chỉnh bởi pháp luật Việt Nam. Tranh chấp trước hết được ưu tiên giải quyết bằng thương lượng thiện chí; nếu không thành, các bên có quyền yêu cầu cơ quan có thẩm quyền giải quyết theo quy định pháp luật.</p>
+          <TermsSection title="8. Dịch vụ bên thứ ba">
+            <p>Mari có thể tích hợp Google Drive, ngân hàng, VietQR hoặc đối tác thanh toán. Việc sử dụng các dịch vụ đó có thể chịu điều khoản và chính sách riêng của bên thứ ba. Mari không lưu mật khẩu ngân hàng hoặc mật khẩu Google của bạn.</p>
+            <p>Kết nối Google Drive chỉ được thực hiện khi bạn chủ động cấp quyền. Phạm vi quyền, cách Mari xử lý dữ liệu Drive và cách thu hồi quyền được mô tả tại <Link href="/privacy" className="font-medium text-orange-700 underline underline-offset-4 dark:text-orange-300">Chính sách bảo mật</Link>.</p>
+          </TermsSection>
+
+          <TermsSection title="9. Hành vi bị cấm">
+            <ul className="list-disc space-y-2 pl-5">
+              <li>Truy cập trái phép, dò quét, phá hoại, phát tán mã độc, can thiệp hệ thống hoặc khai thác dữ liệu của người dùng khác.</li>
+              <li>Thu thập dữ liệu cá nhân trái phép, gửi thư rác, giả mạo, lừa đảo hoặc sử dụng Mari cho mục đích vi phạm pháp luật.</li>
+              <li>Sao chép, sửa đổi, phân phối, bán lại, đảo ngược kỹ thuật hoặc khai thác mã nguồn/giao diện/dữ liệu Mari ngoài phạm vi được pháp luật và Mari cho phép.</li>
+              <li>Vô hiệu hóa hoặc né tránh hạn mức, kiểm soát bảo mật, tính năng thanh toán hoặc các biện pháp bảo vệ của Mari.</li>
+            </ul>
+          </TermsSection>
+
+          <TermsSection title="10. Sở hữu trí tuệ">
+            <p>Thương hiệu, logo, giao diện, phần mềm, cơ sở dữ liệu, tài liệu và các tài sản thuộc Mari hoặc bên cấp phép được bảo hộ theo pháp luật. Ngoại trừ quyền sử dụng dịch vụ theo Điều khoản này, Mari không chuyển giao bất kỳ quyền sở hữu trí tuệ nào cho bạn.</p>
+          </TermsSection>
+
+          <TermsSection title="11. Tính sẵn sàng, bảo trì và hỗ trợ">
+            <p>Mari nỗ lực duy trì dịch vụ ổn định, an toàn và cập nhật. Dịch vụ có thể bị gián đoạn tạm thời do bảo trì, sự cố kỹ thuật, hạ tầng của bên thứ ba hoặc sự kiện bất khả kháng. Khi hợp lý, Mari sẽ thông báo trước về bảo trì có kế hoạch.</p>
+            <p>Để được hỗ trợ, hãy liên hệ theo thông tin tại Điều 14. Mari sẽ tiếp nhận và phản hồi trong thời hạn hợp lý tùy vào tính chất sự việc.</p>
+          </TermsSection>
+
+          <TermsSection title="12. Tạm ngừng, chấm dứt và xóa dữ liệu">
+            <p>Bạn có thể ngừng sử dụng Mari bất kỳ lúc nào. Mari có thể giới hạn, tạm ngừng hoặc chấm dứt quyền truy cập khi có căn cứ hợp lý cho thấy có vi phạm Điều khoản, rủi ro bảo mật, yêu cầu của cơ quan có thẩm quyền hoặc nguy cơ gây hại cho người dùng/hệ thống.</p>
+            <p>Sau khi tài khoản chấm dứt, dữ liệu được xử lý theo <Link href="/privacy" className="font-medium text-orange-700 underline underline-offset-4 dark:text-orange-300">Chính sách bảo mật</Link> và các nghĩa vụ lưu giữ theo pháp luật. Việc chấm dứt không loại trừ các nghĩa vụ hoặc trách nhiệm đã phát sinh trước thời điểm chấm dứt.</p>
+          </TermsSection>
+
+          <TermsSection title="13. Tuyên bố và giới hạn trách nhiệm">
+            <p>Mari cung cấp dịch vụ trên cơ sở phù hợp với khả năng kỹ thuật thực tế và không cam kết dịch vụ luôn không gián đoạn hoặc không có lỗi. Mari sẽ áp dụng biện pháp hợp lý để khắc phục lỗi thuộc phạm vi kiểm soát của mình.</p>
+            <p>Trong phạm vi pháp luật cho phép, Mari không chịu trách nhiệm cho chất lượng dạy học, nội dung do người dùng tạo, giao dịch/học phí giữa người dùng, hành vi của bên thứ ba hoặc thiệt hại gián tiếp. Quy định này không loại trừ các trách nhiệm mà pháp luật không cho phép loại trừ hoặc hạn chế.</p>
+          </TermsSection>
+
+          <TermsSection title="14. Khiếu nại, thay đổi điều khoản và luật áp dụng">
+            <p>Mọi phản ánh hoặc khiếu nại về dịch vụ, vui lòng gửi tới <a className="font-medium text-orange-700 underline underline-offset-4 dark:text-orange-300" href={`mailto:${SITE_CONFIG.contact.email}`}>{SITE_CONFIG.contact.email}</a> hoặc hotline {SITE_CONFIG.contact.hotline}. Hãy cung cấp thông tin tài khoản, mô tả sự việc và tài liệu liên quan để Mari hỗ trợ hiệu quả.</p>
+            <p>Mari có thể cập nhật Điều khoản khi cần thiết. Với thay đổi quan trọng, Mari sẽ công bố trên trang này và, khi phù hợp, thông báo qua kênh liên lạc trong hệ thống trước ngày hiệu lực. Việc tiếp tục sử dụng dịch vụ sau ngày hiệu lực thể hiện sự chấp thuận của bạn, trừ khi pháp luật có quy định khác.</p>
+            <p>Điều khoản này được điều chỉnh bởi pháp luật Việt Nam. Tranh chấp được ưu tiên giải quyết bằng thương lượng; nếu không thành, mỗi bên có quyền yêu cầu cơ quan có thẩm quyền giải quyết theo pháp luật.</p>
           </TermsSection>
         </div>
       </article>
