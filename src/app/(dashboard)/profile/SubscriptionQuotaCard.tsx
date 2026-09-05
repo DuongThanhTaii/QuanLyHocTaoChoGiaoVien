@@ -1,4 +1,5 @@
 import { HardDrive, Layers3, MessageCircleMore, Sparkles, UsersRound } from 'lucide-react';
+import Link from 'next/link';
 import type { QuotaMetric, UserBillingContext, UserQuotaSnapshot } from '@/lib/billing/types';
 
 const dateFormatter = new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -31,7 +32,7 @@ export function SubscriptionQuotaCard({ context, quota }: { context: UserBilling
 
   return <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
     <div className="border-b bg-muted/30 px-5 py-5">
-      <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"><Sparkles className="size-3.5" />Gói {context.plan.name}</span>{context.mode === 'free_access' && <span className="text-xs text-muted-foreground">Được hệ thống cấp quyền tạm thời</span>}</div><h2 className="mt-3 text-lg font-semibold tracking-tight">Gói & hạn mức sử dụng</h2><p className="mt-1 text-sm text-muted-foreground">{renewsAt ? `${context.subscription?.cancelAtPeriodEnd ? 'Gói kết thúc' : 'Gia hạn'} ngày ${renewsAt}.` : 'Bạn đang dùng gói mặc định của Mari.'}</p></div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"><Sparkles className="size-3.5" />Gói {context.plan.name}</span>{context.mode === 'free_access' && <span className="text-xs text-muted-foreground">Được hệ thống cấp quyền tạm thời</span>}</div><h2 className="mt-3 text-lg font-semibold tracking-tight">Gói & hạn mức sử dụng</h2><p className="mt-1 text-sm text-muted-foreground">{renewsAt ? `${context.subscription?.cancelAtPeriodEnd ? 'Gói kết thúc' : 'Gia hạn'} ngày ${renewsAt}.` : 'Bạn đang dùng gói mặc định của Mari.'}</p></div>{context.subscription && <Link href="/settings/billing" className="inline-flex h-8 w-full shrink-0 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium transition-colors hover:bg-muted sm:w-auto">Quản lý gia hạn</Link>}</div>
     </div>
     <div className="grid gap-x-8 gap-y-6 px-5 py-5 md:grid-cols-2">
       <UsageRow icon={Layers3} label="Lớp đang hoạt động" detail="lớp theo gói" metric={quota.classes} />
