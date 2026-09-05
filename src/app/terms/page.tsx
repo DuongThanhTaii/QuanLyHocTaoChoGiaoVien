@@ -6,6 +6,7 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { SITE_CONFIG } from '@/config/landing-data';
 import { PublicLightTheme } from '@/components/providers/PublicLightTheme';
+import { getCurrentLandingUser } from '@/lib/auth/get-current-landing-user';
 
 export const metadata: Metadata = {
   title: 'Điều khoản sử dụng | Mari',
@@ -15,9 +16,10 @@ export const metadata: Metadata = {
 
 const updatedAt = '04/09/2026';
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const currentUser = await getCurrentLandingUser();
   return <PublicLightTheme><div className="min-h-screen bg-[#fffdf9] text-slate-900 dark:bg-zinc-950 dark:text-zinc-50">
-    <Navbar />
+    <Navbar user={currentUser} />
     <main className="pt-16">
       <section className="border-b border-orange-100 bg-[radial-gradient(circle_at_top_right,#ffe4b8,transparent_34%),linear-gradient(135deg,#fffaf2,#fffdf9)] px-5 py-16 dark:border-zinc-800 dark:bg-zinc-950 sm:py-20">
         <div className="mx-auto max-w-4xl">
