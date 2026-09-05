@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { SITE_CONFIG } from '@/config/landing-data';
+import { PublicLightTheme } from '@/components/providers/PublicLightTheme';
 
 export const metadata: Metadata = {
   title: 'Chính sách bảo mật | Mari',
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 const updatedAt = '04/09/2026';
 
 export default function PrivacyPage() {
-  return <div className="min-h-screen bg-[#fffdf9] text-slate-900 dark:bg-zinc-950 dark:text-zinc-50">
+  return <PublicLightTheme><div className="min-h-screen bg-[#fffdf9] text-slate-900 dark:bg-zinc-950 dark:text-zinc-50">
     <Navbar />
     <main className="pt-16">
       <section className="border-b border-orange-100 bg-[radial-gradient(circle_at_top_right,#ffe4b8,transparent_34%),linear-gradient(135deg,#fffaf2,#fffdf9)] px-5 py-16 dark:border-zinc-800 dark:bg-zinc-950 sm:py-20">
@@ -119,7 +120,7 @@ export default function PrivacyPage() {
       </article>
     </main>
     <Footer />
-  </div>;
+  </div></PublicLightTheme>;
 }
 
 function PolicySection({ title, children }: { title: string; children: ReactNode }) {

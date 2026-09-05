@@ -3,8 +3,6 @@ import { Montserrat, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { ThemeColorProvider } from "@/components/providers/theme-color-provider";
 import { PwaManager } from "@/components/providers/PwaManager";
 import { PushNotificationManager } from "@/components/providers/PushNotificationManager";
 
@@ -53,17 +51,13 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <ThemeColorProvider>
-            <TooltipProvider>
-              <InitialCatLoader />
-              <PwaManager />
-              <PushNotificationManager />
-              {children}
-              <Toaster />
-            </TooltipProvider>
-          </ThemeColorProvider>
-        </ThemeProvider>
+        <TooltipProvider>
+          <InitialCatLoader />
+          <PwaManager />
+          <PushNotificationManager />
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   );

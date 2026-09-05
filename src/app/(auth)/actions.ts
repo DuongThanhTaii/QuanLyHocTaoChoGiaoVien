@@ -90,14 +90,11 @@ export async function register(_prevState: AuthActionState, formData: FormData):
   }
 
   const supabase = await createClient()
-  const callbackUrl = getAuthCallbackUrl(await headers())
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      emailRedirectTo: callbackUrl,
-    }
+    options: {}
   })
 
   if (error) {
@@ -117,11 +114,10 @@ export async function resendEmailVerification(_prevState: AuthActionState, formD
   }
 
   const supabase = await createClient()
-  const callbackUrl = getAuthCallbackUrl(await headers())
   const { error } = await supabase.auth.resend({
     type: 'signup',
     email: result.data,
-    options: { emailRedirectTo: callbackUrl },
+    options: {},
   })
 
   if (error) {
@@ -129,6 +125,29 @@ export async function resendEmailVerification(_prevState: AuthActionState, formD
   }
 
   return { success: true, message: 'Đã gửi lại email xác thực. Hãy kiểm tra cả mục Spam.' }
+}
+
+export async function verifySignupOtp(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const email = formData.get('email') as string
+  const token = (formData.get('token') as string || '').replace(/\s/g, '')
+
+  if (!z.string().email().safeParse(email).success) {
+    return { error: 'Email xác thực không hợp lệ. Vui lòng đăng ký lại.' }
+  }
+
+  if (!/^\d{6}$/.test(token)) {
+    return { error: 'Vui lòng nhập đủ 6 chữ số của mã xác thực.' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' })
+
+  if (error) {
+    return { error: 'Mã xác thực không đúng hoặc đã hết hạn. Vui lòng kiểm tra lại hoặc gửi mã mới.' }
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/onboarding')
 }
 
 export async function requestPasswordReset(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {

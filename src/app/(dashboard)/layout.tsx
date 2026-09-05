@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
 import { getUserBillingContext } from '@/lib/billing/server';
+import { DashboardThemeProviders } from '@/components/providers/DashboardThemeProviders';
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -41,14 +42,16 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const billingContext = await getUserBillingContext(user.id).catch(() => null);
 
   return (
-    <DashboardLayout 
+    <DashboardThemeProviders>
+      <DashboardLayout
       userRole={role} 
       userName={userName} 
       userEmail={userEmail}
       subscriptionPlanName={billingContext?.plan.code !== 'free' ? billingContext?.plan.name : undefined}
       uiSettings={profile?.ui_settings}
-    >
-      {children}
-    </DashboardLayout>
+      >
+        {children}
+      </DashboardLayout>
+    </DashboardThemeProviders>
   );
 }
