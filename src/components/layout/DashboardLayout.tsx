@@ -414,8 +414,8 @@ export default function DashboardLayout({
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
                 <AccountMenuItem href="/profile" label="Hồ sơ cá nhân" icon={UserIcon} />
-                <AccountMenuItem href="/settings" label="Cài đặt hệ thống" icon={SettingsIcon} />
                 <AccountMenuItem href="/pricing" label="Gói đăng ký" icon={SparklesIcon} badge={subscriptionPlanName} />
+                <AccountMenuItem href="/settings" label="Cài đặt hệ thống" icon={SettingsIcon} />
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuGroup>
