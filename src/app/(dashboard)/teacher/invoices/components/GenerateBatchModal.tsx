@@ -399,7 +399,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
           <Button
             onClick={handleGenerate}
             disabled={generating || previewLoading || selectedStudentIds.size === 0}
-            className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs h-9"
+            className="h-9 text-xs"
           >
             {generating && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             Sinh {selectedStudentIds.size} Hóa đơn & Gửi phụ huynh

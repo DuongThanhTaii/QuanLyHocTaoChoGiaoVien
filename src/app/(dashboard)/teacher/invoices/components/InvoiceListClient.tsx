@@ -309,7 +309,7 @@ export function InvoiceListClient({ invoices: initialInvoices, classes, bankAcco
 
           <Button
             onClick={() => openInvoiceFlow('batch')}
-            className="h-9 px-3.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-xs"
+            className="h-9 px-3.5 text-xs font-medium"
           >
             <Receipt className="mr-1.5 h-3.5 w-3.5" /> Sinh Hóa đơn Tự động
           </Button>

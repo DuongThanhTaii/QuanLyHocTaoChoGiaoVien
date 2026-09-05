@@ -191,14 +191,14 @@ export function AttendanceManager({
   return (
     <div className="space-y-6">
       {/* KHỐI GIAO DIỆN CHÍNH (UNIFIED LAYOUT) */}
-      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
         
         {/* HEADER AREA */}
         <div className="p-5 border-b border-zinc-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-zinc-50/50">
           
           {/* Cụm Bên Trái: Tiêu đề + Nút chọn ngày + Giờ học */}
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-bold text-zinc-900 tracking-tight">Điểm danh</h2>
+            <h2 className="text-lg font-bold tracking-tight text-foreground">Điểm danh</h2>
             
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
               <PopoverTrigger asChild>
@@ -251,7 +251,7 @@ export function AttendanceManager({
                 <CheckCircle2 className="w-4 h-4 mr-2 text-green-600" />
                 Đánh dấu tất cả Có mặt
               </Button>
-              <Button size="sm" onClick={handleSaveAll} disabled={isSubmitting || students.length === 0} className="h-9 bg-zinc-900 hover:bg-zinc-800 text-white shadow-xs">
+              <Button size="sm" onClick={handleSaveAll} disabled={isSubmitting || students.length === 0} className="h-9 shadow-xs">
                 {isSubmitting ? 'Đang lưu...' : 'Lưu điểm danh'}
               </Button>
             </div>

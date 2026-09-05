@@ -87,7 +87,7 @@ export function ClassStudentsView({
 
         {activeView === 'roster' && (
           <Sheet>
-            <SheetTrigger render={<Button size="sm" className="h-9 px-3.5 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 shadow-2xs" />}>
+            <SheetTrigger render={<Button size="sm" className="h-9 px-3.5 text-xs shadow-2xs" />}>
               <Plus className="h-3.5 w-3.5 mr-1.5" /> Thêm học sinh
             </SheetTrigger>
             <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">

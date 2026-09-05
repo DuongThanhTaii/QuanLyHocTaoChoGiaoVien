@@ -35,7 +35,7 @@ export default async function SchedulePage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thời khóa biểu</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Thời khóa biểu</h1>
         <p className="text-zinc-500">Quản lý lịch học lặp lại hàng tuần cho lớp <span className="font-semibold text-zinc-700">{classroom.name}</span></p>
       </div>
       

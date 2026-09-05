@@ -8,8 +8,8 @@ export default function TeacherRoot() {
   return (
     <div className="space-y-6">
       <div data-tour-id="teacher-dashboard">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tổng quan</h1>
-        <p className="text-zinc-500">Chào mừng bạn quay trở lại. Đây là lịch trình hôm nay của bạn.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Tổng quan</h1>
+        <p className="text-muted-foreground">Chào mừng bạn quay trở lại. Đây là lịch trình hôm nay của bạn.</p>
       </div>
 
       {/* Tải dữ liệu Thống kê song song và độc lập */}

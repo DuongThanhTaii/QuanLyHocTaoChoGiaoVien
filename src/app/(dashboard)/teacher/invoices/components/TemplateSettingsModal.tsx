@@ -259,7 +259,7 @@ export function TemplateSettingsModal({ isOpen, onClose, onSaved }: Props) {
           <Button variant="outline" onClick={onClose} disabled={saving} className="text-xs h-9">
             Hủy
           </Button>
-          <Button onClick={handleSave} disabled={saving || loading} className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs h-9">
+          <Button onClick={handleSave} disabled={saving || loading} className="h-9 text-xs">
             {saving && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             Lưu Cấu hình Mẫu
           </Button>

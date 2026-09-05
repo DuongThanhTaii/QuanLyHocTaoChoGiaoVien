@@ -432,7 +432,7 @@ export function CreateCustomModal({ isOpen, onClose, onSuccess }: Props) {
           <Button variant="outline" onClick={onClose} disabled={submitting} className="text-xs h-9">
             Hủy
           </Button>
-          <Button onClick={handleCreate} disabled={submitting || loadingClasses || loadingStudents} className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs h-9">
+          <Button onClick={handleCreate} disabled={submitting || loadingClasses || loadingStudents} className="h-9 text-xs">
             {submitting && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             Tạo & Gửi Hóa đơn
           </Button>

@@ -36,7 +36,7 @@ export default async function TeacherSchedulePage() {
   return (
     <div className="flex flex-col min-h-0">
       <div className="mb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Thời khóa biểu tổng</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Thời khóa biểu tổng</h1>
         <p className="text-zinc-500">Lịch giảng dạy tất cả các lớp của bạn trong tuần.</p>
       </div>
       <div data-tour-id="teacher-schedule">

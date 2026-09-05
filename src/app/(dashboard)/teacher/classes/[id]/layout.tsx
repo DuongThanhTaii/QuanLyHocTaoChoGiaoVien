@@ -32,9 +32,9 @@ export default async function ClassWorkspaceLayout({
   return (
     <div className="space-y-6">
       {/* Class Header */}
-      <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm flex justify-between items-center">
+      <div className="flex items-center justify-between rounded-xl border bg-card p-6 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">{classroom.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{classroom.name}</h1>
           <p className="text-zinc-500">
             {classroom.subject || 'Chưa cập nhật môn học'} &bull; {Number(classroom.fee_per_session).toLocaleString('vi-VN')} đ/buổi
           </p>
