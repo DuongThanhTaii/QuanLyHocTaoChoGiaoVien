@@ -131,6 +131,18 @@ export async function activateCassoReconciliation(bankAccountId: string, cassoAc
   return { success: true };
 }
 
+export async function activateCassoForBankAccount(bankAccountId: string) {
+  const { user, admin, connection } = await getCurrentCassoConnection();
+  const [accounts, bankAccountResult] = await Promise.all([
+    cassoApi<CassoAccount[]>(decryptCassoSecret(connection.access_token_encrypted), '/v2/accounts'),
+    admin.from('bank_accounts').select('id, account_number').eq('id', bankAccountId).eq('user_id', user.id).maybeSingle(),
+  ]);
+  const bankAccount = bankAccountResult.data;
+  const matchingAccount = bankAccount && accounts.find((account) => account.connectStatus !== 0 && normalizeAccountNumber(account.accountNumber) === normalizeAccountNumber(bankAccount.account_number));
+  if (!matchingAccount) throw new Error('STK này chưa được liên kết trên Casso. Hãy chọn đúng tài khoản đã kết nối Casso.');
+  return activateCassoReconciliation(bankAccount.id, String(matchingAccount.id));
+}
+
 export async function disconnectCasso() {
   const { admin, connection } = await getCurrentCassoConnection();
   const { error } = await admin.from('casso_connections').update({ status: 'revoked', casso_bank_account_id: null, bank_account_id: null, updated_at: new Date().toISOString() }).eq('id', connection.id);
@@ -213,8 +225,11 @@ export async function addBankAccount(prevState: any, formData: FormData) {
     return { error: error.message };
   }
 
+  const { data: addedAccount } = await supabase.from('bank_accounts').select('id').eq('user_id', user.id).eq('account_number', parsed.data.accountNumber).order('created_at', { ascending: false }).limit(1).maybeSingle();
+  const { data: role } = await supabase.from('user_roles').select('role').eq('user_id', user.id).eq('is_primary', true).maybeSingle();
+  const { data: connection } = role?.role === 'teacher' ? await getServiceClient().from('casso_connections').select('status').eq('teacher_id', user.id).maybeSingle() : { data: null };
   revalidatePath('/profile');
-  return { success: true, message: 'Đã thêm tài khoản ngân hàng!' };
+  return { success: true, bankAccountId: addedAccount?.id, startCassoConnection: role?.role === 'teacher' && connection?.status !== 'active', message: role?.role === 'teacher' && connection?.status !== 'active' ? 'Đã thêm STK. Tiếp tục kết nối Casso để bật đối soát.' : 'Đã thêm tài khoản ngân hàng!' };
 }
 
 export async function deleteBankAccount(id: string) {
@@ -222,6 +237,9 @@ export async function deleteBankAccount(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) return { error: 'Unauthorized' };
+
+  const { data: activeConnection } = await getServiceClient().from('casso_connections').select('id').eq('teacher_id', user.id).eq('bank_account_id', id).eq('status', 'active').maybeSingle();
+  if (activeConnection) return { error: 'Đây là tài khoản đang đối soát. Hãy chuyển đối soát sang STK khác trước khi xóa.' };
 
   const { error } = await supabase
     .from('bank_accounts')

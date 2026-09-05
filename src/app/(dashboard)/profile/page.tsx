@@ -1,6 +1,6 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { getServiceClient } from '@/lib/admin/server';
-import { BasicProfileForm, BankAccountsList, AddBankAccountForm, CassoConnectionCard } from './ProfileForms';
+import { BasicProfileForm, BankAccountsList, AddBankAccountForm } from './ProfileForms';
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -37,8 +37,8 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Hồ sơ cá nhân</h1>
-        <p className="text-zinc-500 mt-2">Quản lý thông tin liên hệ và cài đặt thanh toán của bạn.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Hồ sơ cá nhân</h1>
+        <p className="mt-2 text-muted-foreground">Quản lý thông tin liên hệ và cài đặt thanh toán của bạn.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -46,13 +46,12 @@ export default async function ProfilePage() {
         <div className="space-y-8">
           <BasicProfileForm profile={profileWithPhone} />
           
-          {isTeacher && <CassoConnectionCard connection={cassoConnection} bankAccounts={accounts || []} />}
         </div>
 
         {/* Right Column */}
         <div className="space-y-8">
-          <BankAccountsList accounts={accounts || []} />
-          <AddBankAccountForm />
+          <BankAccountsList accounts={accounts || []} cassoConnection={cassoConnection} />
+          <AddBankAccountForm isTeacher={isTeacher} />
         </div>
       </div>
     </div>

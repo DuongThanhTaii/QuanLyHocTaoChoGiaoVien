@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword, activateCassoReconciliation, disconnectCasso, getCassoAccounts, getCassoReconciliationQueue, resolveCassoReconciliation } from './actions';
+import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword, activateCassoReconciliation, activateCassoForBankAccount, disconnectCasso, getCassoAccounts, getCassoReconciliationQueue, resolveCassoReconciliation } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,11 +29,12 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle, Copy, Link2, ShieldCheck, Unplug, Loader2, Check, X } from 'lucide-react';
+import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle, Copy, Link2, ShieldCheck, Unplug, Loader2, Check, X, BadgeCheck } from 'lucide-react';
 import { VIETNAM_BANKS } from '@/lib/banks';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 
-const initialState = { error: '', success: false, message: '' };
+type FormActionState = { error: string; success: boolean; message: string; startCassoConnection?: boolean; bankAccountId?: string };
+const initialState: FormActionState = { error: '', success: false, message: '' };
 const PAYOS_WEBHOOK_URL = 'https://mari.io.vn/api/webhooks/payos';
 
 export function BasicProfileForm({ profile }: { profile: any }) {
@@ -64,19 +65,19 @@ export function BasicProfileForm({ profile }: { profile: any }) {
         <CardContent className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label>Email đăng nhập (Không thể thay đổi)</Label>
-            <Input disabled value={profile?.email || ''} className="bg-zinc-100" />
+          <Input disabled value={profile?.email || ''} className="bg-muted text-muted-foreground" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="fullName">Họ và tên</Label>
-            <Input id="fullName" name="fullName" defaultValue={profile?.full_name || ''} required disabled={!isEditing} className={!isEditing ? 'bg-zinc-50 text-zinc-600' : ''} />
+            <Input id="fullName" name="fullName" defaultValue={profile?.full_name || ''} required disabled={!isEditing} className={!isEditing ? 'bg-muted text-muted-foreground' : ''} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Số điện thoại</Label>
-            <Input id="phone" name="phone" defaultValue={profile?.phone || ''} disabled={!isEditing} className={!isEditing ? 'bg-zinc-50 text-zinc-600' : ''} />
+            <Input id="phone" name="phone" defaultValue={profile?.phone || ''} disabled={!isEditing} className={!isEditing ? 'bg-muted text-muted-foreground' : ''} />
           </div>
         </CardContent>
       </form>
-      <CardFooter className="pt-4 border-t border-zinc-100 flex items-center justify-between">
+      <CardFooter className="flex items-center justify-between border-t border-border pt-4">
         <div className="flex gap-2">
           {isEditing ? (
             <>
@@ -258,7 +259,7 @@ export function ChangePasswordModal() {
 }
 
 
-export function BankAccountsList({ accounts }: { accounts: any[] }) {
+export function BankAccountsList({ accounts, cassoConnection }: { accounts: any[]; cassoConnection: CassoConnection }) {
   const handleSetDefault = async (id: string) => {
     const res = await setDefaultBankAccount(id);
     if (res.error) toast.error(res.error);
@@ -271,13 +272,24 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
     else toast.success('Đã xóa tài khoản');
   };
 
+  const handleActivateReconciliation = async (id: string) => {
+    if (!cassoConnection || cassoConnection.status === 'revoked') {
+      window.location.assign(`/api/casso/connect?bankAccountId=${encodeURIComponent(id)}`);
+      return;
+    }
+    try {
+      await activateCassoForBankAccount(id);
+      toast.success('Đã chuyển đối soát sang tài khoản này.');
+      window.location.reload();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể bật đối soát.');
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Tài khoản nhận tiền</CardTitle>
-        <CardDescription>
-          Thêm số tài khoản ngân hàng để hệ thống tự động sinh mã VietQR cho học sinh thanh toán.
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -286,13 +298,14 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
               <TableHead>Ngân hàng</TableHead>
               <TableHead>Số tài khoản</TableHead>
               <TableHead>Tên chủ TK</TableHead>
+              <TableHead>Đối soát</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {accounts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-zinc-500 py-6">
+                <TableCell colSpan={5} className="py-6 text-center text-muted-foreground">
                   Chưa có tài khoản nào được thêm.
                 </TableCell>
               </TableRow>
@@ -302,6 +315,13 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
                 <TableCell className="font-medium">{acc.bank_name}</TableCell>
                 <TableCell>{acc.account_number}</TableCell>
                 <TableCell>{acc.account_name}</TableCell>
+                <TableCell>
+                  {cassoConnection?.status === 'active' && cassoConnection.bank_account_id === acc.id ? (
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-emerald-600 dark:text-emerald-400"><BadgeCheck className="size-4" />Đang đối soát</span>
+                  ) : (
+                    <button type="button" onClick={() => handleActivateReconciliation(acc.id)} className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-primary hover:underline"><Link2 className="size-3.5" />Dùng để đối soát</button>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-3">
                     {acc.is_default ? (
@@ -343,7 +363,7 @@ export function BankAccountsList({ accounts }: { accounts: any[] }) {
   );
 }
 
-export function AddBankAccountForm() {
+export function AddBankAccountForm({ isTeacher }: { isTeacher: boolean }) {
   const [state, formAction, isPending] = useActionState(addBankAccount as any, initialState);
   const [key, setKey] = useState(Date.now()); // to reset form
   const [selectedBank, setSelectedBank] = useState<string>('');
@@ -351,6 +371,10 @@ export function AddBankAccountForm() {
   useEffect(() => {
     if (state?.success && state?.message) {
       toast.success(state.message);
+      if (state.startCassoConnection && state.bankAccountId) {
+        window.location.assign(`/api/casso/connect?bankAccountId=${encodeURIComponent(state.bankAccountId)}`);
+        return;
+      }
       setKey(Date.now()); // reset form
       setSelectedBank('');
     } else if (state?.error) {
@@ -364,7 +388,7 @@ export function AddBankAccountForm() {
     <Card>
       <CardHeader>
         <CardTitle>Thêm tài khoản mới</CardTitle>
-        <CardDescription>Nhập chính xác thông tin ngân hàng của bạn.</CardDescription>
+        <CardDescription>{isTeacher ? 'STK đầu tiên sẽ được kết nối Casso để bật tự động đối soát.' : 'Nhập chính xác thông tin ngân hàng của bạn.'}</CardDescription>
       </CardHeader>
       <form action={formAction} key={key}>
         <CardContent className="space-y-4">
@@ -403,7 +427,7 @@ export function AddBankAccountForm() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isPending} className="w-full h-12 text-md">{isPending ? 'Đang thêm...' : 'Thêm tài khoản'}</Button>
+          <Button type="submit" disabled={isPending} className="h-12 w-full text-md">{isPending ? 'Đang thêm...' : isTeacher ? 'Thêm & bật đối soát' : 'Thêm tài khoản'}</Button>
         </CardFooter>
       </form>
     </Card>
