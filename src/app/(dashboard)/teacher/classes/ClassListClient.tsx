@@ -39,7 +39,7 @@ export function ClassListClient({ classes }: ClassListClientProps) {
             />
           </div>
           <Link href="/teacher/classes/create" data-tour-id="teacher-create-class">
-            <Button className="bg-zinc-900 hover:bg-zinc-800 text-white whitespace-nowrap">
+            <Button className="whitespace-nowrap">
               <PlusCircle className="mr-2 h-4 w-4" /> Tạo lớp mới
             </Button>
           </Link>
@@ -77,7 +77,7 @@ export function ClassListClient({ classes }: ClassListClientProps) {
                 <Link href={`/teacher/classes/${c.id}/schedule`} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full text-zinc-700">
                   Lịch học
                 </Link>
-                <Link href={`/teacher/classes/${c.id}/attendance`} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors bg-zinc-900 text-white hover:bg-zinc-800 h-9 px-4 py-2 w-full">
+                <Link href={`/teacher/classes/${c.id}/attendance`} className="inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
                   Điểm danh
                 </Link>
               </CardFooter>

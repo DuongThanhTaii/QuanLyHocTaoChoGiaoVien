@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="bg-zinc-900 text-white hover:bg-zinc-800">
+    <Button type="submit" disabled={pending}>
       {pending ? 'Đang tạo...' : 'Tạo lớp học'}
     </Button>
   );

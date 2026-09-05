@@ -32,13 +32,13 @@ const colorPresets = {
     dark: { primary: "0.6 0.15 150" },
   },
   orange: {
-    light: { primary: "0.6 0.15 45" },
-    dark: { primary: "0.7 0.15 45" },
+    light: { primary: "0.68 0.19 45" },
+    dark: { primary: "0.72 0.17 45" },
   }
 }
 
 export function ThemeColorProvider({ children }: { children: React.ReactNode }) {
-  const [themeColor, setThemeColorState] = useState<ThemeColor>("zinc")
+  const [themeColor, setThemeColorState] = useState<ThemeColor>("orange")
   const { resolvedTheme } = useTheme()
 
   useEffect(() => {
@@ -64,9 +64,11 @@ export function ThemeColorProvider({ children }: { children: React.ReactNode }) 
       const modeData = isDark ? preset.dark : preset.light
       // Shadcn uses --primary for the main brand color
       root.style.setProperty("--primary", `oklch(${modeData.primary})`)
+      root.style.setProperty("--primary-foreground", "oklch(1 0 0)")
       
       // Optionally also set --sidebar-primary for the sidebar specifically
       root.style.setProperty("--sidebar-primary", `oklch(${modeData.primary})`)
+      root.style.setProperty("--sidebar-primary-foreground", "oklch(1 0 0)")
     }
   }, [themeColor, resolvedTheme])
 

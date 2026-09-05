@@ -49,44 +49,26 @@ export default function SettingsPage() {
         {/* Theme Mode Settings */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-foreground">Chế độ hiển thị (Theme)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div role="group" aria-label="Chế độ hiển thị" className="grid grid-cols-3 rounded-xl border border-border bg-muted/50 p-1">
             <button
               onClick={() => handleSetTheme('light')}
-              className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 bg-background'}`}
+              className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${theme === 'light' ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              <div className={`p-2 rounded-lg ${theme === 'light' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                <Sun className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <p className={`font-medium ${theme === 'light' ? 'text-primary' : 'text-foreground'}`}>Sáng</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Màu nền trắng</p>
-              </div>
+              <Sun className="size-4" /> Sáng
             </button>
 
             <button
               onClick={() => handleSetTheme('dark')}
-              className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 bg-background'}`}
+              className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${theme === 'dark' ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                <Moon className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <p className={`font-medium ${theme === 'dark' ? 'text-primary' : 'text-foreground'}`}>Tối</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Bảo vệ mắt ban đêm</p>
-              </div>
+              <Moon className="size-4" /> Tối
             </button>
 
             <button
               onClick={() => handleSetTheme('system')}
-              className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${theme === 'system' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 bg-background'}`}
+              className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${theme === 'system' ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              <div className={`p-2 rounded-lg ${theme === 'system' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                <Monitor className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <p className={`font-medium ${theme === 'system' ? 'text-primary' : 'text-foreground'}`}>Hệ thống</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Tự động theo OS</p>
-              </div>
+              <Monitor className="size-4" /> Hệ thống
             </button>
           </div>
         </div>
@@ -99,11 +81,11 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground">Chọn màu sắc nhấn cho các nút bấm và thành phần UI.</p>
           <div className="flex flex-wrap gap-4 mt-2">
             {[
-              { id: 'zinc', name: 'Kẽm (Mặc định)', class: 'bg-zinc-900 dark:bg-zinc-100' },
+              { id: 'orange', name: 'Cam (Mặc định)', class: 'bg-orange-500' },
+              { id: 'zinc', name: 'Kẽm', class: 'bg-zinc-900 dark:bg-zinc-100' },
               { id: 'red', name: 'Đỏ', class: 'bg-red-600' },
               { id: 'blue', name: 'Xanh dương', class: 'bg-blue-600' },
               { id: 'green', name: 'Xanh lá', class: 'bg-emerald-600' },
-              { id: 'orange', name: 'Cam', class: 'bg-orange-500' },
             ].map((color) => (
               <button
                 key={color.id}
