@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword } from './actions';
+import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword, activateCassoReconciliation, disconnectCasso, getCassoAccounts, getCassoReconciliationQueue, resolveCassoReconciliation } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle, Copy } from 'lucide-react';
+import { Star, Trash2, Eye, EyeOff, CheckCircle2, XCircle, Copy, Link2, ShieldCheck, Unplug, Loader2, Check, X } from 'lucide-react';
 import { VIETNAM_BANKS } from '@/lib/banks';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 
@@ -406,6 +406,80 @@ export function AddBankAccountForm() {
           <Button type="submit" disabled={isPending} className="w-full h-12 text-md">{isPending ? 'Đang thêm...' : 'Thêm tài khoản'}</Button>
         </CardFooter>
       </form>
+    </Card>
+  );
+}
+
+type CassoConnection = { status?: string; bank_account_id?: string | null; last_synced_at?: string | null; last_error?: string | null } | null;
+type CassoAccount = { id: string; accountNumber: string; accountName: string; bankName: string; connected: boolean };
+
+export function CassoConnectionCard({ connection, bankAccounts }: { connection: CassoConnection; bankAccounts: any[] }) {
+  const [accounts, setAccounts] = useState<CassoAccount[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [bankAccountId, setBankAccountId] = useState(connection?.bank_account_id || '');
+  const [cassoAccountId, setCassoAccountId] = useState('');
+  const [queue, setQueue] = useState<Array<any>>([]);
+  const active = connection?.status === 'active';
+
+  useEffect(() => {
+    if (!connection || connection.status === 'revoked') return;
+    setLoading(true);
+    getCassoAccounts().then(setAccounts).catch((error) => toast.error(error instanceof Error ? error.message : 'Không thể tải tài khoản Casso.')).finally(() => setLoading(false));
+  }, [connection?.status]);
+
+  const refreshQueue = () => getCassoReconciliationQueue().then(setQueue).catch(() => setQueue([]));
+  useEffect(() => { if (active) refreshQueue(); }, [active]);
+
+  const enable = async () => {
+    if (!bankAccountId || !cassoAccountId) return toast.error('Hãy chọn STK nhận học phí và tài khoản tương ứng trên Casso.');
+    setSaving(true);
+    try {
+      await activateCassoReconciliation(bankAccountId, cassoAccountId);
+      toast.success('Đã bật tự động đối soát học phí.');
+      window.location.reload();
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Không thể bật đối soát.'); }
+    finally { setSaving(false); }
+  };
+
+  const disconnect = async () => {
+    setSaving(true);
+    try { await disconnectCasso(); toast.success('Đã ngắt kết nối Casso.'); window.location.reload(); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Không thể ngắt kết nối.'); }
+    finally { setSaving(false); }
+  };
+
+  const resolveQueue = async (id: string, accept: boolean) => {
+    setSaving(true);
+    try { await resolveCassoReconciliation(id, accept); toast.success(accept ? 'Đã xác nhận gạch nợ.' : 'Đã bỏ qua giao dịch.'); await refreshQueue(); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Không thể xử lý giao dịch.'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <Card className="overflow-hidden border-primary/25">
+      <CardHeader className="border-b border-primary/10 bg-primary/[0.035]">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Link2 className="size-5" /></span>
+            <div><CardTitle className="text-lg">Tự động đối soát học phí</CardTitle><CardDescription className="mt-1">Kết nối Casso một lần để Mari tự gạch nợ khi phụ huynh chuyển khoản đúng nội dung.</CardDescription></div>
+          </div>
+          {active && <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400"><ShieldCheck className="size-3.5" />Đang bật</span>}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-5">
+        {!connection || connection.status === 'revoked' ? (
+          <div className="space-y-3"><p className="text-sm text-muted-foreground">Mari không cần API key PayOS của bạn. Bạn sẽ xác nhận quyền đọc biến động giao dịch trực tiếp với Casso/Cas ID.</p><a href="/api/casso/connect" className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"><Link2 className="mr-2 size-4" />Kết nối Casso</a></div>
+        ) : (
+          <>
+            {connection.last_error && <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{connection.last_error}</p>}
+            <p className="text-sm text-muted-foreground">{active ? 'Mari chỉ đối soát giao dịch tiền vào của tài khoản đã chọn; tiền vẫn chuyển thẳng vào STK của bạn.' : 'Chọn đúng tài khoản bạn đã liên kết trên Casso để hoàn tất thiết lập.'}</p>
+            {!active && <div className="grid gap-3"><div className="space-y-1.5"><Label>STK nhận học phí trong Mari</Label><Select value={bankAccountId} onValueChange={(value) => setBankAccountId(value || '')}><SelectTrigger><SelectValue placeholder="Chọn STK đã thêm" /></SelectTrigger><SelectContent>{bankAccounts.map((account) => <SelectItem key={account.id} value={account.id}>{account.bank_name} · {account.account_number}</SelectItem>)}</SelectContent></Select></div><div className="space-y-1.5"><Label>Tài khoản đã liên kết trên Casso</Label><Select value={cassoAccountId} onValueChange={(value) => setCassoAccountId(value || '')} disabled={loading}><SelectTrigger><SelectValue placeholder={loading ? 'Đang tải từ Casso…' : 'Chọn tài khoản Casso'} /></SelectTrigger><SelectContent>{accounts.filter((account) => account.connected).map((account) => <SelectItem key={account.id} value={account.id}>{account.bankName} · {account.accountNumber}</SelectItem>)}</SelectContent></Select></div>{!bankAccounts.length && <p className="text-xs text-amber-700 dark:text-amber-400">Hãy thêm STK nhận tiền trước khi bật đối soát.</p>}</div>}
+          </>
+        )}
+      </CardContent>
+      {active && queue.length > 0 && <div className="border-t border-border px-6 py-4"><p className="mb-3 text-sm font-semibold">Giao dịch cần xác nhận</p><div className="space-y-2">{queue.map((item) => <div key={item.id} className="flex flex-col gap-2 rounded-lg border border-amber-300/60 bg-amber-50/60 p-3 text-sm dark:bg-amber-950/20 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><p className="font-medium">{Number(item.amount).toLocaleString('vi-VN')} đ {item.invoice?.invoice_number ? `· ${item.invoice.invoice_number}` : ''}</p><p className="truncate text-xs text-muted-foreground">{item.transfer_content || item.reason}</p></div><div className="flex gap-2"><Button size="sm" variant="outline" disabled={saving} onClick={() => resolveQueue(item.id, false)}><X className="mr-1 size-3.5" />Bỏ qua</Button>{item.invoice && <Button size="sm" disabled={saving} onClick={() => resolveQueue(item.id, true)}><Check className="mr-1 size-3.5" />Xác nhận</Button>}</div></div>)}</div></div>}
+      {connection && connection.status !== 'revoked' && <CardFooter className="justify-between border-t border-border bg-muted/30"><span className="text-xs text-muted-foreground">{active && connection.last_synced_at ? `Đã kích hoạt ${new Date(connection.last_synced_at).toLocaleDateString('vi-VN')}` : 'Quyền truy cập có thể thu hồi bất cứ lúc nào.'}</span>{active ? <Button type="button" variant="outline" size="sm" disabled={saving} onClick={disconnect}><Unplug className="mr-2 size-3.5" />Ngắt kết nối</Button> : <Button type="button" size="sm" disabled={saving || loading || !bankAccounts.length} onClick={enable}>{saving && <Loader2 className="mr-2 size-3.5 animate-spin" />}Bật tự động đối soát</Button>}</CardFooter>}
     </Card>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useTheme } from "next-themes";
 import { useThemeColor } from "@/components/providers/theme-color-provider";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Moon, Sun, Monitor, CreditCard } from "lucide-react";
+import Link from 'next/link';
 import { useEffect, useState } from "react";
 import { saveUiSettings } from "./actions";
 
@@ -43,6 +44,10 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Cài đặt Giao diện</h1>
         <p className="text-muted-foreground">Tùy chỉnh chế độ hiển thị và màu sắc chủ đạo của ứng dụng.</p>
       </div>
+
+      <Link href="/settings/billing" className="flex items-center justify-between rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted/50">
+        <span className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary"><CreditCard className="size-5" /></span><span><span className="block font-semibold text-foreground">Gói & thanh toán</span><span className="mt-0.5 block text-sm text-muted-foreground">Quản lý gia hạn tự động và phương thức thanh toán.</span></span></span><span className="text-sm font-medium text-primary">Quản lý</span>
+      </Link>
 
       <div className="grid gap-8 border border-border bg-card rounded-xl p-6">
         

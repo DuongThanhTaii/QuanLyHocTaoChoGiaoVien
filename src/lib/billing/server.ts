@@ -52,7 +52,7 @@ export async function getUserBillingContext(userId: string): Promise<UserBilling
   const [settingsResult, entitlementResult, subscriptionResult, plans] = await Promise.all([
     admin.from('billing_settings').select('mode').eq('singleton', true).single(),
     admin.rpc('get_effective_entitlement', { target_user_id: userId }).single(),
-    admin.from('subscriptions').select('id, status, current_period_end, cancel_at_period_end, plan_id').eq('teacher_id', userId).in('status', ['active', 'trial']).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    admin.from('subscriptions').select('id, status, current_period_end, cancel_at_period_end, auto_renew, next_renewal_at, renewal_status, plan_id').eq('teacher_id', userId).in('status', ['active', 'trial']).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     getBillingPlans(),
   ]);
   if (settingsResult.error || entitlementResult.error) throw new Error(settingsResult.error?.message || entitlementResult.error?.message || 'Không thể tải quyền sử dụng.');
@@ -66,6 +66,9 @@ export async function getUserBillingContext(userId: string): Promise<UserBilling
       id: subscriptionResult.data.id, status: subscriptionResult.data.status,
       currentPeriodEnd: subscriptionResult.data.current_period_end,
       cancelAtPeriodEnd: subscriptionResult.data.cancel_at_period_end,
+      autoRenew: subscriptionResult.data.auto_renew,
+      nextRenewalAt: subscriptionResult.data.next_renewal_at,
+      renewalStatus: subscriptionResult.data.renewal_status,
     } : null,
   };
 }

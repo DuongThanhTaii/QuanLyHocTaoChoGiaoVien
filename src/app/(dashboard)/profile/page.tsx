@@ -1,5 +1,6 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
-import { BasicProfileForm, BankAccountsList, AddBankAccountForm, PayOSConfigForm } from './ProfileForms';
+import { getServiceClient } from '@/lib/admin/server';
+import { BasicProfileForm, BankAccountsList, AddBankAccountForm, CassoConnectionCard } from './ProfileForms';
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -17,6 +18,8 @@ export default async function ProfilePage() {
     .single();
 
   const { data: teacherProfile } = await supabase.from('teacher_profiles').select('phone').eq('user_id', user.id).maybeSingle();
+  const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', user.id).eq('is_primary', true).maybeSingle();
+  const isTeacher = roleData?.role === 'teacher';
   const profileWithPhone = { ...profile, phone: profile?.phone || teacherProfile?.phone || '' };
 
   // Fetch Bank Accounts
@@ -25,6 +28,11 @@ export default async function ProfilePage() {
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
+  const cassoConnection = isTeacher ? (await getServiceClient()
+    .from('casso_connections')
+    .select('status, bank_account_id, last_synced_at, last_error')
+    .eq('teacher_id', user.id)
+    .maybeSingle()).data : null;
 
   return (
     <div className="space-y-8 pb-10">
@@ -38,10 +46,7 @@ export default async function ProfilePage() {
         <div className="space-y-8">
           <BasicProfileForm profile={profileWithPhone} />
           
-          <div className="pt-4 border-t border-zinc-200">
-            <h2 className="text-xl font-semibold mb-4">Cài đặt Thanh toán</h2>
-            <PayOSConfigForm profile={profile} />
-          </div>
+          {isTeacher && <CassoConnectionCard connection={cassoConnection} bankAccounts={accounts || []} />}
         </div>
 
         {/* Right Column */}

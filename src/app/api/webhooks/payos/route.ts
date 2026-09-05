@@ -28,10 +28,19 @@ export async function POST(req: NextRequest) {
     if (Number(order.amount) !== amount) throw new Error('Số tiền webhook không khớp đơn hàng.');
     if (body.code !== '00' || body.data.code !== '00') return NextResponse.json({ success: true, ignored: true });
 
-    const { error: activationError } = await admin.rpc('activate_platform_order', {
+    const { data: subscriptionId, error: activationError } = await admin.rpc('activate_platform_order', {
       target_order_code: orderCode, transaction_reference: String(body.data.reference || body.data.paymentLinkId || ''),
     });
     if (activationError) throw new Error(activationError.message);
+    if (subscriptionId) {
+      const { data: subscription } = await admin.from('subscriptions').select('current_period_end').eq('id', subscriptionId).maybeSingle();
+      await admin.from('subscriptions').update({
+        auto_renew: true,
+        next_renewal_at: subscription?.current_period_end ?? null,
+        renewal_status: process.env.PAYOS_RECURRING_ENABLED === 'true' ? 'ready' : 'not_configured',
+        renewal_attempt_count: 0,
+      }).eq('id', subscriptionId);
+    }
     await admin.from('payment_webhook_events').update({ processed_at: new Date().toISOString() }).eq('event_hash', eventHash);
     revalidatePath('/pricing');
     revalidatePath('/profile');

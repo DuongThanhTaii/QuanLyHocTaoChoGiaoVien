@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const payment = await createPayOSPaymentLink({
-        orderCode, amount: Number(price.amount), description: `GiaSu Pro ${planResult.data.name}`.slice(0, 25),
+        orderCode, amount: Number(price.amount), description: `Mari ${planResult.data.name}`.slice(0, 25),
         buyerName: user.user_metadata.full_name || user.email || undefined, buyerEmail: user.email,
         items: [{ name: `${planResult.data.name} (${input.data.interval === 'yearly' ? 'năm' : 'tháng'})`, quantity: 1, price: Number(price.amount) }],
         returnUrl: `${origin}/pricing?payment=success&order=${orderCode}`,

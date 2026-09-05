@@ -33,6 +33,9 @@ export type UserBillingContext = {
     status: string;
     currentPeriodEnd: string | null;
     cancelAtPeriodEnd: boolean;
+    autoRenew?: boolean;
+    nextRenewalAt?: string | null;
+    renewalStatus?: string;
   } | null;
 };
 
