@@ -111,13 +111,13 @@ export function NewChatModal({ onConversationCreated }: NewChatModalProps) {
             <div
               key={user.id}
               onClick={() => !isCreating && handleSelectUser(user)}
-              className="flex items-center justify-between p-3 rounded-lg border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 cursor-pointer transition-all"
+              className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-muted/60 cursor-pointer transition-all"
             >
               <div className="flex items-center gap-3">
                 <UserAvatar name={user.full_name} email={user.email} size="lg" className="shrink-0" />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-zinc-900">{user.full_name}</span>
+                    <span className="font-semibold text-sm text-foreground">{user.full_name}</span>
                     <span
                       className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
                         roleColors[user.role] || 'bg-zinc-100 text-zinc-600'
@@ -126,7 +126,7 @@ export function NewChatModal({ onConversationCreated }: NewChatModalProps) {
                       {roleLabels[user.role] || user.role}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-zinc-500 mt-0.5">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                     {user.phone && (
                       <span className="flex items-center gap-1">
                         <Phone className="w-3 h-3 text-zinc-400" /> {user.phone}

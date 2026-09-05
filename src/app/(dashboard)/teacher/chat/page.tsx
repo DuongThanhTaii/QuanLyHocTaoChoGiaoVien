@@ -19,7 +19,7 @@ export default async function TeacherChatPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tin nhắn</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Tin nhắn</h1>
       </div>
 
       <ChatLayout

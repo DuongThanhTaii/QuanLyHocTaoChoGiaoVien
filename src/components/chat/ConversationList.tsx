@@ -59,9 +59,9 @@ export function ConversationList({
   });
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-zinc-200">
+    <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header & Actions */}
-      <div className="p-4 border-b border-zinc-200 space-y-3 shrink-0">
+      <div className="p-4 border-b border-border space-y-3 shrink-0">
         <div className="flex items-center gap-2">
           {currentUserRole === 'teacher' && (
             <div className="flex-1">
@@ -81,15 +81,15 @@ export function ConversationList({
             placeholder="Tìm kiếm cuộc trò chuyện..."
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            className="pl-9 h-9 text-xs bg-zinc-50 border-zinc-200 focus:bg-white"
+            className="pl-9 h-9 text-xs bg-muted/50 border-border focus:bg-background"
           />
         </div>
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+      <div className="flex-1 overflow-y-auto divide-y divide-border/60">
         {isLoading ? (
-          <div className="divide-y divide-zinc-100 animate-pulse">
+          <div className="divide-y divide-border/60 animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="p-3.5 flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-zinc-200 shrink-0" />
@@ -115,7 +115,7 @@ export function ConversationList({
               />
               <div className="w-24 h-2 bg-zinc-400/40 rounded-[50%] blur-[2px] -mt-[22px] z-0" />
             </div>
-            <p className="text-zinc-500 text-xs font-medium">
+            <p className="text-muted-foreground text-xs font-medium">
               {searchFilter ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có cuộc trò chuyện nào'}
             </p>
           </div>
@@ -131,8 +131,8 @@ export function ConversationList({
                 onClick={() => onSelectConversation(conv.id)}
                 className={`p-3.5 flex items-center gap-3 cursor-pointer transition-colors ${
                   isActive
-                    ? 'bg-blue-50/80'
-                    : 'hover:bg-zinc-50'
+                    ? 'bg-primary/10'
+                    : 'hover:bg-muted/60'
                 }`}
               >
                 <div className="relative shrink-0">
@@ -150,10 +150,10 @@ export function ConversationList({
                     <h4
                       className={`text-sm truncate ${
                         isActive 
-                          ? 'font-bold text-blue-950' 
+                          ? 'font-bold text-primary'
                           : conv.isUnread
                           ? 'font-bold text-zinc-950'
-                          : 'font-medium text-zinc-800'
+                          : 'font-medium text-foreground'
                       }`}
                     >
                       {conv.title}
@@ -167,10 +167,10 @@ export function ConversationList({
                     <p
                       className={`text-xs truncate ${
                         isActive 
-                          ? 'text-blue-900/80 font-medium' 
+                          ? 'text-primary/80 font-medium'
                           : conv.isUnread
-                          ? 'text-zinc-900 font-semibold'
-                          : 'text-zinc-500 font-normal'
+                          ? 'text-foreground font-semibold'
+                          : 'text-muted-foreground font-normal'
                       }`}
                     >
                       {conv.lastMessageText || 'Bắt đầu cuộc trò chuyện'}

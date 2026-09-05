@@ -7,8 +7,8 @@ export default function ToolsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Tiện ích & Biểu mẫu</h1>
-        <p className="text-zinc-500">Các công cụ và biểu mẫu giúp bạn quản lý lớp học dễ dàng hơn.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Tiện ích & Biểu mẫu</h1>
+        <p className="text-muted-foreground">Các công cụ và biểu mẫu giúp bạn quản lý lớp học dễ dàng hơn.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

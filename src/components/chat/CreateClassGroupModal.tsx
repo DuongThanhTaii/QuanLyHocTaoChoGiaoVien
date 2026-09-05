@@ -65,7 +65,7 @@ export function CreateClassGroupModal({ onGroupCreated }: CreateClassGroupModalP
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button size="sm" variant="outline" className="w-full h-9 px-3 gap-1.5 justify-center" />}>
-        <Users className="w-4 h-4 text-zinc-900" />
+        <Users className="w-4 h-4 text-foreground" />
         <span>Tạo nhóm lớp</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -103,7 +103,7 @@ export function CreateClassGroupModal({ onGroupCreated }: CreateClassGroupModalP
               <select
                 value={selectedClassId}
                 onChange={(e) => handleClassChange(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 {classes.map((c) => (
                   <option key={c.id} value={c.id}>

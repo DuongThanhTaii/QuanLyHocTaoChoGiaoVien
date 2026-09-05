@@ -88,14 +88,14 @@ export function ChatHeader({
 
   return (
     <>
-      <div className="h-16 px-4 border-b border-zinc-200 bg-white flex items-center justify-between shrink-0 shadow-2xs">
+      <div className="h-16 px-4 border-b border-border bg-card flex items-center justify-between shrink-0 shadow-2xs">
         <div className="flex items-center gap-3">
           {onBack && (
             <Button
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="md:hidden h-8 w-8 text-zinc-500 hover:text-zinc-900"
+              className="md:hidden h-8 w-8 text-muted-foreground hover:text-foreground"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -110,10 +110,10 @@ export function ChatHeader({
           )}
 
           <div>
-            <h3 className="font-semibold text-sm text-zinc-900 leading-tight line-clamp-1">
+            <h3 className="font-semibold text-sm text-foreground leading-tight line-clamp-1">
               {conversation.title}
             </h3>
-            <p className="text-xs text-zinc-500 leading-tight mt-0.5">
+            <p className="text-xs text-muted-foreground leading-tight mt-0.5">
               {isGroup ? (
                 <span>Nhóm lớp • {conversation.memberCount} thành viên</span>
               ) : partner ? (
@@ -133,7 +133,7 @@ export function ChatHeader({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-900" disabled={isProcessing}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" disabled={isProcessing}>
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               }
@@ -142,8 +142,8 @@ export function ChatHeader({
               {isGroup ? (
                 <>
                   <DropdownMenuItem onClick={() => setMembersModalOpen(true)} className="cursor-pointer">
-                    <Info className="w-4 h-4 mr-2 text-zinc-500 shrink-0" />
-                    <span className="whitespace-nowrap font-medium text-xs text-zinc-700">Thông tin & Thành viên</span>
+                    <Info className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                    <span className="whitespace-nowrap font-medium text-xs text-foreground">Thông tin & Thành viên</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLeaveGroup} className="text-amber-600 focus:text-amber-600 cursor-pointer">

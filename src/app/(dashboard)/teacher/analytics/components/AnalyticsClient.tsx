@@ -436,10 +436,10 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
       {/* Header & Chọn năm */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Tài chính & Thuế
           </h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             Báo cáo doanh thu thực nhận, đối soát công nợ và công cụ tính thuế
             chuẩn luật Việt Nam.
           </p>
@@ -477,16 +477,16 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
 
       {/* Tabs Chuyển đổi Báo cáo Tài chính & Công cụ Thuế (Full Width, No Emojis/Icons, Font Size Thích Hợp) */}
       <Tabs defaultValue="financial" className="space-y-6 w-full">
-        <TabsList className="w-full grid grid-cols-2 h-11 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <TabsList className="w-full grid grid-cols-2 h-11 p-1 bg-muted rounded-xl border border-border">
           <TabsTrigger
             value="financial"
-            className="w-full text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="w-full text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
           >
             Thống kê Thu - Chi
           </TabsTrigger>
           <TabsTrigger
             value="tax"
-            className="w-full text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="w-full text-sm font-semibold h-9 rounded-lg transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
           >
             Công cụ Kê khai Thuế
           </TabsTrigger>
@@ -976,7 +976,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
                   size="sm"
                   onClick={handleSaveTaxSettings}
                   disabled={savingTax}
-                  className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
                 >
                   {savingTax && (
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -1096,7 +1096,7 @@ export function AnalyticsClient({ invoices, classes, profile }: Props) {
 
                 <Button
                   onClick={handleExportExcel}
-                  className="w-full text-xs bg-zinc-900 hover:bg-zinc-800 text-white shadow-sm"
+                  className="w-full text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5" /> Xuất Bảng kê Kê
                   khai Thuế

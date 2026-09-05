@@ -187,7 +187,7 @@ export function ChatLayout({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex h-[calc(100vh-10rem)] min-h-[550px]">
+    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex h-[calc(100vh-10rem)] min-h-[550px]">
       {/* Cột 1: Sidebar danh sách cuộc trò chuyện */}
       <div
         className={`w-full md:w-80 lg:w-96 shrink-0 h-full ${
@@ -206,14 +206,14 @@ export function ChatLayout({
 
       {/* Cột 2: Khung Chat */}
       <div
-        className={`flex-1 flex flex-col h-full min-w-0 bg-white ${
+        className={`flex-1 flex flex-col h-full min-w-0 bg-card ${
           !activeConversationId ? 'hidden md:flex' : 'flex'
         }`}
       >
         {isLoadingConversations ? (
-          <div className="flex-1 flex flex-col h-full bg-white animate-pulse">
+          <div className="flex-1 flex flex-col h-full bg-card animate-pulse">
             {/* Header skeleton */}
-            <div className="h-16 px-4 border-b border-zinc-200 flex items-center justify-between">
+            <div className="h-16 px-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Skeleton className="w-10 h-10 rounded-full" />
                 <div className="space-y-1.5">
@@ -223,7 +223,7 @@ export function ChatLayout({
               </div>
             </div>
             {/* Messages feed skeleton */}
-            <div className="flex-1 p-4 space-y-4 bg-zinc-50/30">
+            <div className="flex-1 p-4 space-y-4 bg-muted/30">
               <div className="flex items-start gap-2 max-w-[70%]">
                 <Skeleton className="h-8 w-8 rounded-full shrink-0 mt-1" />
                 <div className="space-y-1">
@@ -256,7 +256,7 @@ export function ChatLayout({
 
             {/* Messages Feed */}
             {isLoadingMessages ? (
-              <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-zinc-50/30">
+              <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-muted/30">
                 <div className="flex items-start gap-2 max-w-[70%]">
                   <Skeleton className="h-8 w-8 rounded-full shrink-0 mt-1" />
                   <div className="space-y-1">
