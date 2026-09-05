@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
 
         <div className="text-center">
           <h1 className="text-2xl font-extrabold tracking-tight text-[#a95123]">Quên mật khẩu?</h1>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">Nhập email đã đăng ký. Mari sẽ gửi liên kết an toàn để bạn đặt lại mật khẩu.</p>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">Nhập email đã đăng ký. Mari sẽ gửi mã xác thực gồm 6 chữ số để bạn đặt lại mật khẩu.</p>
         </div>
 
         <form action={formAction} className="mt-5 space-y-3">
@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
             <input id="email" name="email" type="email" placeholder="tenban@email.com" required autoComplete="email" className="mt-1.5 h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" />
           </label>
           <button type="submit" disabled={isPending} className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-sm font-bold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] transition hover:brightness-105 active:translate-y-0.5 active:shadow-[0_3px_0_#d95508] disabled:cursor-not-allowed disabled:opacity-60">
-            <Send className="size-4" /> {isPending ? 'Đang gửi...' : 'Gửi liên kết đặt lại'}
+            <Send className="size-4" /> {isPending ? 'Đang gửi...' : 'Gửi mã xác thực'}
           </button>
         </form>
 

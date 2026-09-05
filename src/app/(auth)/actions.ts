@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/infrastructure/auth/supabase/server'
 import { z } from 'zod'
@@ -34,21 +33,6 @@ function getLoginErrorMessage(errorMessage: string) {
   }
 
   return 'Không thể đăng nhập lúc này. Vui lòng thử lại.'
-}
-
-function getAuthCallbackUrl(headerList: Headers, nextPath = '/onboarding') {
-  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL
-  const next = encodeURIComponent(nextPath)
-  if (configuredUrl) {
-    return `${configuredUrl.replace(/\/$/, '')}/auth/callback?next=${next}`
-  }
-
-  const host = headerList.get('x-forwarded-host') ?? headerList.get('host')
-  const protocol = headerList.get('x-forwarded-proto') ?? (host?.startsWith('localhost') ? 'http' : 'https')
-
-  return host
-    ? `${protocol}://${host}/auth/callback?next=${next}`
-    : `http://localhost:3000/auth/callback?next=${next}`
 }
 
 export async function login(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
@@ -159,20 +143,45 @@ export async function requestPasswordReset(_prevState: AuthActionState, formData
   }
 
   const supabase = await createClient()
-  const callbackUrl = getAuthCallbackUrl(await headers(), '/reset-password')
-  const { error } = await supabase.auth.resetPasswordForEmail(result.data, {
-    redirectTo: callbackUrl,
-  })
+  const { error } = await supabase.auth.resetPasswordForEmail(result.data)
 
   // Always return a generic success state to avoid exposing which emails have accounts.
   if (error) {
     console.error('Password reset request failed:', error.message)
   }
 
-  return {
-    success: true,
-    message: 'Nếu email này có tài khoản Mari, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu. Hãy kiểm tra cả mục Spam.',
-  }
+  redirect('/reset-password?email=' + encodeURIComponent(result.data))
+}
+
+export async function resendPasswordResetOtp(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const email = formData.get('email') as string
+  const result = z.string().email().safeParse(email)
+  if (!result.success) return { error: 'Email không hợp lệ.' }
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(result.data)
+  if (error) console.error('Password reset OTP resend failed:', error.message)
+  return { success: true, message: 'Nếu email này có tài khoản Mari, chúng tôi đã gửi mã mới. Hãy kiểm tra cả mục Spam.' }
+}
+
+export async function verifyRecoveryOtpAndUpdatePassword(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const email = formData.get('email') as string
+  const token = (formData.get('token') as string || '').replace(/\s/g, '')
+  const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+  if (!z.string().email().safeParse(email).success) return { error: 'Email xác thực không hợp lệ. Vui lòng yêu cầu mã mới.' }
+  if (!/^\d{6}$/.test(token)) return { error: 'Vui lòng nhập đủ 6 chữ số của mã xác thực.' }
+  if (password !== confirmPassword) return { error: 'Xác nhận mật khẩu chưa khớp.' }
+  const parsed = z.string().min(8, 'Mật khẩu cần có ít nhất 8 ký tự.').safeParse(password)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Mật khẩu chưa hợp lệ.' }
+
+  const supabase = await createClient()
+  const { data, error: verifyError } = await supabase.auth.verifyOtp({ email, token, type: 'recovery' })
+  if (verifyError || !data.user) return { error: 'Mã xác thực không đúng hoặc đã hết hạn. Vui lòng gửi mã mới.' }
+  const { error: updateError } = await supabase.auth.updateUser({ password: parsed.data })
+  if (updateError) return { error: 'Không thể cập nhật mật khẩu. Vui lòng thử lại.' }
+  await supabase.auth.signOut()
+  revalidatePath('/', 'layout')
+  redirect('/login?reset=success')
 }
 
 export async function updatePassword(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
