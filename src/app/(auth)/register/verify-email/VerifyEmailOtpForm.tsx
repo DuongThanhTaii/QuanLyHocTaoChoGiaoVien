@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
-import { Atom, BookOpen, Calculator, MailCheck, PencilLine, RefreshCw, ShieldCheck } from "lucide-react";
+import { Atom, BookOpen, Calculator, PencilLine, RefreshCw, ShieldCheck } from "lucide-react";
 import { resendEmailVerification, verifySignupOtp, type AuthActionState } from "../../actions";
 import { SupportButton } from "@/components/shared/SupportButton";
 
@@ -51,7 +51,6 @@ export function VerifyEmailOtpForm({ email }: { email: string }) {
     <div className="pointer-events-none absolute inset-0 opacity-20 text-[#d97932]" aria-hidden="true">{backgroundIcons.map(({ Icon, className }, index) => <Icon key={index} className={`absolute stroke-[1.5] ${className}`} />)}</div>
     <section className="relative z-10 w-full max-w-[450px] rounded-[24px] border border-white/90 bg-white/95 px-6 pb-7 pt-6 text-center shadow-[0_18px_45px_rgba(137,77,33,0.24)] backdrop-blur sm:px-8">
       <div className="mx-auto mb-3 relative h-12 w-32 overflow-hidden"><Image src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" fill sizes="128px" className="object-contain mix-blend-multiply" priority /></div>
-      <div className="mx-auto mb-3 grid size-11 place-items-center rounded-2xl bg-orange-100 text-[#e86f18]"><MailCheck className="size-5" /></div>
       <h1 className="text-2xl font-extrabold tracking-tight text-[#a95123]">Xác thực email</h1>
       <p className="mt-2 text-xs leading-5 text-zinc-500">Nhập mã 6 chữ số Mari đã gửi tới<br /><strong className="font-semibold text-zinc-700">{email}</strong></p>
       <form action={verifyAction} className="mt-5 space-y-4"><input type="hidden" name="email" value={email} /><input type="hidden" name="token" value={token} />

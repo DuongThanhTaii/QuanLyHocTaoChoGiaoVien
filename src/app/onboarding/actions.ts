@@ -29,7 +29,9 @@ const GuardianProfileSchema = z.object({
   phone: z.string().optional(),
 })
 
-export async function completeTeacherOnboarding(prevState: any, formData: FormData) {
+type OnboardingActionState = { error: string }
+
+export async function completeTeacherOnboarding(_prevState: OnboardingActionState, formData: FormData) {
   const supabase = await createClient()
   const admin = getAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -46,19 +48,19 @@ export async function completeTeacherOnboarding(prevState: any, formData: FormDa
     .select('ui_settings')
     .eq('id', user.id)
     .single()
-  if (existingProfileError) return { error: existingProfileError.message }
+  const supportsUiSettings = !existingProfileError
+  if (existingProfileError && !existingProfileError.message.includes('ui_settings')) return { error: existingProfileError.message }
 
   const currentSettings = (existingProfile?.ui_settings || {}) as Record<string, unknown>
   const currentTours = (currentSettings.tours || {}) as Record<string, unknown>
 
   // 1. Update profiles (status = ACTIVE, full_name, role)
-  const { error: profileError } = await admin
-    .from('profiles')
-    .update({
-      full_name: fullName,
-      phone: phone,
-      status: 'ACTIVE',
-      role: 'teacher',
+  const profileUpdate = {
+    full_name: fullName,
+    phone: phone,
+    status: 'ACTIVE',
+    role: 'teacher',
+    ...(supportsUiSettings ? {
       ui_settings: {
         ...currentSettings,
         tours: {
@@ -66,7 +68,11 @@ export async function completeTeacherOnboarding(prevState: any, formData: FormDa
           teacher_setup_v1: { eligibleAt: new Date().toISOString() },
         },
       },
-    })
+    } : {}),
+  }
+  const { error: profileError } = await admin
+    .from('profiles')
+    .update(profileUpdate)
     .eq('id', user.id)
   
   if (profileError) return { error: profileError.message }
@@ -94,7 +100,7 @@ export async function completeTeacherOnboarding(prevState: any, formData: FormDa
   redirect('/dashboard')
 }
 
-export async function completeStudentOnboarding(prevState: any, formData: FormData) {
+export async function completeStudentOnboarding(_prevState: OnboardingActionState, formData: FormData) {
   const supabase = await createClient()
   const admin = getAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -138,7 +144,7 @@ export async function completeStudentOnboarding(prevState: any, formData: FormDa
   redirect('/dashboard')
 }
 
-export async function completeGuardianOnboarding(prevState: any, formData: FormData) {
+export async function completeGuardianOnboarding(_prevState: OnboardingActionState, formData: FormData) {
   const supabase = await createClient()
   const admin = getAdminClient()
   const { data: { user } } = await supabase.auth.getUser()

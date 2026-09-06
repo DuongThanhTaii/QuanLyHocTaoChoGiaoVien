@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { Check } from 'lucide-react';
+import Image from 'next/image';
 
 export function OnboardingHeader({ className = 'bg-white' }: { className?: string }) {
   const pathname = usePathname();
@@ -34,7 +35,8 @@ export function OnboardingHeader({ className = 'bg-white' }: { className?: strin
   ];
 
   return (
-    <header className={`w-full ${className} px-6 pt-8 pb-4 flex flex-col items-center justify-center z-50`}>
+    <header className={`relative z-10 flex w-full flex-col items-center justify-center px-6 pb-4 pt-6 ${className}`}>
+      <div className="relative mb-4 h-10 w-28 overflow-hidden"><Image src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" fill sizes="112px" className="object-contain mix-blend-multiply" priority /></div>
       {/* Stepper */}
       <div className="flex items-center w-full max-w-md mb-8">
         {steps.map((step, index) => {
@@ -45,20 +47,20 @@ export function OnboardingHeader({ className = 'bg-white' }: { className?: strin
             <div key={step.num} className="flex items-center flex-1 last:flex-none">
               <div className="flex flex-col items-center gap-3 relative">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors
-                  ${isCompleted ? 'bg-zinc-900 text-white' : 
-                    isActive ? 'bg-zinc-900 text-white ring-4 ring-zinc-100' : 
-                    'bg-white text-zinc-400 border border-zinc-200'}`}
+                  ${isCompleted ? 'bg-[#e86f18] text-white' :
+                    isActive ? 'bg-[#e86f18] text-white ring-4 ring-orange-200/70' :
+                    'border border-orange-200 bg-white/80 text-orange-300'}`}
                 >
                   {isCompleted ? <Check className="w-4 h-4" /> : step.num}
                 </div>
                 <span className={`text-sm absolute -bottom-7 whitespace-nowrap
-                  ${isActive || isCompleted ? 'text-zinc-900 font-medium' : 'text-zinc-400'}`}>
+                  ${isActive || isCompleted ? 'font-medium text-[#a95123]' : 'text-orange-300'}`}>
                   {step.label}
                 </span>
               </div>
               {index < steps.length - 1 && (
                 <div className={`h-[1px] flex-1 mx-4 transition-colors
-                  ${step.num < currentStep ? 'bg-zinc-900' : 'bg-zinc-200'}`} 
+                  ${step.num < currentStep ? 'bg-[#e86f18]' : 'bg-orange-200'}`}
                 />
               )}
             </div>
@@ -67,8 +69,8 @@ export function OnboardingHeader({ className = 'bg-white' }: { className?: strin
       </div>
 
       <div className="text-center mt-2">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-zinc-900 mb-3">{title}</h2>
-        <p className="text-zinc-500">{subtitle}</p>
+        <h2 className="mb-3 text-3xl font-extrabold text-[#a95123] md:text-4xl">{title}</h2>
+        <p className="text-[#9f745f]">{subtitle}</p>
       </div>
     </header>
   );

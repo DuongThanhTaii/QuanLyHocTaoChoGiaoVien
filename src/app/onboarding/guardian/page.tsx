@@ -12,17 +12,17 @@ import Link from 'next/link';
 const initialState = { error: '' };
 
 export default function GuardianOnboardingPage() {
-  const [state, formAction, isPending] = useActionState(completeGuardianOnboarding as any, initialState);
+  const [state, formAction, isPending] = useActionState(completeGuardianOnboarding, initialState);
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-white px-4 py-8">
+    <div className="flex flex-1 items-center justify-center px-4 py-8">
       <form action={formAction} className="w-full max-w-md">
-        <Card className="border-zinc-200 shadow-sm">
+        <Card className="border-white/90 bg-white/95 shadow-[0_18px_45px_rgba(137,77,33,0.24)]">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold tracking-tight text-zinc-900">
+            <CardTitle className="text-2xl font-extrabold tracking-tight text-[#a95123]">
               Thông tin Phụ huynh
             </CardTitle>
-            <CardDescription className="text-zinc-500">
+            <CardDescription className="text-[#9f745f]">
               Hoàn thiện thông tin để theo dõi tiến trình học tập
             </CardDescription>
           </CardHeader>
@@ -41,7 +41,7 @@ export default function GuardianOnboardingPage() {
                 name="fullName" 
                 placeholder="Trần Thị B" 
                 required 
-                className="bg-white"
+                className="border-[#e9c999] bg-[#fffaf2]"
               />
             </div>
             <div className="space-y-2">
@@ -51,16 +51,16 @@ export default function GuardianOnboardingPage() {
                 name="phone" 
                 placeholder="09..." 
                 required
-                className="bg-white"
+                className="border-[#e9c999] bg-[#fffaf2]"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" disabled={isPending} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white">
+            <Button type="submit" disabled={isPending} className="w-full rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] hover:brightness-105">
               {isPending ? 'Đang lưu...' : 'Hoàn tất'}
             </Button>
-            <div className="text-center text-sm text-zinc-500">
-              <Link href="/onboarding" className="hover:underline">
+            <div className="text-center text-sm text-[#9f745f]">
+              <Link href="/onboarding" className="text-[#a95123] hover:underline">
                 Quay lại chọn vai trò khác
               </Link>
             </div>
