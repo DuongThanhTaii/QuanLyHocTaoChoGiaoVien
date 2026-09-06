@@ -1,6 +1,5 @@
 import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 import { PublicLightTheme } from '@/components/providers/PublicLightTheme';
-import Image from 'next/image';
 
 export default function OnboardingLayout({
   children,
@@ -16,7 +15,6 @@ export default function OnboardingLayout({
         <main className="relative z-10 flex min-h-0 flex-1 flex-col">
           {children}
         </main>
-        <Image src="/images/empty_states/cat_stand.png" alt="" width={280} height={390} priority className="pointer-events-none absolute -bottom-6 -left-10 z-0 hidden h-auto w-52 drop-shadow-[0_12px_8px_rgba(133,69,17,0.25)] xl:block" />
       </div>
     </PublicLightTheme>
   );
