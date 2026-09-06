@@ -282,7 +282,7 @@ export function CreateClassWizard() {
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Thời lượng (phút)</Label>
-                      <Input type="number" min="1" step="5" value={durationMinutes} onChange={(event) => updateDuration(event.target.value)} aria-live="polite" className="bg-white" />
+                      <Input type="number" min="1" step="1" value={durationMinutes} onChange={(event) => updateDuration(event.target.value)} aria-live="polite" className="bg-white" />
                     </div>
                   </div>
                   {(!getDurationMinutes(startTime, endTime) || durationMinutes < 1) && <p className="text-xs text-red-600">Giờ kết thúc phải sau giờ bắt đầu và nằm trong cùng một ngày.</p>}
