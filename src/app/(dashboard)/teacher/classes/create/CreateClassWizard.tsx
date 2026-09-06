@@ -31,6 +31,14 @@ function getDurationMinutes(startTime: string, endTime: string) {
   return Number.isFinite(start) && Number.isFinite(end) && end > start ? end - start : null;
 }
 
+function addMinutesToTime(time: string, minutes: number) {
+  const [hours, mins] = time.split(':').map(Number);
+  const totalMinutes = hours * 60 + mins + minutes;
+  if (!Number.isFinite(totalMinutes) || totalMinutes < 0 || totalMinutes >= 24 * 60) return '';
+
+  return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+}
+
 export function CreateClassWizard() {
   const [step, setStep] = useState(1);
   const [state, formAction] = useActionState(createClassWizard as any, { error: '' });
@@ -39,8 +47,44 @@ export function CreateClassWizard() {
   const [scheduleType, setScheduleType] = useState('fixed');
   const [startTime, setStartTime] = useState('18:00');
   const [endTime, setEndTime] = useState('19:30');
+  const [durationMinutes, setDurationMinutes] = useState(90);
+  const [lastEditedTimeField, setLastEditedTimeField] = useState<'start' | 'end' | 'duration'>('start');
   const [studentContacts, setStudentContacts] = useState<Array<{ email: string; phone: string }>>([]);
-  const durationMinutes = getDurationMinutes(startTime, endTime);
+
+  const updateStartTime = (value: string) => {
+    setStartTime(value);
+    if (lastEditedTimeField === 'duration') {
+      setEndTime(addMinutesToTime(value, durationMinutes));
+    } else {
+      const calculatedDuration = getDurationMinutes(value, endTime);
+      if (calculatedDuration) setDurationMinutes(calculatedDuration);
+    }
+    setLastEditedTimeField('start');
+  };
+
+  const updateEndTime = (value: string) => {
+    setEndTime(value);
+    if (lastEditedTimeField === 'duration') {
+      setStartTime(addMinutesToTime(value, -durationMinutes));
+    } else {
+      const calculatedDuration = getDurationMinutes(startTime, value);
+      if (calculatedDuration) setDurationMinutes(calculatedDuration);
+    }
+    setLastEditedTimeField('end');
+  };
+
+  const updateDuration = (value: string) => {
+    const nextDuration = Number(value);
+    if (!Number.isInteger(nextDuration) || nextDuration < 1) return;
+
+    setDurationMinutes(nextDuration);
+    if (lastEditedTimeField === 'end') {
+      setStartTime(addMinutesToTime(endTime, -nextDuration));
+    } else {
+      setEndTime(addMinutesToTime(startTime, nextDuration));
+    }
+    setLastEditedTimeField('duration');
+  };
 
   const addStudentContact = () => setStudentContacts((contacts) => [...contacts, { email: '', phone: '' }]);
   const updateStudentContact = (index: number, field: 'email' | 'phone', value: string) => {
@@ -230,18 +274,18 @@ export function CreateClassWizard() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     <div className="space-y-1">
                       <Label className="text-xs">Giờ bắt đầu</Label>
-                      <Input type="time" name="startTime" value={startTime} onChange={(event) => setStartTime(event.target.value)} className="bg-white" />
+                      <Input type="time" name="startTime" value={startTime} onChange={(event) => updateStartTime(event.target.value)} className="bg-white" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Giờ kết thúc</Label>
-                      <Input type="time" name="endTime" value={endTime} onChange={(event) => setEndTime(event.target.value)} className="bg-white" />
+                      <Input type="time" name="endTime" value={endTime} onChange={(event) => updateEndTime(event.target.value)} className="bg-white" />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Thời lượng</Label>
-                      <Input value={durationMinutes ? `${durationMinutes} phút` : 'Chưa hợp lệ'} readOnly aria-live="polite" className="bg-zinc-100 text-zinc-600" />
+                      <Label className="text-xs">Thời lượng (phút)</Label>
+                      <Input type="number" min="1" step="5" value={durationMinutes} onChange={(event) => updateDuration(event.target.value)} aria-live="polite" className="bg-white" />
                     </div>
                   </div>
-                  {!durationMinutes && <p className="text-xs text-red-600">Giờ kết thúc phải sau giờ bắt đầu.</p>}
+                  {(!getDurationMinutes(startTime, endTime) || durationMinutes < 1) && <p className="text-xs text-red-600">Giờ kết thúc phải sau giờ bắt đầu và nằm trong cùng một ngày.</p>}
                   <p className="text-xs text-zinc-500">Hệ thống sẽ tự động tạo các buổi học dựa trên ngày khai giảng, ngày kết thúc và lịch học này.</p>
                 </div>
               )}
