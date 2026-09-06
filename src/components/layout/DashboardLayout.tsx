@@ -425,12 +425,6 @@ export default function DashboardLayout({
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">Pháp lý</DropdownMenuLabel>
-                <AccountMenuItem href="/terms" label="Điều khoản sử dụng" icon={InfoCircleIcon} />
-                <AccountMenuItem href="/privacy" label="Chính sách bảo mật" icon={ShieldCheckIcon} />
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuGroup>
                 <LogoutMenuItem />
               </DropdownMenuGroup>
             </DropdownMenuContent>
