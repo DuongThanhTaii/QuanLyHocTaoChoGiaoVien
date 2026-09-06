@@ -104,6 +104,14 @@ export async function createClassWizard(prevState: any, formData: FormData) {
 
   const classId = classResult.getValue().id;
 
+  // These records are created as part of a teacher-only server action. Use the
+  // service-role client so the enrollment is not silently blocked by a missing
+  // or outdated client-side RLS policy.
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   // Add any students entered during the class-creation wizard.
   try {
     const contacts = JSON.parse(parsed.data.studentContacts || '[]') as Array<{ email?: string; phone?: string }>;
@@ -112,7 +120,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
       const phone = contact.phone?.trim() || null;
       if (!email && !phone) continue;
 
-      const { data: student, error: studentError } = await supabase
+      const { data: student, error: studentError } = await supabaseAdmin
         .from('students')
         .insert({ full_name: email || phone, email, phone })
         .select('id')
@@ -120,7 +128,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
 
       if (studentError || !student) throw studentError ?? new Error('Không thể tạo hồ sơ học sinh');
 
-      const { error: enrollmentError } = await supabase
+      const { error: enrollmentError } = await supabaseAdmin
         .from('enrollments')
         .insert({ class_id: classId, student_id: student.id, status: 'ACTIVE' });
 
@@ -135,10 +143,6 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   const tokenHash = uuidv4();
 
   // 3. Create Class Invitation
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
   const { error: invError } = await supabaseAdmin.from('class_invitations').insert({
     class_id: classId,
     join_code: joinCode,
