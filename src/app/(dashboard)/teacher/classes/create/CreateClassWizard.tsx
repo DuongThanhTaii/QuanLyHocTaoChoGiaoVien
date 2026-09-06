@@ -22,13 +22,25 @@ function SubmitButton() {
   );
 }
 
+function getDurationMinutes(startTime: string, endTime: string) {
+  const [startHours, startMinutes] = startTime.split(':').map(Number);
+  const [endHours, endMinutes] = endTime.split(':').map(Number);
+  const start = startHours * 60 + startMinutes;
+  const end = endHours * 60 + endMinutes;
+
+  return Number.isFinite(start) && Number.isFinite(end) && end > start ? end - start : null;
+}
+
 export function CreateClassWizard() {
   const [step, setStep] = useState(1);
   const [state, formAction] = useActionState(createClassWizard as any, { error: '' });
 
   const [feeType, setFeeType] = useState('per_session');
   const [scheduleType, setScheduleType] = useState('fixed');
+  const [startTime, setStartTime] = useState('18:00');
+  const [endTime, setEndTime] = useState('19:30');
   const [studentContacts, setStudentContacts] = useState<Array<{ email: string; phone: string }>>([]);
+  const durationMinutes = getDurationMinutes(startTime, endTime);
 
   const addStudentContact = () => setStudentContacts((contacts) => [...contacts, { email: '', phone: '' }]);
   const updateStudentContact = (index: number, field: 'email' | 'phone', value: string) => {
@@ -215,16 +227,21 @@ export function CreateClassWizard() {
                       </label>
                     ))}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     <div className="space-y-1">
                       <Label className="text-xs">Giờ bắt đầu</Label>
-                      <Input type="time" name="startTime" defaultValue="18:00" className="bg-white" />
+                      <Input type="time" name="startTime" value={startTime} onChange={(event) => setStartTime(event.target.value)} className="bg-white" />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Thời lượng (Phút)</Label>
-                      <Input type="number" name="durationMinutes" defaultValue="90" step="15" className="bg-white" />
+                      <Label className="text-xs">Giờ kết thúc</Label>
+                      <Input type="time" name="endTime" value={endTime} onChange={(event) => setEndTime(event.target.value)} className="bg-white" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Thời lượng</Label>
+                      <Input value={durationMinutes ? `${durationMinutes} phút` : 'Chưa hợp lệ'} readOnly aria-live="polite" className="bg-zinc-100 text-zinc-600" />
                     </div>
                   </div>
+                  {!durationMinutes && <p className="text-xs text-red-600">Giờ kết thúc phải sau giờ bắt đầu.</p>}
                   <p className="text-xs text-zinc-500">Hệ thống sẽ tự động tạo các buổi học dựa trên ngày khai giảng, ngày kết thúc và lịch học này.</p>
                 </div>
               )}

@@ -24,7 +24,7 @@ const CreateClassWizardSchema = z.object({
   endDate: z.string().optional(),
   weekDays: z.array(z.string()).optional(),
   startTime: z.string().optional(),
-  durationMinutes: z.coerce.number().optional(),
+  endTime: z.string().optional(),
   studentContacts: z.string().optional()
 });
 
@@ -50,7 +50,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
     endDate: formData.get('endDate'),
     weekDays: formData.getAll('weekDays'),
     startTime: formData.get('startTime'),
-    durationMinutes: formData.get('durationMinutes'),
+    endTime: formData.get('endTime'),
     studentContacts: formData.get('studentContacts')
   };
 
@@ -58,6 +58,10 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   if (!parsed.success) {
     const errorMessages = parsed.error.issues.map((e: any) => e.message).join(', ');
     return { error: 'Invalid data: ' + errorMessages };
+  }
+
+  if (parsed.data.scheduleType === 'fixed' && !isValidTimeRange(parsed.data.startTime, parsed.data.endTime)) {
+    return { error: 'Giờ kết thúc phải sau giờ bắt đầu.' };
   }
 
   // 1. Create Class
@@ -145,7 +149,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
       let currentDate = new Date(start);
       const sessionsToInsert = [];
       const startTime = parsed.data.startTime || '18:00';
-      const duration = parsed.data.durationMinutes || 90;
+      const endTime = parsed.data.endTime || '19:30';
       let sessionOrder = 1;
 
       while (currentDate <= end) {
@@ -155,7 +159,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
             class_id: classId,
             session_date: dateStr,
             start_time: startTime,
-            end_time: addMinutes(startTime, duration),
+            end_time: endTime,
             title: `Buổi ${sessionOrder}`,
             status: 'SCHEDULED'
           });
@@ -181,10 +185,17 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   redirect(`/teacher/classes/${classId}/settings?success=true&code=${joinCode}`);
 }
 
-function addMinutes(time: string, minutes: number): string {
-  const [hours, mins] = time.split(':').map(Number);
-  const totalMinutes = ((hours * 60 + mins + minutes) % (24 * 60) + 24 * 60) % (24 * 60);
-  return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+function isValidTimeRange(startTime?: string, endTime?: string): boolean {
+  if (!startTime || !endTime) return false;
+  const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+  if (!timePattern.test(startTime) || !timePattern.test(endTime)) return false;
+
+  const toMinutes = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  return toMinutes(endTime) > toMinutes(startTime);
 }
 
 function parseCalendarDate(date: string): Date {
