@@ -9,8 +9,25 @@ export default async function DashboardRedirect() {
     redirect('/login');
   }
 
-  // Redirect based on user metadata role
-  const role = user.user_metadata?.role;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('status')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  // A new account has a session before it has a role. Resolve onboarding first,
+  // before choosing a dashboard target, so no Teacher dashboard is painted briefly.
+  if (profile?.status !== 'ACTIVE') {
+    redirect('/onboarding');
+  }
+
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('is_primary', true)
+    .maybeSingle();
+  const role = roleData?.role || user.user_metadata?.role;
   
   switch(role) {
     case 'admin':

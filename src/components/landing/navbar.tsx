@@ -42,6 +42,7 @@ export const Navbar = ({ user }: NavbarProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -141,14 +142,14 @@ export const Navbar = ({ user }: NavbarProps) => {
         <div className="hidden lg:flex items-center gap-3">
           {user ? (
             /* User already logged in */
-            <div className="flex items-center gap-3 bg-orange-50/80 dark:bg-zinc-900/90 pl-3 pr-1.5 py-1 rounded-full border border-orange-200/70 dark:border-zinc-800 shadow-2xs">
-              <Link href={user.dashboardUrl} className="flex items-center gap-2 group cursor-pointer" title="Bấm để vào Dashboard">
+            <div className="relative flex items-center gap-3 rounded-full border border-orange-200/70 bg-orange-50/80 py-1 pl-3 pr-1.5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/90">
+              <button type="button" onClick={() => setAccountOpen((open) => !open)} aria-expanded={accountOpen} aria-haspopup="menu" className="flex items-center gap-2 rounded-full text-left outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
                 <UserAvatar name={user.name} email={user.email} size="sm" />
                 <div className="hidden min-w-0 flex-col text-left sm:flex">
-                  <span className="max-w-[120px] truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-orange-600 dark:text-white">{user.name}</span>
+                  <span className="max-w-[120px] truncate text-xs font-bold text-slate-900 transition-colors hover:text-orange-600 dark:text-white">{user.name}</span>
                   <span className="-mt-0.5 text-[10px] font-medium text-orange-600 dark:text-orange-400">{ROLE_LABELS[user.role] || user.role}</span>
                 </div>
-              </Link>
+              </button>
 
               <Link
                 href={user.dashboardUrl}
@@ -158,6 +159,15 @@ export const Navbar = ({ user }: NavbarProps) => {
                 <span>Vào Dashboard</span>
                 <ArrowRight className="w-3 h-3" />
               </Link>
+              {accountOpen && (
+                <div role="menu" className="absolute right-0 top-[calc(100%+0.6rem)] z-[60] w-52 rounded-2xl border border-orange-100 bg-white p-2 shadow-xl shadow-orange-950/10 dark:border-zinc-800 dark:bg-zinc-900">
+                  <p className="px-2.5 pb-2 pt-1 text-xs text-slate-500 dark:text-zinc-400">{user.email}</p>
+                  <Link href={user.dashboardUrl} onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-orange-50 hover:text-orange-700 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-orange-300"><LayoutDashboard className="size-4" />Vào Dashboard</Link>
+                  <form action={logout}>
+                    <button type="submit" role="menuitem" className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/30"><LogOut className="size-4" />Đăng xuất</button>
+                  </form>
+                </div>
+              )}
             </div>
           ) : (
             /* Guest / Not logged in */
@@ -181,7 +191,7 @@ export const Navbar = ({ user }: NavbarProps) => {
 
         {/* Mobile Menu Toggle */}
         <div className="flex lg:hidden items-center gap-2">
-          {user && <Link href={user.dashboardUrl} className="rounded-full border border-orange-300 p-1" title="Vào Dashboard"><UserAvatar name={user.name} email={user.email} size="sm" /></Link>}
+          {user && <div className="relative"><button type="button" onClick={() => setAccountOpen((open) => !open)} aria-label="Mở menu tài khoản" aria-expanded={accountOpen} className="rounded-full border border-orange-300 p-1"><UserAvatar name={user.name} email={user.email} size="sm" /></button>{accountOpen && <div role="menu" className="absolute right-0 top-[calc(100%+0.6rem)] z-[60] w-48 rounded-2xl border border-orange-100 bg-white p-2 shadow-xl shadow-orange-950/10 dark:border-zinc-800 dark:bg-zinc-900"><Link href={user.dashboardUrl} onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-700 dark:text-zinc-200 dark:hover:bg-zinc-800"><LayoutDashboard className="size-4" />Vào Dashboard</Link><form action={logout}><button type="submit" className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"><LogOut className="size-4" />Đăng xuất</button></form></div>}</div>}
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

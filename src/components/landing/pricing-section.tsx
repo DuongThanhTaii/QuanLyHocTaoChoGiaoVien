@@ -2,15 +2,36 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { PRICING_PLANS } from "@/config/landing-data";
+import type { BillingPlan } from "@/lib/billing/types";
 import { MaxWidthWrapper } from "@/components/global/max-width-wrapper";
 import { AnimationContainer } from "@/components/global/animation-container";
 import { MagicBadge } from "@/components/ui/magic-badge";
 import { Check, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const PricingSection = () => {
+const money = new Intl.NumberFormat('vi-VN');
+
+function quota(limit: number | null, label: string) {
+  return limit === null ? `Không giới hạn ${label}` : `Tối đa ${limit} ${label}`;
+}
+
+function featuresFor(plan: BillingPlan) {
+  const features = [
+    quota(plan.entitlements.maxClasses, 'lớp đang hoạt động'),
+    quota(plan.entitlements.maxStudentsPerClass, 'học sinh mỗi lớp'),
+    quota(plan.entitlements.maxActiveConversations, 'đoạn chat đang hoạt động'),
+    quota(plan.entitlements.maxStorageGb, 'GB kho tài liệu'),
+  ];
+  if (plan.entitlements.canCollectTuition) features.push('Tự động tạo mã VietQR thu học phí');
+  if (plan.entitlements.canAdvancedAnalytics) features.push('Báo cáo phân tích chuyên sâu');
+  if (plan.entitlements.canCustomBranding) features.push('Tùy biến thương hiệu');
+  if (plan.entitlements.canPrioritySupport) features.push('Hỗ trợ kỹ thuật ưu tiên');
+  return features;
+}
+
+export const PricingSection = ({ plans }: { plans: BillingPlan[] }) => {
   const [isYearly, setIsYearly] = useState(true);
+  const displayPlans = plans.filter((plan) => plan.code === 'free' || plan.code === 'pro' || plan.code === 'max');
 
   return (
     <section id="pricing" className="py-20 sm:py-28 relative">
@@ -71,8 +92,10 @@ export const PricingSection = () => {
 
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          {PRICING_PLANS.map((plan, idx) => {
-            const price = isYearly ? plan.priceYearly : plan.priceMonthly;
+          {displayPlans.map((plan, idx) => {
+            const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+            const popular = plan.code === 'pro';
+            const period = plan.code === 'free' ? 'mãi mãi' : isYearly ? 'năm' : 'tháng';
 
             return (
               <AnimationContainer
@@ -83,16 +106,16 @@ export const PricingSection = () => {
                 <div
                   className={cn(
                     "relative h-full flex flex-col justify-between p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 transition-all duration-300",
-                    plan.popular
+                    popular
                       ? "border-2 border-orange-500 shadow-xl shadow-orange-500/10 lg:-translate-y-2"
                       : "border border-slate-200 dark:border-zinc-800 shadow-sm hover:border-orange-200 dark:hover:border-zinc-700",
                   )}
                 >
                   {/* Popular Highlight Tag */}
-                  {plan.popular && (
+                  {popular && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold uppercase tracking-wider shadow-sm flex items-center gap-1 md:whitespace-nowrap">
                       <Sparkles className="w-3 h-3" />
-                      <span>{plan.highlightBadge}</span>
+                      <span>Được tin dùng nhiều nhất</span>
                     </div>
                   )}
 
@@ -110,16 +133,16 @@ export const PricingSection = () => {
                     {/* Price */}
                     <div className="mb-6 pb-6 border-b border-slate-100 dark:border-zinc-800 flex items-baseline gap-1">
                       <span className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white font-mono">
-                        {price}
+                        {price ? `${money.format(price)}đ` : '0đ'}
                       </span>
                       <span className="text-xs text-slate-500 dark:text-zinc-400">
-                        /{plan.period}
+                        /{period}
                       </span>
                     </div>
 
                     {/* Features List */}
                     <ul className="space-y-3 mb-8">
-                      {plan.features.map((feat) => (
+                      {featuresFor(plan).map((feat) => (
                         <li
                           key={feat}
                           className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-600 dark:text-zinc-300"
@@ -136,16 +159,16 @@ export const PricingSection = () => {
                   {/* CTA Button */}
                   <Link
                     href={
-                      plan.tier === "free" ? "/register" : "/pricing"
+                      plan.code === "free" ? "/register" : "/pricing"
                     }
                     className={cn(
                       "w-full py-3 rounded-2xl font-bold text-sm text-center flex items-center justify-center gap-2 transition-all duration-200 active:scale-95",
-                      plan.popular
+                      popular
                         ? "bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-600"
                         : "bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-700",
                     )}
                   >
-                    <span>{plan.cta}</span>
+                    <span>{plan.code === 'free' ? 'Bắt đầu miễn phí' : `Nâng cấp ${plan.name}`}</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>

@@ -9,6 +9,7 @@ import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { FAQSection } from "@/components/landing/faq-section";
 import { CTALampSection } from "@/components/landing/cta-lamp-section";
 import { Footer } from "@/components/landing/footer";
+import { getBillingPlans } from '@/lib/billing/server';
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -22,7 +23,7 @@ export default async function HomePage() {
     // 1. Fetch user profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name, avatar_url")
+      .select("full_name, avatar_url, status")
       .eq("id", user.id)
       .single();
 
@@ -37,7 +38,9 @@ export default async function HomePage() {
     const role = roleData?.role || "teacher";
 
     // 3. Determine dashboard target URL
-    const targetDashboardUrl =
+    const targetDashboardUrl = profile?.status !== 'ACTIVE'
+      ? '/onboarding'
+      :
       role === "admin"
         ? "/admin"
         : role === "student"
@@ -63,6 +66,8 @@ export default async function HomePage() {
     };
   }
 
+  const plans = await getBillingPlans();
+
   return (
     <div className="relative min-h-screen bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 overflow-x-hidden">
       {/* Top Header */}
@@ -74,7 +79,7 @@ export default async function HomePage() {
         <MetricsSection />
         <BentoFeatures />
         <ProcessSection />
-        <PricingSection />
+        <PricingSection plans={plans} />
         <TestimonialsSection />
         <FAQSection />
         <CTALampSection user={currentUser} />
