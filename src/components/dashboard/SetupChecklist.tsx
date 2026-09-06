@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Circle, ClipboardCheck } from 'lucide-react';
+import { CheckCircle2, Circle, ClipboardCheck } from 'lucide-react';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 
@@ -106,10 +106,9 @@ export async function SetupChecklist({ role }: { role: DashboardRole }) {
             <Link href={item.href} className="group flex gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
               {item.complete ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" /> : <Circle className="mt-0.5 size-4 shrink-0 text-zinc-300 group-hover:text-orange-500" />}
               <span className="min-w-0 flex-1">
-                <span className={`block text-sm font-medium ${item.complete ? 'text-zinc-400 line-through' : 'text-zinc-800 group-hover:text-orange-600'}`}>{item.label}</span>
-                <span className={`mt-0.5 block text-xs leading-5 ${item.complete ? 'text-zinc-300 line-through' : 'text-zinc-500'}`}>{item.description}</span>
+                <span className={`block text-sm font-medium xl:whitespace-nowrap ${item.complete ? 'text-zinc-400 line-through' : 'text-zinc-800 group-hover:text-orange-600'}`}>{item.label}</span>
+                <span className={`mt-0.5 block text-xs leading-5 xl:whitespace-nowrap ${item.complete ? 'text-zinc-300 line-through' : 'text-zinc-500'}`}>{item.description}</span>
               </span>
-              {!item.complete && <ArrowRight className="mt-0.5 size-4 shrink-0 text-zinc-300 transition-transform group-hover:translate-x-0.5 group-hover:text-orange-500" />}
             </Link>
           </li>
         ))}

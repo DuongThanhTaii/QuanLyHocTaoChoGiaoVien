@@ -8,7 +8,7 @@ import { SetupChecklist } from '@/components/dashboard/SetupChecklist';
 export default function TeacherRoot() {
   return (
     <div className="space-y-6">
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
         <div className="space-y-6">
           <div data-tour-id="teacher-dashboard">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Tổng quan</h1>

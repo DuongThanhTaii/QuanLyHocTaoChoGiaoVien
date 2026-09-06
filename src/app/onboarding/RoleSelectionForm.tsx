@@ -92,7 +92,7 @@ export function RoleSelectionForm() {
           onClick={handleNext}
           disabled={!selectedRole}
           size="lg"
-          className="h-11 rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] px-8 text-base font-semibold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] hover:brightness-105"
+          className="h-11 rounded-full border-transparent bg-gradient-to-b from-[#ff981b] to-[#f26808] px-8 text-base font-semibold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] hover:brightness-105"
         >
           Tiếp theo
         </Button>
