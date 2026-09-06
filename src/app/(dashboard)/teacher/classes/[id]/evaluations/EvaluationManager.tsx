@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Sparkles, Smile, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Smile, AlertCircle, AlertTriangle, CheckCircle2, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { saveSessionEvaluation } from '../../evaluation-actions';
 import { toast } from 'sonner';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { createMakeupSession } from '../../attendance-actions';
@@ -194,8 +194,8 @@ export function EvaluationManager({
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-lg font-semibold text-zinc-900">Đánh giá buổi học</h2>
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild><Button variant="outline" size="sm" className="h-9 font-medium"><Calendar className="mr-2 h-4 w-4" />{dayName}, {formattedDate}</Button></PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={selectedDate} onSelect={handleDateSelect} locale={vi} modifiers={{ scheduled: (date) => scheduleDays.includes(date.getDay()) }} modifiersStyles={{ scheduled: { fontWeight: 'bold', textDecoration: 'underline' } }} /></PopoverContent>
+              <PopoverTrigger asChild><Button variant="outline" size="sm" className="h-9 font-medium"><CalendarIcon className="mr-2 h-4 w-4" />{dayName}, {formattedDate}</Button></PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start"><DateCalendar mode="single" selected={selectedDate} onSelect={handleDateSelect} locale={vi} modifiers={{ scheduled: (date) => scheduleDays.includes(date.getDay()) }} modifiersStyles={{ scheduled: { fontWeight: 'bold', textDecoration: 'underline' } }} /></PopoverContent>
             </Popover>
           </div>
           <p className="text-sm text-zinc-500">Đánh giá thái độ, kết quả học tập và để lại nhận xét cho phụ huynh.</p>
