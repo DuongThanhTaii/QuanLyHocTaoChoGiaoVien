@@ -166,11 +166,30 @@ export async function createClassWizard(prevState: any, formData: FormData) {
         'Thứ 2': 1, 'Thứ 3': 2, 'Thứ 4': 3, 'Thứ 5': 4, 'Thứ 6': 5, 'Thứ 7': 6
       };
       const allowedDays = parsed.data.weekDays.map(d => dayMap[d]).filter(d => d !== undefined);
+      const startTime = parsed.data.startTime || '18:00';
+      const endTime = parsed.data.endTime || '19:30';
+
+      // Persist the recurring schedule as well as individual sessions. The
+      // timetable pages read schedule_slots, while attendance and invoicing
+      // use class_sessions.
+      const { data: scheduleSlots, error: scheduleSlotsError } = await supabaseAdmin
+        .from('schedule_slots')
+        .insert(allowedDays.map((dayOfWeek) => ({
+          class_id: classId,
+          day_of_week: dayOfWeek,
+          start_time: startTime,
+          end_time: endTime,
+          is_recurring: true,
+          valid_from: parsed.data.startDate,
+          valid_until: parsed.data.endDate || null,
+        })))
+        .select('id, day_of_week');
+
+      if (scheduleSlotsError) throw scheduleSlotsError;
+      const slotIdsByDay = new Map((scheduleSlots || []).map((slot) => [slot.day_of_week, slot.id]));
       
       let currentDate = new Date(start);
       const sessionsToInsert = [];
-      const startTime = parsed.data.startTime || '18:00';
-      const endTime = parsed.data.endTime || '19:30';
       let sessionOrder = 1;
 
       while (currentDate <= end) {
@@ -178,6 +197,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
           const dateStr = formatCalendarDate(currentDate);
           sessionsToInsert.push({
             class_id: classId,
+            schedule_slot_id: slotIdsByDay.get(currentDate.getDay()),
             session_date: dateStr,
             start_time: startTime,
             end_time: endTime,
@@ -190,7 +210,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
       }
 
       if (sessionsToInsert.length > 0) {
-        const { error: sessionErr } = await supabase.from('class_sessions').insert(sessionsToInsert);
+        const { error: sessionErr } = await supabaseAdmin.from('class_sessions').insert(sessionsToInsert);
         if (sessionErr) console.error('Failed to generate sessions:', sessionErr);
       }
     } catch (err) {
@@ -199,6 +219,7 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   }
 
   revalidatePath('/teacher/classes');
+  revalidatePath(`/teacher/classes/${classId}/schedule`);
   revalidatePath('/teacher/schedule');
   revalidatePath('/student/schedule');
   revalidatePath('/parent/schedule');
