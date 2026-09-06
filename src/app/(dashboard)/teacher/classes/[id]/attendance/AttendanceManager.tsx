@@ -197,7 +197,7 @@ export function AttendanceManager({
         <div className="p-5 border-b border-zinc-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-zinc-50/50">
           
           {/* Cụm Bên Trái: Tiêu đề + Nút chọn ngày + Giờ học */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-4">
             <h2 className="text-lg font-bold tracking-tight text-foreground">Điểm danh</h2>
             
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
@@ -214,8 +214,9 @@ export function AttendanceManager({
                   {selectedDateStr ? `${dayName}, ${formattedSelectedDate}` : <span>Chọn ngày</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-[23rem] overflow-hidden rounded-xl border p-0 shadow-lg" align="start" sideOffset={8}>
                 <Calendar
+                  className="w-full p-3 [--cell-size:--spacing(9)]"
                   mode="single"
                   selected={selectedDateObj}
                   onSelect={handleDateSelect}
@@ -228,8 +229,8 @@ export function AttendanceManager({
                     scheduled: { fontWeight: 'bold', textDecoration: 'underline' }
                   }}
                 />
-                <div className="p-3 border-t border-zinc-100 bg-zinc-50/50">
-                  <p className="text-[11px] text-zinc-500 font-medium">
+                <div className="border-t border-zinc-100 bg-zinc-50/70 px-4 py-3">
+                  <p className="text-xs leading-5 text-zinc-500">
                     * Ngày in đậm, gạch dưới là ngày có lịch cố định.
                   </p>
                 </div>
