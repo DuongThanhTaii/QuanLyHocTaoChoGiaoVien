@@ -118,6 +118,7 @@ export function AttendanceManager({
 
     setIsSubmitting(true);
     let successCount = 0;
+    const errors: string[] = [];
     
     for (const student of studentsToSave) {
       const data = attendanceState[student.id];
@@ -131,13 +132,27 @@ export function AttendanceManager({
       const res = await markAttendance(formData);
       if (res && res.success) {
         successCount++;
+      } else {
+        errors.push(res?.error || `Không thể lưu điểm danh cho ${student.name}.`);
       }
     }
     
     setIsSubmitting(false);
-    toast.success('Điểm danh hoàn tất', {
-      description: `Đã lưu điểm danh cho ${successCount}/${studentsToSave.length} học sinh.`,
-    });
+    if (successCount === studentsToSave.length) {
+      toast.success('Điểm danh hoàn tất', {
+        description: `Đã lưu điểm danh cho ${successCount}/${studentsToSave.length} học sinh.`,
+      });
+      router.refresh();
+    } else if (successCount > 0) {
+      toast.warning('Điểm danh lưu chưa đầy đủ', {
+        description: `Đã lưu ${successCount}/${studentsToSave.length} học sinh. ${errors[0] || ''}`,
+      });
+      router.refresh();
+    } else {
+      toast.error('Không thể lưu điểm danh', {
+        description: errors[0] || 'Vui lòng thử lại.',
+      });
+    }
   };
 
   const handleCreateMakeupSession = async (e: React.FormEvent) => {

@@ -16,12 +16,25 @@ const MarkAttendanceSchema = z.object({
   note: z.string().optional()
 });
 
+async function isTeacher(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const [{ data: roleData }, { data: profileData }] = await Promise.all([
+    supabase.from('user_roles').select('role').eq('user_id', userId).eq('is_primary', true).maybeSingle(),
+    supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
+  ]);
+
+  return (roleData?.role || profileData?.role) === 'teacher';
+}
+
 export async function markAttendance(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || user.user_metadata?.role !== 'teacher') {
-    return { error: 'Unauthorized' };
+  if (!user) {
+    return { error: 'Bạn cần đăng nhập để điểm danh.' };
+  }
+
+  if (!await isTeacher(supabase, user.id)) {
+    return { error: 'Bạn không có quyền điểm danh cho lớp này.' };
   }
 
   const rawData = {
@@ -98,6 +111,7 @@ export async function markAttendance(formData: FormData) {
     // ----------------------------
 
     revalidatePath(`/teacher/classes/${parsed.data.classId}/attendance`);
+    revalidatePath(`/teacher/classes/${parsed.data.classId}/students`);
     return { success: true };
   }
 
@@ -116,8 +130,12 @@ export async function createMakeupSession(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || user.user_metadata?.role !== 'teacher') {
-    return { error: 'Unauthorized' };
+  if (!user) {
+    return { error: 'Bạn cần đăng nhập để tạo buổi học.' };
+  }
+
+  if (!await isTeacher(supabase, user.id)) {
+    return { error: 'Bạn không có quyền tạo buổi học.' };
   }
 
   const rawData = {

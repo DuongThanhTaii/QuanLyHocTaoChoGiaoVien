@@ -105,12 +105,12 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
     .select('id, student_id, total_amount, status, period_start, invoice_number, created_at')
     .eq('class_id', classId);
 
-  const { data: sessionsCount } = await supabaseAdmin
+  const { count: totalClassSessions } = await supabaseAdmin
     .from('class_sessions')
     .select('id', { count: 'exact', head: true })
     .eq('class_id', classId);
 
-  const totalClassSessions = sessionsCount || 0;
+  const sessionCount = totalClassSessions || 0;
 
   const { data: attendanceRecords } = await supabaseAdmin
     .from('attendance_records')
@@ -131,7 +131,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
       const studAttendance = (attendanceRecords || []).filter((r: any) => r.student_id === stud.id);
       const attendedCount = studAttendance.filter((r: any) => r.status === 'present' || r.status === 'late').length;
       const absentCount = studAttendance.filter((r: any) => r.status === 'absent').length;
-      const effectiveSessions = Math.max(totalClassSessions, studAttendance.length);
+      const effectiveSessions = Math.max(sessionCount, studAttendance.length);
       const percentage = effectiveSessions > 0 ? Math.round((attendedCount / effectiveSessions) * 100) : 0;
 
       // Học phí
