@@ -47,43 +47,46 @@ export function CreateClassWizard() {
   const [scheduleType, setScheduleType] = useState('fixed');
   const [startTime, setStartTime] = useState('18:00');
   const [endTime, setEndTime] = useState('19:30');
-  const [durationMinutes, setDurationMinutes] = useState(90);
+  const [durationMinutes, setDurationMinutes] = useState('90');
   const [lastEditedTimeField, setLastEditedTimeField] = useState<'start' | 'end' | 'duration'>('start');
   const [studentContacts, setStudentContacts] = useState<Array<{ email: string; phone: string }>>([]);
 
+  const parsedDuration = Number(durationMinutes);
+  const hasValidDuration = Number.isInteger(parsedDuration) && parsedDuration > 0;
+
   const updateStartTime = (value: string) => {
     setStartTime(value);
-    if (lastEditedTimeField === 'duration') {
-      setEndTime(addMinutesToTime(value, durationMinutes));
+    if (lastEditedTimeField === 'duration' && hasValidDuration) {
+      setEndTime(addMinutesToTime(value, parsedDuration));
     } else {
       const calculatedDuration = getDurationMinutes(value, endTime);
-      if (calculatedDuration) setDurationMinutes(calculatedDuration);
+      if (calculatedDuration) setDurationMinutes(String(calculatedDuration));
     }
     setLastEditedTimeField('start');
   };
 
   const updateEndTime = (value: string) => {
     setEndTime(value);
-    if (lastEditedTimeField === 'duration') {
-      setStartTime(addMinutesToTime(value, -durationMinutes));
+    if (lastEditedTimeField === 'duration' && hasValidDuration) {
+      setStartTime(addMinutesToTime(value, -parsedDuration));
     } else {
       const calculatedDuration = getDurationMinutes(startTime, value);
-      if (calculatedDuration) setDurationMinutes(calculatedDuration);
+      if (calculatedDuration) setDurationMinutes(String(calculatedDuration));
     }
     setLastEditedTimeField('end');
   };
 
   const updateDuration = (value: string) => {
     const nextDuration = Number(value);
+    setDurationMinutes(value);
+    setLastEditedTimeField('duration');
     if (!Number.isInteger(nextDuration) || nextDuration < 1) return;
 
-    setDurationMinutes(nextDuration);
     if (lastEditedTimeField === 'end') {
       setStartTime(addMinutesToTime(endTime, -nextDuration));
     } else {
       setEndTime(addMinutesToTime(startTime, nextDuration));
     }
-    setLastEditedTimeField('duration');
   };
 
   const addStudentContact = () => setStudentContacts((contacts) => [...contacts, { email: '', phone: '' }]);
@@ -285,7 +288,7 @@ export function CreateClassWizard() {
                       <Input type="number" min="1" step="1" value={durationMinutes} onChange={(event) => updateDuration(event.target.value)} aria-live="polite" className="bg-white" />
                     </div>
                   </div>
-                  {(!getDurationMinutes(startTime, endTime) || durationMinutes < 1) && <p className="text-xs text-red-600">Giờ kết thúc phải sau giờ bắt đầu và nằm trong cùng một ngày.</p>}
+                  {(!getDurationMinutes(startTime, endTime) || !hasValidDuration) && <p className="text-xs text-red-600">Giờ kết thúc phải sau giờ bắt đầu và thời lượng phải là số phút lớn hơn 0 trong cùng một ngày.</p>}
                   <p className="text-xs text-zinc-500">Hệ thống sẽ tự động tạo các buổi học dựa trên ngày khai giảng, ngày kết thúc và lịch học này.</p>
                 </div>
               )}

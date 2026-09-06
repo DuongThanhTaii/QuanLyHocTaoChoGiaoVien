@@ -32,8 +32,25 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || user.user_metadata?.role !== 'teacher') {
-    return { error: 'Unauthorized' };
+  if (!user) {
+    return { error: 'Bạn cần đăng nhập để tạo lớp học.' };
+  }
+
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('is_primary', true)
+    .maybeSingle();
+
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if ((roleData?.role || profileData?.role) !== 'teacher') {
+    return { error: 'Bạn không có quyền tạo lớp học.' };
   }
 
   const rawData = {
