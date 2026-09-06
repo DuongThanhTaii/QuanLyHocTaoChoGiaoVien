@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Download, WifiOff, X } from 'lucide-react';
 
 type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> };
+type PwaWindow = Window & { __mariInstallPrompt?: InstallPromptEvent };
 
 const DISMISS_KEY = 'mari-pwa-install-dismissed-at';
 const DISMISS_FOR_MS = 7 * 24 * 60 * 60 * 1000;
@@ -37,7 +38,10 @@ export function PwaManager() {
 
     const onInstallPrompt = (event: Event) => {
       event.preventDefault();
-      setInstallEvent(event as InstallPromptEvent);
+      const promptEvent = event as InstallPromptEvent;
+      (window as PwaWindow).__mariInstallPrompt = promptEvent;
+      window.dispatchEvent(new Event('mari:installable'));
+      setInstallEvent(promptEvent);
       if (!isStandalone() && canAskAgain) setShowInstall(true);
     };
     window.addEventListener('beforeinstallprompt', onInstallPrompt);
@@ -67,6 +71,7 @@ export function PwaManager() {
     if (!installEvent) return;
     await installEvent.prompt();
     await installEvent.userChoice;
+    delete (window as PwaWindow).__mariInstallPrompt;
     setInstallEvent(null);
     setShowInstall(false);
   };

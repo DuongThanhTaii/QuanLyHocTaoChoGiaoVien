@@ -8,6 +8,7 @@ type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 };
+type PwaWindow = Window & { __mariInstallPrompt?: InstallPromptEvent };
 
 function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
@@ -26,19 +27,28 @@ export function PwaInstallButton() {
   useEffect(() => {
     setInstalled(isStandalone());
     setIos(isIos());
+    const readStoredInstallPrompt = () => {
+      setInstallEvent((window as PwaWindow).__mariInstallPrompt ?? null);
+    };
     const onBeforeInstall = (event: Event) => {
       event.preventDefault();
-      setInstallEvent(event as InstallPromptEvent);
+      const promptEvent = event as InstallPromptEvent;
+      (window as PwaWindow).__mariInstallPrompt = promptEvent;
+      setInstallEvent(promptEvent);
     };
     const onInstalled = () => {
       setInstalled(true);
+      delete (window as PwaWindow).__mariInstallPrompt;
       setInstallEvent(null);
       toast.success('Mari đã được cài đặt trên thiết bị này.');
     };
+    readStoredInstallPrompt();
     window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('mari:installable', readStoredInstallPrompt);
     window.addEventListener('appinstalled', onInstalled);
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+      window.removeEventListener('mari:installable', readStoredInstallPrompt);
       window.removeEventListener('appinstalled', onInstalled);
     };
   }, []);
@@ -50,7 +60,7 @@ export function PwaInstallButton() {
       return;
     }
     if (!installEvent) {
-      toast('Chưa thể hiển thị cửa sổ cài đặt', { description: 'Hãy mở Mari bằng Chrome hoặc Edge và thử lại sau vài giây.' });
+      toast('Chrome chưa sẵn sàng cài Mari', { description: 'Tải lại trang, chờ vài giây rồi thử lại. Bạn cũng có thể mở menu ⋮ của Chrome và chọn “Cài đặt Mari”.' });
       return;
     }
     setInstalling(true);
@@ -58,6 +68,8 @@ export function PwaInstallButton() {
       await installEvent.prompt();
       const result = await installEvent.userChoice;
       if (result.outcome === 'dismissed') toast('Bạn chưa cài Mari');
+      delete (window as PwaWindow).__mariInstallPrompt;
+      setInstallEvent(null);
     } finally {
       setInstalling(false);
     }
