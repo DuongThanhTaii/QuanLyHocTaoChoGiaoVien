@@ -2,12 +2,13 @@
 
 import { useTheme } from "next-themes";
 import { useThemeColor, type ThemeColor } from "@/components/providers/theme-color-provider";
-import { Bell, Camera, CheckCircle2, Monitor, Moon, Smartphone, Sun } from "lucide-react";
+import { Bell, Camera, CheckCircle2, Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { saveUiSettings } from "./actions";
 import { subscribeToPushNotifications } from "@/lib/firebase/client";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { PwaInstallStatus } from "@/components/providers/PwaInstallButton";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -15,12 +16,10 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [cameraGranted, setCameraGranted] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
 
   // Avoid hydration mismatch by waiting for mount
   useEffect(() => {
     setMounted(true);
-    setIsInstalled(window.matchMedia('(display-mode: standalone)').matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
     if ('Notification' in window) setNotificationPermission(Notification.permission);
     if (navigator.permissions?.query) {
       void navigator.permissions.query({ name: 'camera' as PermissionName }).then((permission) => {
@@ -162,7 +161,7 @@ export default function SettingsPage() {
 
         <section className="space-y-4" aria-labelledby="app-settings-heading">
           <div><h2 id="app-settings-heading" className="text-lg font-medium text-foreground">Cài đặt ứng dụng</h2><p className="mt-1 text-sm text-muted-foreground">Trạng thái Mari trên thiết bị hiện tại.</p></div>
-          <div className="flex items-start gap-3 rounded-lg border border-border p-4"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"><Smartphone className="size-4" /></span><div><p className="font-medium text-foreground">Ứng dụng Mari</p><p className="mt-0.5 text-sm text-muted-foreground">{isInstalled ? 'Mari đang mở dưới dạng ứng dụng đã cài đặt.' : 'Bạn đang dùng Mari trên trình duyệt. Có thể cài Mari từ biểu tượng cài đặt trên thanh địa chỉ.'}</p></div></div>
+          <PwaInstallStatus />
         </section>
 
       </div>
