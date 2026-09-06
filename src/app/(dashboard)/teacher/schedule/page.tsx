@@ -10,7 +10,7 @@ export default async function TeacherSchedulePage() {
   // Fetch classes for teacher
   const { data: classes } = await supabase
     .from('classes')
-    .select('id, name')
+    .select('id, name, location, online_meeting_url')
     .eq('teacher_id', user.id);
 
   let slots: ScheduleSlot[] = [];
@@ -27,7 +27,7 @@ export default async function TeacherSchedulePage() {
         const cls = classes.find(c => c.id === slot.class_id);
         return {
           ...slot,
-          classes: cls ? { id: cls.id, name: cls.name || '' } : null
+          classes: cls ? { id: cls.id, name: cls.name || '', location: cls.location, online_meeting_url: cls.online_meeting_url } : null
         } as ScheduleSlot;
       });
     }

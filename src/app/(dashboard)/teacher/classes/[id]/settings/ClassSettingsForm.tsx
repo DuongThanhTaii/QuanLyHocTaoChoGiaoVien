@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Pencil, Check, X } from 'lucide-react';
+import { Pencil, Check, X, MapPin, Video } from 'lucide-react';
 
 export function ClassSettingsForm({ classroom }: { classroom: any }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -63,6 +63,17 @@ export function ClassSettingsForm({ classroom }: { classroom: any }) {
           disabled={!isEditing}
           className="disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-muted/40 resize-none min-h-[80px]"
         />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="location" className="flex items-center gap-1.5"><MapPin className="size-3.5" />Địa điểm học</Label>
+          <Input id="location" name="location" defaultValue={classroom.location ?? ''} disabled={!isEditing} placeholder="VD: 12 Nguyễn Huệ, P. Bến Nghé, Q.1" className="disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-muted/40" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="onlineMeetingUrl" className="flex items-center gap-1.5"><Video className="size-3.5" />Link học trực tuyến</Label>
+          <Input id="onlineMeetingUrl" name="onlineMeetingUrl" type="url" defaultValue={classroom.online_meeting_url ?? ''} disabled={!isEditing} placeholder="https://meet.google.com/..." className="disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-muted/40" />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

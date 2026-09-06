@@ -11,6 +11,8 @@ export interface ClassProps {
   name: string;
   subject?: string;
   description?: string;
+  location?: string;
+  onlineMeetingUrl?: string;
   feePerSession: Money;
   feeType: FeeType;
   color?: string;
@@ -24,6 +26,8 @@ export class Classroom extends AggregateRoot {
     private _name: string,
     private _subject: string | null,
     private _description: string | null,
+    private _location: string | null,
+    private _onlineMeetingUrl: string | null,
     private _feePerSession: Money,
     private _feeType: FeeType,
     private _color: string,
@@ -43,6 +47,8 @@ export class Classroom extends AggregateRoot {
       props.name,
       props.subject || null,
       props.description || null,
+      props.location || null,
+      props.onlineMeetingUrl || null,
       props.feePerSession,
       props.feeType,
       props.color || '#3B82F6',

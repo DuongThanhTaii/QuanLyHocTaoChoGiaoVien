@@ -33,7 +33,7 @@ export default async function ParentSchedulePage() {
         const classIds = enrollments.map(e => e.class_id);
         const { data: classes } = await supabase
           .from('classes')
-          .select('id, name')
+          .select('id, name, location, online_meeting_url')
           .in('id', classIds);
 
         const { data: scheduleSlots } = await supabase
@@ -46,7 +46,7 @@ export default async function ParentSchedulePage() {
             const cls = classes.find(c => c.id === slot.class_id);
             return {
               ...slot,
-              classes: cls ? { id: cls.id, name: cls.name || '' } : null
+              classes: cls ? { id: cls.id, name: cls.name || '', location: cls.location, online_meeting_url: cls.online_meeting_url } : null
             } as ScheduleSlot;
           });
         }

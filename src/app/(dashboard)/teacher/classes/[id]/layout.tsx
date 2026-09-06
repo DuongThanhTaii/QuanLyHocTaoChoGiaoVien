@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
+import { ExternalLink, MapPin, Video } from 'lucide-react';
 
 import { ClassTabs } from './ClassTabs';
 
@@ -21,7 +21,7 @@ export default async function ClassWorkspaceLayout({
 
   const { data: classroom } = await supabase
     .from('classes')
-    .select('name, subject, fee_per_session')
+    .select('name, subject, fee_per_session, location, online_meeting_url')
     .eq('id', id)
     .single();
 
@@ -32,12 +32,18 @@ export default async function ClassWorkspaceLayout({
   return (
     <div className="space-y-6">
       {/* Class Header */}
-      <div className="flex items-center justify-between rounded-xl border bg-card p-6 shadow-sm">
+      <div className="rounded-xl border bg-card p-6 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{classroom.name}</h1>
           <p className="text-zinc-500">
             {classroom.subject || 'Chưa cập nhật môn học'} &bull; {Number(classroom.fee_per_session).toLocaleString('vi-VN')} đ/buổi
           </p>
+          {(classroom.location || classroom.online_meeting_url) && (
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+              {classroom.location && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" />{classroom.location}</span>}
+              {classroom.online_meeting_url && <a href={classroom.online_meeting_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"><Video className="size-4" />Vào lớp trực tuyến <ExternalLink className="size-3.5" /></a>}
+            </div>
+          )}
         </div>
       </div>
 

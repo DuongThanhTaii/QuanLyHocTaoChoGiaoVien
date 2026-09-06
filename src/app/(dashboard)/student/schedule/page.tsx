@@ -27,7 +27,7 @@ export default async function StudentSchedulePage() {
       const classIds = enrollments.map((e: any) => e.class_id);
       const { data: classes } = await admin
         .from('classes')
-        .select('id, name')
+        .select('id, name, location, online_meeting_url')
         .in('id', classIds);
 
       const { data: scheduleSlots } = await admin
@@ -40,7 +40,7 @@ export default async function StudentSchedulePage() {
           const cls = classes.find((c: any) => c.id === slot.class_id);
           return {
             ...slot,
-            classes: cls ? { id: cls.id, name: cls.name || '' } : null
+            classes: cls ? { id: cls.id, name: cls.name || '', location: cls.location, online_meeting_url: cls.online_meeting_url } : null
           } as ScheduleSlot;
         });
       }

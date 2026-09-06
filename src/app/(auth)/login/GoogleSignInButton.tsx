@@ -35,7 +35,6 @@ export function GoogleSignInButton() {
       {pending ? <Loader2 className="size-4 animate-spin" /> : <GoogleMark />}
       {pending ? 'Đang chuyển đến Google...' : 'Đăng nhập với Google'}
     </button>
-    <p className="text-center text-[11px] text-zinc-500">Google sẽ cấp quyền Drive một lần để bạn dùng Học liệu ngay sau khi đăng nhập.</p>
     {error && <p role="alert" className="text-center text-xs text-red-600">{error}</p>}
   </div>;
 }

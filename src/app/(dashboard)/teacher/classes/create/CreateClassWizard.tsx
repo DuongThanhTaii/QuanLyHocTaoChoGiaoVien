@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info, Plus, X } from 'lucide-react';
+import { Info, MapPin, Plus, Video, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -99,6 +99,29 @@ export function CreateClassWizard() {
                 * Học phí tính theo tháng sẽ yêu cầu tạo hóa đơn thủ công hoặc tạo mẫu thanh toán định kỳ.
               </p>
             )}
+
+            <div className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50/70 p-4">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                  <MapPin className="size-4 text-zinc-500" />
+                  Địa điểm & học trực tuyến
+                </div>
+                <p className="mt-1 text-xs text-zinc-500">Nhập địa chỉ học và/hoặc link Google Meet, Zoom, Microsoft Teams để học sinh dễ tìm buổi học.</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Địa điểm học</Label>
+                  <Input id="location" name="location" placeholder="VD: 12 Nguyễn Huệ, P. Bến Nghé, Q.1" className="bg-white" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="onlineMeetingUrl">Link học trực tuyến</Label>
+                  <div className="relative">
+                    <Video className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+                    <Input id="onlineMeetingUrl" name="onlineMeetingUrl" type="url" placeholder="https://meet.google.com/..." className="bg-white pl-9" />
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <input type="hidden" name="studentContacts" value={JSON.stringify(studentContacts)} />
             <div className="space-y-3 rounded-lg border border-zinc-200 p-4">

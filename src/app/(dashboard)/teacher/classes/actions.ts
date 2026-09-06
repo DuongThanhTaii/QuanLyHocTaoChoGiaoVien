@@ -17,6 +17,8 @@ const CreateClassWizardSchema = z.object({
   feeType: z.enum(['per_session', 'per_month', 'per_course']),
   color: z.string().optional(),
   description: z.string().optional(),
+  location: z.string().trim().max(500).optional(),
+  onlineMeetingUrl: z.union([z.string().trim().url(), z.literal('')]).optional(),
   scheduleType: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
@@ -41,6 +43,8 @@ export async function createClassWizard(prevState: any, formData: FormData) {
     feeType: formData.get('feeType') || 'per_session',
     color: formData.get('color'),
     description: formData.get('description'),
+    location: formData.get('location'),
+    onlineMeetingUrl: formData.get('onlineMeetingUrl'),
     scheduleType: formData.get('scheduleType'),
     startDate: formData.get('startDate'),
     endDate: formData.get('endDate'),
@@ -68,6 +72,8 @@ export async function createClassWizard(prevState: any, formData: FormData) {
     feeType: parsed.data.feeType,
     color: parsed.data.color,
     description: parsed.data.description,
+    location: parsed.data.location || undefined,
+    onlineMeetingUrl: parsed.data.onlineMeetingUrl || undefined,
     isActive: true
   });
 
@@ -168,6 +174,9 @@ export async function createClassWizard(prevState: any, formData: FormData) {
   }
 
   revalidatePath('/teacher/classes');
+  revalidatePath('/teacher/schedule');
+  revalidatePath('/student/schedule');
+  revalidatePath('/parent/schedule');
   // Redirect to the success screen of the wizard or the class workspace
   redirect(`/teacher/classes/${classId}/settings?success=true&code=${joinCode}`);
 }
@@ -196,6 +205,7 @@ const AddStudentManualSchema = z.object({
 
 const UpdateClassSettingsSchema = z.object({
   classId: z.string().uuid(), name: z.string().min(2), subject: z.string().optional(), description: z.string().optional(),
+  location: z.string().trim().max(500).optional(), onlineMeetingUrl: z.union([z.string().trim().url(), z.literal('')]).optional(),
   feeAmount: z.coerce.number().min(0), feeType: z.enum(['per_session', 'per_month', 'per_course']), color: z.string()
 });
 
@@ -206,9 +216,13 @@ export async function updateClassSettings(prevState: any, formData: FormData) {
   if (!user || user.user_metadata?.role !== 'teacher') return { error: 'Bạn không có quyền chỉnh sửa lớp này.' };
   if (!parsed.success) return { error: 'Thông tin lớp học chưa hợp lệ.' };
   const { classId, feeAmount, ...data } = parsed.data;
-  const { error } = await supabase.from('classes').update({ name: data.name, subject: data.subject || null, description: data.description || null, fee_per_session: feeAmount, fee_type: data.feeType, color: data.color }).eq('id', classId).eq('teacher_id', user.id);
+  const { error } = await supabase.from('classes').update({ name: data.name, subject: data.subject || null, description: data.description || null, location: data.location || null, online_meeting_url: data.onlineMeetingUrl || null, fee_per_session: feeAmount, fee_type: data.feeType, color: data.color }).eq('id', classId).eq('teacher_id', user.id);
   if (error) return { error: error.message };
   revalidatePath(`/teacher/classes/${classId}`);
+  revalidatePath(`/student/classes/${classId}`);
+  revalidatePath('/teacher/schedule');
+  revalidatePath('/student/schedule');
+  revalidatePath('/parent/schedule');
   return { success: true };
 }
 

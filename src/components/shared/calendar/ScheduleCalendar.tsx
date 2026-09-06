@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { startOfWeek, addDays, format, subWeeks, addWeeks, isSameDay, startOfMonth, endOfMonth, endOfWeek, isSameMonth, subMonths, addMonths, eachDayOfInterval } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +20,8 @@ export type ScheduleSlot = {
   classes: {
     id: string;
     name: string;
+    location?: string | null;
+    online_meeting_url?: string | null;
   } | null;
 };
 
@@ -36,6 +38,11 @@ const COLORS = [
   'bg-pink-100 border-pink-200 text-pink-800 dark:bg-pink-900/30 dark:border-pink-800 dark:text-pink-300',
   'bg-teal-100 border-teal-200 text-teal-800 dark:bg-teal-900/30 dark:border-teal-800 dark:text-teal-300',
 ];
+
+function MeetingLink({ href, compact = false }: { href?: string | null; compact?: boolean }) {
+  if (!href) return null;
+  return <a href={href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-current underline-offset-2 hover:underline" aria-label="Mở lớp học trực tuyến"><Video className="size-3" />{compact ? null : 'Vào lớp trực tuyến'}<ExternalLink className="size-3" /></a>;
+}
 
 export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
   const router = useRouter();
@@ -188,7 +195,8 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                         <p className="min-w-0 flex-1 text-sm font-semibold leading-5">{slot.title || slot.classes?.name || 'Buổi học'}</p>
                         <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap pt-0.5 text-[11px] font-medium opacity-90"><Clock className="size-3" />{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
                       </div>
-                      {slot.room && <p className="mt-1 inline-flex items-center gap-1 text-[11px] opacity-80"><MapPin className="size-3" />{slot.room}</p>}
+                      {(slot.room || slot.classes?.location) && <p className="mt-1 inline-flex items-center gap-1 text-[11px] opacity-80"><MapPin className="size-3" />{slot.room || slot.classes?.location}</p>}
+                      <MeetingLink href={slot.classes?.online_meeting_url} />
                     </div>)}
                   </div>
                 </section>;
@@ -236,6 +244,8 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                           <Clock className="w-3 h-3" />
                           <span>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
                         </div>
+                        {(slot.room || slot.classes?.location) && <div className="flex items-center gap-1.5 text-xs opacity-80"><MapPin className="size-3" /><span className="truncate">{slot.room || slot.classes?.location}</span></div>}
+                        <MeetingLink href={slot.classes?.online_meeting_url} />
                       </div>
                     ))}
                   </div>
@@ -261,6 +271,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                           className={`px-1.5 py-1 rounded border text-[10px] leading-tight cursor-pointer hover:opacity-80 transition-opacity truncate ${classColors.get(slot.class_id)}`}
                         >
                           <span className="font-semibold">{formatTime(slot.start_time)}</span> {slot.title || slot.classes?.name || 'Ca học'}
+                          <MeetingLink href={slot.classes?.online_meeting_url} compact />
                         </div>
                       ))}
                     </div>

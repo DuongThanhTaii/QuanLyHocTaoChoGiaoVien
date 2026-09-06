@@ -3,18 +3,18 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { NAV_LINKS, SITE_CONFIG } from "@/config/landing-data";
+import { NAV_LINKS } from "@/config/landing-data";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { logout } from "@/app/(auth)/actions";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
   ArrowRight,
   Menu,
   X,
   Zap,
-  Sparkles,
   ChevronDown,
   LayoutDashboard,
   LogOut,
-  GraduationCap,
 } from "lucide-react";
 import { MaxWidthWrapper } from "@/components/global/max-width-wrapper";
 import Image from "next/image";
@@ -38,6 +38,56 @@ const ROLE_LABELS: Record<string, string> = {
   parent: "Phụ huynh",
   admin: "Quản trị viên",
 };
+
+function LandingAccountMenu({ user, compact = false }: { user: LoggedInUser; compact?: boolean }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={cn(
+          "outline-none transition-colors focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2",
+          compact
+            ? "rounded-full border border-orange-300 p-1 hover:border-orange-400 hover:bg-orange-50"
+            : "flex items-center gap-2 rounded-full text-left group cursor-pointer",
+        )}
+        aria-label="Mở menu tài khoản"
+      >
+        <UserAvatar name={user.name} email={user.email} size="sm" />
+        {!compact && (
+          <div className="hidden min-w-0 flex-col text-left sm:flex">
+            <span className="max-w-[120px] truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-orange-600 dark:text-white">
+              {user.name}
+            </span>
+            <span className="-mt-0.5 text-[10px] font-medium text-orange-600 dark:text-orange-400">
+              {ROLE_LABELS[user.role] || user.role}
+            </span>
+          </div>
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={10} className="w-64 border-orange-100 bg-white p-1.5 shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
+        <DropdownMenuLabel className="px-2.5 py-2">
+          <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{user.name}</p>
+          <p className="mt-0.5 truncate text-xs font-normal text-slate-500 dark:text-zinc-400">{user.email}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <Link href={user.dashboardUrl} className="block">
+          <DropdownMenuItem className="cursor-pointer gap-2.5 px-2.5 py-2 font-medium">
+            <LayoutDashboard className="size-4 text-orange-600" />
+            Vào dashboard
+          </DropdownMenuItem>
+        </Link>
+        <DropdownMenuSeparator />
+        <form action={logout}>
+          <button type="submit" className="block w-full text-left">
+            <DropdownMenuItem variant="destructive" className="w-full cursor-pointer gap-2.5 px-2.5 py-2 font-medium">
+              <LogOut className="size-4" />
+              Đăng xuất
+            </DropdownMenuItem>
+          </button>
+        </form>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export const Navbar = ({ user }: NavbarProps) => {
   const [scrolled, setScrolled] = useState(false);
@@ -143,21 +193,7 @@ export const Navbar = ({ user }: NavbarProps) => {
           {user ? (
             /* User already logged in */
             <div className="flex items-center gap-3 bg-orange-50/80 dark:bg-zinc-900/90 pl-3 pr-1.5 py-1 rounded-full border border-orange-200/70 dark:border-zinc-800 shadow-2xs">
-              <Link
-                href={user.dashboardUrl}
-                className="flex items-center gap-2 group cursor-pointer"
-                title="Bấm để vào Dashboard"
-              >
-                <UserAvatar name={user.name} email={user.email} size="sm" />
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-orange-600 transition-colors max-w-[120px] truncate">
-                    {user.name}
-                  </span>
-                  <span className="text-[10px] text-orange-600 dark:text-orange-400 font-medium -mt-0.5">
-                    {ROLE_LABELS[user.role] || user.role}
-                  </span>
-                </div>
-              </Link>
+              <LandingAccountMenu user={user} />
 
               <Link
                 href={user.dashboardUrl}
@@ -191,13 +227,7 @@ export const Navbar = ({ user }: NavbarProps) => {
         {/* Mobile Menu Toggle */}
         <div className="flex lg:hidden items-center gap-2">
           {user && (
-            <Link
-              href={user.dashboardUrl}
-              className="p-1 rounded-full border border-orange-300"
-              title="Vào Dashboard"
-            >
-              <UserAvatar name={user.name} email={user.email} size="sm" />
-            </Link>
+            <LandingAccountMenu user={user} compact />
           )}
 
           <button
@@ -279,6 +309,15 @@ export const Navbar = ({ user }: NavbarProps) => {
                     Vào Dashboard ({ROLE_LABELS[user.role] || user.role})
                   </span>
                 </Link>
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 py-2.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                  >
+                    <LogOut className="size-4" />
+                    Đăng xuất
+                  </button>
+                </form>
               </div>
             ) : (
               <>
