@@ -19,6 +19,12 @@ interface Props {
   onSuccess?: () => void;
 }
 
+function feeUnitLabel(feeType?: string) {
+  if (feeType === 'per_month') return 'đ/tháng';
+  if (feeType === 'per_course') return 'đ/khóa';
+  return 'đ/buổi';
+}
+
 export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
@@ -70,8 +76,9 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
       setPreviewItems(data);
       // Mặc định chọn tất cả học sinh chưa có hóa đơn
       const initialSelected = new Set<string>();
+      const isPerSession = classes.find((cls) => cls.id === selectedClassId)?.fee_type === 'per_session';
       data.forEach((item: any) => {
-        if (!item.hasExistingInvoice) {
+        if (!item.hasExistingInvoice && (!isPerSession || item.effectiveSessions > 0)) {
           initialSelected.add(item.studentId);
         }
       });
@@ -95,10 +102,11 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
   }
 
   function handleToggleAll() {
-    if (selectedStudentIds.size === previewItems.length) {
+    const billableItems = previewItems.filter((item) => !item.hasExistingInvoice && (!isPerSessionClass || item.effectiveSessions > 0));
+    if (selectedStudentIds.size === billableItems.length) {
       setSelectedStudentIds(new Set());
     } else {
-      setSelectedStudentIds(new Set(previewItems.map(p => p.studentId)));
+      setSelectedStudentIds(new Set(billableItems.map(p => p.studentId)));
     }
   }
 
@@ -112,7 +120,8 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
       const disc = Number(updated.discount) || 0;
       const extra = Number(updated.extraFee) || 0;
 
-      const subtotal = sessions * unit;
+      const isPerSession = selectedClass?.fee_type === 'per_session';
+      const subtotal = (isPerSession ? sessions : 1) * unit;
       const total = Math.max(0, subtotal - disc + extra);
       return {
         ...updated,
@@ -140,11 +149,10 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
         // Snapshot only sessions the student actually attended. This is printed
         // on the invoice so the parent can reconcile per-session tuition.
         attendanceLog: (() => {
+          if (selectedClass?.fee_type !== 'per_session') return [];
           const sessions = item.sessionDetails || [];
           const attendedSessions = sessions.filter((session: any) => ['present', 'late'].includes(String(session.status).toLowerCase()));
-          // When attendance has not been marked yet, preserve the scheduled
-          // sessions that are being charged so the invoice remains auditable.
-          return (attendedSessions.length > 0 ? attendedSessions : sessions.filter((session: any) => String(session.status).toLowerCase() === 'not_marked'))
+          return attendedSessions
           .map((session: any) => ({
             date: session.date,
             title: session.title,
@@ -173,6 +181,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
   }
 
   const selectedClass = classes.find(c => c.id === selectedClassId);
+  const isPerSessionClass = selectedClass?.fee_type === 'per_session';
   const totalSelectedAmount = previewItems
     .filter(i => selectedStudentIds.has(i.studentId))
     .reduce((sum, i) => sum + (i.totalAmount || 0), 0);
@@ -195,14 +204,14 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                 <SelectTrigger className="w-full text-xs h-9">
                   <SelectValue placeholder="Chọn lớp học">
                     {classes.find(cls => cls.id === selectedClassId)
-                      ? `${classes.find(cls => cls.id === selectedClassId)?.name} (${Number(classes.find(cls => cls.id === selectedClassId)?.fee_per_session).toLocaleString('vi-VN')} đ/buổi)`
+                      ? `${classes.find(cls => cls.id === selectedClassId)?.name} (${Number(classes.find(cls => cls.id === selectedClassId)?.fee_per_session).toLocaleString('vi-VN')} ${feeUnitLabel(classes.find(cls => cls.id === selectedClassId)?.fee_type)})`
                       : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {classes.map((cls) => (
                     <SelectItem key={cls.id} value={cls.id}>
-                      {cls.name} ({Number(cls.fee_per_session).toLocaleString('vi-VN')} đ/buổi)
+                      {cls.name} ({Number(cls.fee_per_session).toLocaleString('vi-VN')} {feeUnitLabel(cls.fee_type)})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -252,7 +261,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="selectAll"
-                  checked={previewItems.length > 0 && selectedStudentIds.size === previewItems.length}
+                  checked={previewItems.length > 0 && selectedStudentIds.size === previewItems.filter((item) => !item.hasExistingInvoice && (!isPerSessionClass || item.effectiveSessions > 0)).length}
                   onCheckedChange={handleToggleAll}
                 />
                 <label htmlFor="selectAll" className="text-xs font-semibold cursor-pointer">
@@ -262,7 +271,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
 
               {selectedClass && (
                 <div className="text-xs text-zinc-500">
-                  Học phí gốc: <span className="font-semibold text-zinc-900 dark:text-zinc-100">{Number(selectedClass.fee_per_session).toLocaleString('vi-VN')} đ/buổi</span>
+                  Học phí gốc: <span className="font-semibold text-zinc-900 dark:text-zinc-100">{Number(selectedClass.fee_per_session).toLocaleString('vi-VN')} {feeUnitLabel(selectedClass.fee_type)}</span>
                 </div>
               )}
             </div>
@@ -284,7 +293,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                       <TableHead className="w-10 text-center"></TableHead>
                       <TableHead className="text-xs font-semibold">Học sinh</TableHead>
                       <TableHead className="text-xs font-semibold text-center">Điểm danh</TableHead>
-                      <TableHead className="text-xs font-semibold text-center">Số buổi tính phí</TableHead>
+                      <TableHead className="text-xs font-semibold text-center">{isPerSessionClass ? 'Số buổi tính phí' : 'Số kỳ tính phí'}</TableHead>
                       <TableHead className="text-xs font-semibold text-right">Đơn giá</TableHead>
                       <TableHead className="text-xs font-semibold text-right">Miễn giảm</TableHead>
                       <TableHead className="text-xs font-semibold text-right">Tổng học phí</TableHead>
@@ -295,13 +304,14 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                     {previewItems.map((item) => {
                       const isSelected = selectedStudentIds.has(item.studentId);
                       const hasInvoice = item.hasExistingInvoice;
+                      const hasBillableAttendance = !isPerSessionClass || item.effectiveSessions > 0;
 
                       return (
                         <TableRow key={item.studentId} className={`text-xs ${hasInvoice ? 'opacity-60 bg-zinc-50/40 dark:bg-zinc-900/40' : ''}`}>
                           <TableCell className="text-center">
                             <Checkbox
                               checked={isSelected}
-                              disabled={hasInvoice}
+                              disabled={hasInvoice || !hasBillableAttendance}
                               onCheckedChange={() => handleToggleStudent(item.studentId)}
                             />
                           </TableCell>
@@ -332,6 +342,7 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                               min="0"
                               value={item.effectiveSessions}
                               disabled={hasInvoice || !isSelected}
+                              readOnly
                               onChange={(e) => handleItemChange(item.studentId, 'effectiveSessions', Number(e.target.value))}
                               className="w-16 text-center text-xs h-7 mx-auto font-mono"
                             />

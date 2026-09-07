@@ -173,23 +173,10 @@ export class InvoiceService {
         });
       }
 
-      // Tính số buổi hiệu dụng
-      // Nếu có điểm danh: Đi học = 1, Đi trễ = 1 (hoặc 100%), nếu không có buổi nào được điểm danh nhưng có buổi học -> mặc định số buổi của lớp
-      let effectiveSessions = presentCount + lateCount;
-      if (classSessions.length > 0 && effectiveSessions === 0 && absentCount === 0 && excusedCount === 0) {
-        // Chưa điểm danh buổi nào: tính theo tổng số buổi tổ chức trong tháng
-        effectiveSessions = classSessions.length;
-      } else if (classSessions.length === 0) {
-        // Chưa tạo session trong DB: ước tính mặc định 8 buổi/tháng (2 buổi/tuần)
-        effectiveSessions = 8;
-      }
-
-      let subtotal = 0;
-      if (feeType === 'per_month') {
-        subtotal = unitPrice;
-      } else {
-        subtotal = effectiveSessions * unitPrice;
-      }
+      // Classes charged per session bill only sessions where this student was
+      // present or late. Monthly and course fees are a single fixed charge.
+      const effectiveSessions = feeType === 'per_session' ? presentCount + lateCount : 1;
+      const subtotal = effectiveSessions * unitPrice;
 
       const existingInv = existingMap.get(studentId);
 
@@ -198,7 +185,7 @@ export class InvoiceService {
         studentName,
         phone: student.phone || undefined,
         email: student.email || undefined,
-        totalSessionsInMonth: classSessions.length || 8,
+        totalSessionsInMonth: classSessions.length,
         presentCount,
         lateCount,
         absentCount,
@@ -255,9 +242,16 @@ export class InvoiceService {
 
     for (const item of items) {
       const unitPrice = item.unitPrice || 0;
-      const sessionsCount = item.sessionsCount || 0;
+      const attendedSessions = (item.attendanceLog || []).filter((session) =>
+        ['present', 'late'].includes(String(session.status).toLowerCase())
+      );
+      const sessionsCount = isPerSession ? attendedSessions.length : 1;
       const discountAmount = item.discount || 0;
       const extraFeeAmount = item.extraFee || 0;
+
+      // A per-session invoice must never charge an absence or an unmarked
+      // session, even if a caller changes the preview payload.
+      if (isPerSession && sessionsCount === 0) continue;
 
       const lineItems: InvoiceLineItem[] = (item.lineItems && item.lineItems.length > 0)
         ? item.lineItems.map(li => ({
@@ -267,7 +261,11 @@ export class InvoiceService {
             amount: new Money(li.amount)
           }))
         : [{
-            description: `Học phí tháng ${month}/${year} (${sessionsCount} buổi)`,
+            description: isPerSession
+              ? `Học phí tháng ${month}/${year} (${sessionsCount} buổi)`
+              : classData?.fee_type === 'per_month'
+                ? `Học phí tháng ${month}/${year}`
+                : 'Học phí khóa học',
             quantity: sessionsCount,
             unitPrice: new Money(unitPrice),
             amount: new Money(sessionsCount * unitPrice)
@@ -304,6 +302,10 @@ export class InvoiceService {
         inv.markAsSent(); // Set trạng thái đã gửi để phụ huynh thấy
         invoices.push(inv);
       }
+    }
+
+    if (invoices.length === 0) {
+      return Result.fail(new Error('Chưa có buổi học nào được điểm danh Có mặt hoặc Đi trễ để tính học phí.'));
     }
 
     await this.invoiceRepo.saveMany(invoices);
