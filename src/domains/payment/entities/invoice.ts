@@ -29,6 +29,7 @@ export interface InvoiceLearningReportSession {
   endTime?: string;
   title?: string;
   attendanceStatus: 'present' | 'late' | 'absent' | 'excused' | 'not_marked';
+  attendanceNote?: string;
   learningContent?: string;
   exercises: Array<{ title: string; dueDate?: string }>;
   rating?: 'EXCELLENT' | 'GOOD' | 'AVERAGE' | 'POOR';

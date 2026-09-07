@@ -284,3 +284,9 @@
 .learning-report table tbody td {
   border-color: #fed7aa;
 }
+
+/* Thay bằng bảng dùng chung tại popup giáo viên, giữ nguyên cấu trúc cũ phía sau để tương thích hóa đơn cũ. */
+.learning-report:has(.learning-report-table-v2) > .hidden.overflow-x-auto,
+.learning-report:has(.learning-report-table-v2) > .space-y-3.md\:hidden {
+  display: none !important;
+}

@@ -16,7 +16,7 @@ async function buildLearningReports(supabase: any, classId: string, month: numbe
   ]);
   const sessionIds = (sessions || []).map((session: any) => session.id);
   const [{ data: attendance }, { data: evaluations }, { data: links }] = sessionIds.length ? await Promise.all([
-    supabase.from('attendance_records').select('session_id, student_id, status').in('session_id', sessionIds).in('student_id', studentIds),
+    supabase.from('attendance_records').select('session_id, student_id, status, note').in('session_id', sessionIds).in('student_id', studentIds),
     supabase.from('session_evaluations').select('session_id, student_id, rating, feedback').in('session_id', sessionIds).in('student_id', studentIds),
     supabase.from('class_session_exercises').select('session_id, exercises(title, due_date)').in('session_id', sessionIds)
   ]) : [{ data: [] }, { data: [] }, { data: [] }];
@@ -33,7 +33,7 @@ async function buildLearningReports(supabase: any, classId: string, month: numbe
           return { title: exercise?.title || 'Bài tập', dueDate: exercise?.due_date || undefined };
         });
         return { date: session.session_date, startTime: session.start_time, endTime: session.end_time, title: session.title || undefined,
-          attendanceStatus: String(attendanceRecord?.status || 'not_marked').toLowerCase(), learningContent: session.learning_content || undefined,
+          attendanceStatus: String(attendanceRecord?.status || 'not_marked').toLowerCase(), attendanceNote: attendanceRecord?.note || undefined, learningContent: session.learning_content || undefined,
           exercises, rating: evaluation?.rating || undefined, feedback: evaluation?.feedback || undefined };
       })
     });

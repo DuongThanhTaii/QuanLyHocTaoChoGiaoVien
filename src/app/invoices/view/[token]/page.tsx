@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { CheckCircle2, Clock, Calendar, User, BookOpen, QrCode, Phone, Mail, Sparkles } from 'lucide-react';
 import { PublicInvoiceClientActions } from './client-actions';
 import { InvoiceReportTabs } from './InvoiceReportTabs';
+import { LearningReportTable } from '@/components/invoices/LearningReportTable';
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -385,15 +386,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {(['present', 'late', 'absent', 'excused'] as const).map((status) => <div key={status} className={`rounded-xl border p-3 text-center ${status === 'present' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : status === 'late' ? 'border-amber-200 bg-amber-50 text-amber-700' : status === 'absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-violet-200 bg-violet-50 text-violet-700'}`}><p className="text-lg font-bold">{learningReport.sessions.filter((session: any) => session.attendanceStatus === status).length}</p><p className="text-xs text-zinc-600">{attendanceLabel[status]}</p></div>)}
                 </div>
-                <div className="hidden overflow-x-auto rounded-xl border border-zinc-200 md:block print:block">
-                  <Table className="min-w-[880px]"><TableHeader className="bg-blue-600"><TableRow>{['STT', 'Ngày', 'Nội dung', 'BTVN', 'Ý thức', 'Nhận xét', 'Ghi chú'].map((label) => <TableHead key={label} className="h-11 text-center text-xs font-bold text-white">{label}</TableHead>)}</TableRow></TableHeader><TableBody>{learningReport.sessions.map((session: any, index: number) => <TableRow key={`${session.date}-${index}`} className="align-top"><TableCell className="text-center text-sm font-semibold">Buổi {index + 1}</TableCell><TableCell className="min-w-28 text-xs"><b>{new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</b><br />{session.startTime?.slice(0, 5)}–{session.endTime?.slice(0, 5)}</TableCell><TableCell className="min-w-52 whitespace-pre-line text-sm">{session.learningContent || 'Chưa cập nhật nội dung.'}</TableCell><TableCell className="min-w-36 text-sm">{session.exercises?.length ? session.exercises.map((exercise: any) => <p key={exercise.title}>• {exercise.title}</p>) : '—'}</TableCell><TableCell className="min-w-28 text-center text-sm">{session.rating ? ratingLabel[session.rating] || session.rating : '—'}</TableCell><TableCell className="min-w-56 whitespace-pre-line text-sm">{session.feedback || 'Chưa có nhận xét.'}</TableCell><TableCell className="min-w-28 text-center text-xs"><Badge variant="outline">{attendanceLabel[session.attendanceStatus] || 'Chưa điểm danh'}</Badge></TableCell></TableRow>)}</TableBody></Table>
-                </div>
-                <div className="space-y-3 md:hidden print:hidden">
-                  {learningReport.sessions.map((session: any, index: number) => <details key={`${session.date}-${index}`} className="rounded-xl border border-zinc-200 p-4" open={index === 0}>
-                    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3"><span className="font-semibold">Buổi {index + 1} · {new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span><Badge variant="outline">{attendanceLabel[session.attendanceStatus] || 'Chưa điểm danh'}</Badge></summary>
-                    <div className="mt-3 space-y-3 border-t pt-3 text-sm leading-6 text-zinc-600"><div><b className="text-zinc-900">Nội dung học:</b><p>{session.learningContent || 'Giáo viên chưa cập nhật nội dung buổi học.'}</p></div><div><b className="text-zinc-900">Bài tập:</b><p>{session.exercises?.length ? session.exercises.map((exercise: any) => exercise.title).join(', ') : 'Chưa giao bài tập.'}</p></div><div><b className="text-zinc-900">Đánh giá:</b><p>{session.rating ? ratingLabel[session.rating] || session.rating : 'Chưa đánh giá'}{session.feedback ? ` — ${session.feedback}` : ''}</p></div></div>
-                  </details>)}
-                </div>
+                <LearningReportTable sessions={learningReport.sessions} />
               </CardContent>
             </Card>
           ) : <Card className="border-0 shadow-lg bg-white rounded-3xl"><CardContent className="p-8 text-center text-sm text-zinc-500">Chưa có báo cáo học tập cho hóa đơn này.</CardContent></Card>}
