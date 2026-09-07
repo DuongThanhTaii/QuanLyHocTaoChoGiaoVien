@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GoogleDriveIcon } from '@/components/icons/GoogleDriveIcon';
 import {
   UploadCloud,
@@ -489,7 +490,7 @@ export function UploadMaterialModal({
               <Label className="text-xs font-semibold text-blue-900 dark:text-blue-200">Gắn vào buổi học <span className="font-normal text-zinc-500">(không bắt buộc)</span></Label>
               {selectedClassIds.map((classId) => {
                 const classroom = classes.find((item) => item.id === classId);
-                return <div key={classId} className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center"><span className="truncate text-xs font-medium">{classroom?.name}</span><select disabled={isUploading} value={assignmentTargets[classId] || 'none'} onChange={(event) => setAssignmentTargets((current) => ({ ...current, [classId]: event.target.value }))} className="h-9 rounded-md border border-input bg-background px-2 text-xs"><option value="none">Không gắn buổi học</option>{(scheduleTargets[classId] || []).map((target) => <option key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</option>)}</select></div>;
+                return <div key={classId} className="space-y-1.5 rounded-lg border border-blue-100 bg-white/70 p-2.5 dark:border-blue-900/50 dark:bg-zinc-900/40"><p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-100">{classroom?.name}</p><Select disabled={isUploading} value={assignmentTargets[classId] || 'none'} onValueChange={(value) => setAssignmentTargets((current) => ({ ...current, [classId]: value || 'none' }))}><SelectTrigger className="h-9 w-full bg-background text-xs"><SelectValue placeholder="Không gắn buổi học" /></SelectTrigger><SelectContent><SelectItem value="none">Không gắn buổi học</SelectItem>{(scheduleTargets[classId] || []).map((target) => <SelectItem key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</SelectItem>)}</SelectContent></Select></div>;
               })}
             </div>
           )}

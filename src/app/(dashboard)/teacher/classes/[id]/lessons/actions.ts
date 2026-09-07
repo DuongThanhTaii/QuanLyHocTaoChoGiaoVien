@@ -146,6 +146,8 @@ export async function deleteExerciseAction(exerciseId: string, classId: string) 
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  const { data: exercise } = await admin.from('exercises').select('attachments').eq('id', exerciseId).eq('class_id', classId).maybeSingle();
+
   const { error } = await admin
     .from('exercises')
     .delete()
@@ -155,6 +157,9 @@ export async function deleteExerciseAction(exerciseId: string, classId: string) 
   if (error) {
     return { error: error.message };
   }
+
+  const attachmentUrls = Array.isArray(exercise?.attachments) ? exercise.attachments.map((attachment: any) => attachment?.url).filter(Boolean) : [];
+  if (attachmentUrls.length) await admin.from('materials').delete().eq('class_id', classId).in('storage_path', attachmentUrls);
 
   revalidatePath(`/teacher/classes/${classId}/lessons`);
   revalidatePath('/teacher/content');

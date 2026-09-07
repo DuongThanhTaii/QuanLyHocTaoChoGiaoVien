@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -110,6 +110,10 @@ export function ContentManagerClient({
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [materialPendingDeletion, setMaterialPendingDeletion] = useState<MaterialRow | null>(null);
   const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    setMaterials(initialMaterials);
+  }, [initialMaterials]);
 
   const handleUploadSuccess = () => {
     window.dispatchEvent(new Event('materials:changed'));

@@ -63,6 +63,16 @@ export async function POST(req: NextRequest) {
       .in('id', ids);
 
     for (const mat of (materials || [])) {
+      // An assignment and its library material share the Drive URL. Deleting
+      // the material must also remove the assignment that students received.
+      const { data: classExercises } = await admin
+        .from('exercises')
+        .select('id, attachments')
+        .eq('class_id', mat.class_id);
+      const exerciseIds = (classExercises || []).filter((exercise: any) =>
+        Array.isArray(exercise.attachments) && exercise.attachments.some((attachment: any) => attachment?.url === mat.storage_path)
+      ).map((exercise: any) => exercise.id);
+      if (exerciseIds.length) await admin.from('exercises').delete().in('id', exerciseIds);
       // Extract Google Drive file ID from storage_path (e.g., https://drive.google.com/file/d/FILE_ID/view)
       let driveFileId: string | null = null;
       const match = mat.storage_path?.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
