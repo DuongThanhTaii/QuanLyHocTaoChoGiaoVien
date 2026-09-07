@@ -3,7 +3,7 @@ import { IAttendanceRepository } from '../ports/attendance.repository';
 import { IEnrollmentRepository } from '../ports/enrollment.repository';
 import { IClassRepository } from '../ports/class.repository';
 import { Result } from '../../domains/shared/result';
-import { Invoice, InvoiceAttendanceSession, InvoiceLineItem, InvoiceTemplateSnapshot, PaymentMethod } from '../../domains/payment/entities/invoice';
+import { Invoice, InvoiceAttendanceSession, InvoiceLearningReport, InvoiceLineItem, InvoiceTemplateSnapshot, PaymentMethod } from '../../domains/payment/entities/invoice';
 import { Money } from '../../domains/shared/value-objects';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { NotificationService } from './notification.service';
@@ -224,6 +224,7 @@ export class InvoiceService {
       notes?: string;
       lineItems?: Array<{ description: string; quantity: number; unitPrice: number; amount: number }>;
       attendanceLog?: InvoiceAttendanceSession[];
+      learningReport?: InvoiceLearningReport;
     }>;
     templateSnapshot?: InvoiceTemplateSnapshot;
   }): Promise<Result<Invoice[]>> {
@@ -293,7 +294,7 @@ export class InvoiceService {
         taxRate: 0,
         dueDate: resolvedDueDate,
         notes: item.notes,
-        templateSnapshot,
+        templateSnapshot: item.learningReport ? { ...templateSnapshot, learningReport: item.learningReport } : templateSnapshot,
         attendanceLog: isPerSession ? item.attendanceLog : undefined
       });
 

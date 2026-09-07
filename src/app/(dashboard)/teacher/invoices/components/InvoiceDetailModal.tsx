@@ -123,6 +123,10 @@ export function InvoiceDetailModal({
     window.print();
   }
 
+  function handlePrintPublic(section: 'report' | 'both') {
+    window.open(`${publicUrl}?print=${section}`, '_blank', 'noopener,noreferrer');
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-4xl lg:max-w-5xl max-h-[92vh] overflow-y-auto p-0 border-0 shadow-2xl">
@@ -190,7 +194,13 @@ export function InvoiceDetailModal({
                 onClick={handlePrint}
                 className="text-xs"
               >
-                <Printer className="w-3.5 h-3.5 mr-1.5" /> In phiếu
+                <Printer className="w-3.5 h-3.5 mr-1.5" /> In hóa đơn
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handlePrintPublic('report')} className="text-xs">
+                <Printer className="w-3.5 h-3.5 mr-1.5" /> In báo cáo
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handlePrintPublic('both')} className="text-xs">
+                <Printer className="w-3.5 h-3.5 mr-1.5" /> In cả hai
               </Button>
             </div>
           </div>

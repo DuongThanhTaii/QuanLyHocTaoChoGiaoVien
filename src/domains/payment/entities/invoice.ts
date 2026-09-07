@@ -23,6 +23,25 @@ export interface InvoiceAttendanceSession {
   status: 'present' | 'late' | 'not_marked';
 }
 
+export interface InvoiceLearningReportSession {
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  title?: string;
+  attendanceStatus: 'present' | 'late' | 'absent' | 'excused' | 'not_marked';
+  learningContent?: string;
+  exercises: Array<{ title: string; dueDate?: string }>;
+  rating?: 'EXCELLENT' | 'GOOD' | 'AVERAGE' | 'POOR';
+  feedback?: string;
+}
+
+export interface InvoiceLearningReport {
+  studentName?: string;
+  className?: string;
+  periodLabel?: string;
+  sessions: InvoiceLearningReportSession[];
+}
+
 export interface InvoiceTemplateSnapshot {
   brandName?: string;
   logoUrl?: string;
@@ -32,6 +51,7 @@ export interface InvoiceTemplateSnapshot {
   noteMessage?: string;
   themeColor?: string;
   showAttendanceLog?: boolean;
+  learningReport?: InvoiceLearningReport;
 }
 
 export class InvoicePaidEvent implements DomainEvent {

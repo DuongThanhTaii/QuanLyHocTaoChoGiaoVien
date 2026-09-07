@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getTeacherClassesAction, getMonthlyBillingPreviewAction, generateBatchInvoicesAction } from '../actions';
+import { getTeacherClassesAction, getMonthlyBillingPreviewAction, getLearningReportPreviewAction, generateBatchInvoicesAction } from '../actions';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
@@ -40,6 +40,8 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
   // Danh sách preview các học sinh
   const [previewItems, setPreviewItems] = useState<any[]>([]);
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [activePreviewTab, setActivePreviewTab] = useState<'invoice' | 'report'>('invoice');
+  const [learningReports, setLearningReports] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -74,6 +76,8 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
     try {
       const data = await getMonthlyBillingPreviewAction(selectedClassId, month, year);
       setPreviewItems(data);
+      const reports = await getLearningReportPreviewAction(selectedClassId, month, year, data.map((item: any) => item.studentId));
+      setLearningReports(reports);
       // Mặc định chọn tất cả học sinh chưa có hóa đơn
       const initialSelected = new Set<string>();
       const isPerSession = classes.find((cls) => cls.id === selectedClassId)?.fee_type === 'per_session';
@@ -255,8 +259,13 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
             </div>
           </div>
 
+          <div className="flex rounded-lg bg-zinc-100 p-1 w-full sm:w-fit">
+            <button type="button" onClick={() => setActivePreviewTab('invoice')} className={`min-h-10 rounded-md px-4 text-sm font-medium ${activePreviewTab === 'invoice' ? 'bg-white shadow text-zinc-900' : 'text-zinc-500'}`}>Hóa đơn</button>
+            <button type="button" onClick={() => setActivePreviewTab('report')} className={`min-h-10 rounded-md px-4 text-sm font-medium ${activePreviewTab === 'report' ? 'bg-white shadow text-zinc-900' : 'text-zinc-500'}`}>Báo cáo học tập</button>
+          </div>
+
           {/* Bảng Preview Tính Toán Tự Động Từ Điểm Danh */}
-          <div className="space-y-3">
+          {activePreviewTab === 'invoice' ? <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -387,7 +396,24 @@ export function GenerateBatchModal({ isOpen, onClose, onSuccess }: Props) {
                 </Table>
               </div>
             )}
-          </div>
+          </div> : (
+            <div className="space-y-4">
+              <p className="text-sm text-zinc-500">Báo cáo này sẽ được chụp lại và gửi cùng hóa đơn sau khi tạo.</p>
+              {previewItems.filter((item) => selectedStudentIds.has(item.studentId)).map((item) => {
+                const report = learningReports[item.studentId];
+                return <div key={item.studentId} className="rounded-xl border border-zinc-200 overflow-hidden">
+                  <div className="bg-zinc-50 px-4 py-3 font-semibold">{item.studentName} <span className="font-normal text-sm text-zinc-500">• {month}/{year}</span></div>
+                  <div className="divide-y">
+                    {(report?.sessions || []).map((session: any, index: number) => <details key={`${session.date}-${index}`} className="group px-4 py-3">
+                      <summary className="cursor-pointer list-none flex min-h-11 items-center justify-between gap-3 text-sm"><span className="font-medium">Buổi {index + 1} · {new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span><Badge variant="outline">{session.attendanceStatus === 'present' ? 'Có mặt' : session.attendanceStatus === 'late' ? 'Đi trễ' : session.attendanceStatus === 'absent' ? 'Vắng' : session.attendanceStatus === 'excused' ? 'Có phép' : 'Chưa điểm danh'}</Badge></summary>
+                      <div className="pt-3 space-y-2 text-sm text-zinc-600"><p><b>Nội dung:</b> {session.learningContent || 'Chưa cập nhật nội dung buổi học.'}</p><p><b>Bài tập:</b> {session.exercises?.length ? session.exercises.map((exercise: any) => exercise.title).join(', ') : 'Chưa giao bài tập.'}</p><p><b>Đánh giá:</b> {session.rating || 'Chưa đánh giá'}{session.feedback ? ` — ${session.feedback}` : ''}</p></div>
+                    </details>)}
+                  </div>
+                </div>;
+              })}
+              {selectedStudentIds.size === 0 && <div className="py-10 text-center text-sm text-zinc-500">Chọn học sinh ở tab Hóa đơn để xem báo cáo.</div>}
+            </div>
+          )}
 
           {/* Tổng tiền dự kiến */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 gap-3">

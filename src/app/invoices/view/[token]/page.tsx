@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CheckCircle2, Clock, Calendar, User, BookOpen, QrCode, Phone, Mail, Sparkles } from 'lucide-react';
 import { PublicInvoiceClientActions } from './client-actions';
+import { InvoiceReportTabs } from './InvoiceReportTabs';
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -114,6 +115,9 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   const themeColor = templateSnapshot?.themeColor || '#3B82F6';
   const showAttendance = templateSnapshot?.showAttendanceLog !== false;
   const isPerSessionInvoice = classroom?.fee_type !== 'per_month' && classroom?.fee_type !== 'per_course';
+  const learningReport = templateSnapshot?.learningReport || null;
+  const attendanceLabel: Record<string, string> = { present: 'Có mặt', late: 'Đi trễ', absent: 'Vắng', excused: 'Có phép', not_marked: 'Chưa điểm danh' };
+  const ratingLabel: Record<string, string> = { EXCELLENT: 'Xuất sắc', GOOD: 'Tốt', AVERAGE: 'Cần cố gắng', POOR: 'Chưa tập trung' };
 
   const isPaid = invoice.status === 'paid';
 
@@ -183,6 +187,8 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         )}
 
 
+        <InvoiceReportTabs
+          invoice={<>
         {/* Thẻ Phiếu Thu Chính */}
         <Card className="border-0 shadow-lg bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
           <CardContent className="p-6 sm:p-8 space-y-6">
@@ -371,6 +377,24 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
 
           </CardContent>
         </Card>
+          </>}
+          report={learningReport ? (
+            <Card className="border-0 shadow-lg bg-white rounded-3xl overflow-hidden">
+              <CardContent className="p-5 sm:p-8 space-y-5">
+                <header className="border-b pb-5 text-center"><p className="text-sm text-zinc-500">Báo cáo học tập</p><h1 className="text-xl font-bold">{learningReport.studentName || student?.full_name}</h1><p className="mt-1 text-sm text-zinc-500">{learningReport.className || classroom?.name} · Kỳ {learningReport.periodLabel || `${new Date(invoice.period_start).getMonth() + 1}/${new Date(invoice.period_start).getFullYear()}`}</p></header>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {(['present', 'late', 'absent', 'excused'] as const).map((status) => <div key={status} className="rounded-xl bg-zinc-50 p-3 text-center"><p className="text-lg font-bold">{learningReport.sessions.filter((session: any) => session.attendanceStatus === status).length}</p><p className="text-xs text-zinc-500">{attendanceLabel[status]}</p></div>)}
+                </div>
+                <div className="space-y-3">
+                  {learningReport.sessions.map((session: any, index: number) => <details key={`${session.date}-${index}`} className="rounded-xl border border-zinc-200 p-4" open={index === 0}>
+                    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3"><span className="font-semibold">Buổi {index + 1} · {new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span><Badge variant="outline">{attendanceLabel[session.attendanceStatus] || 'Chưa điểm danh'}</Badge></summary>
+                    <div className="mt-3 space-y-3 border-t pt-3 text-sm leading-6 text-zinc-600"><div><b className="text-zinc-900">Nội dung học:</b><p>{session.learningContent || 'Giáo viên chưa cập nhật nội dung buổi học.'}</p></div><div><b className="text-zinc-900">Bài tập:</b><p>{session.exercises?.length ? session.exercises.map((exercise: any) => exercise.title).join(', ') : 'Chưa giao bài tập.'}</p></div><div><b className="text-zinc-900">Đánh giá:</b><p>{session.rating ? ratingLabel[session.rating] || session.rating : 'Chưa đánh giá'}{session.feedback ? ` — ${session.feedback}` : ''}</p></div></div>
+                  </details>)}
+                </div>
+              </CardContent>
+            </Card>
+          ) : <Card className="border-0 shadow-lg bg-white rounded-3xl"><CardContent className="p-8 text-center text-sm text-zinc-500">Chưa có báo cáo học tập cho hóa đơn này.</CardContent></Card>}
+        />
 
         <div className="text-center text-xs text-zinc-400">
           Nền tảng Quản lý Lớp học & Học phí Thông minh • Mari

@@ -44,7 +44,7 @@ export default async function ClassEvaluationsPage({ params, searchParams }: { p
   const selectedDayOfWeek = selectedDate.getDay();
   const { data: slot } = await supabase
     .from('schedule_slots')
-    .select('id, start_time, end_time')
+    .select('id, start_time, end_time, learning_content')
     .eq('class_id', classId)
     .eq('day_of_week', selectedDayOfWeek)
     .limit(1)
@@ -71,7 +71,7 @@ export default async function ClassEvaluationsPage({ params, searchParams }: { p
         end_time: slot.end_time,
         status: 'SCHEDULED'
       })
-      .select('id, start_time, end_time')
+      .select('id, start_time, end_time, learning_content')
       .single();
 
     session = newSession;
@@ -94,6 +94,13 @@ export default async function ClassEvaluationsPage({ params, searchParams }: { p
     return acc;
   }, {});
 
+  const [{ data: exercises }, { data: sessionExercises }] = sessionId
+    ? await Promise.all([
+        admin.from('exercises').select('id, title, due_date').eq('class_id', classId).order('created_at', { ascending: false }),
+        admin.from('class_session_exercises').select('exercise_id').eq('session_id', sessionId)
+      ])
+    : [{ data: [] }, { data: [] }];
+
   return (
     <div className="space-y-6">
       <EvaluationManager
@@ -106,6 +113,9 @@ export default async function ClassEvaluationsPage({ params, searchParams }: { p
         isScheduled={isScheduled}
         scheduleDays={scheduleDays}
         initialEvaluations={initialEvaluations}
+        initialLearningContent={(session as any)?.learning_content || ''}
+        exercises={exercises || []}
+        selectedExerciseIds={(sessionExercises || []).map((item: any) => item.exercise_id)}
       />
     </div>
   );

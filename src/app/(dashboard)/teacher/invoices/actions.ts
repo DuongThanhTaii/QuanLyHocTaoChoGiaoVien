@@ -6,6 +6,41 @@ import { InvoiceService } from '@/application/services/invoice-generation.servic
 import { revalidatePath } from 'next/cache';
 import { PaymentMethod } from '@/domains/payment/entities/invoice';
 
+async function buildLearningReports(supabase: any, classId: string, month: number, year: number, studentIds: string[]) {
+  const start = `${year}-${String(month).padStart(2, '0')}-01`;
+  const end = `${year}-${String(month).padStart(2, '0')}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`;
+  const [{ data: classroom }, { data: students }, { data: sessions }] = await Promise.all([
+    supabase.from('classes').select('name').eq('id', classId).maybeSingle(),
+    supabase.from('students').select('id, full_name').in('id', studentIds),
+    supabase.from('class_sessions').select('id, session_date, start_time, end_time, title, learning_content').eq('class_id', classId).gte('session_date', start).lte('session_date', end).neq('status', 'CANCELLED').order('session_date')
+  ]);
+  const sessionIds = (sessions || []).map((session: any) => session.id);
+  const [{ data: attendance }, { data: evaluations }, { data: links }] = sessionIds.length ? await Promise.all([
+    supabase.from('attendance_records').select('session_id, student_id, status').in('session_id', sessionIds).in('student_id', studentIds),
+    supabase.from('session_evaluations').select('session_id, student_id, rating, feedback').in('session_id', sessionIds).in('student_id', studentIds),
+    supabase.from('class_session_exercises').select('session_id, exercises(title, due_date)').in('session_id', sessionIds)
+  ]) : [{ data: [] }, { data: [] }, { data: [] }];
+  const reports = new Map<string, any>();
+  for (const studentId of studentIds) {
+    const student = (students || []).find((item: any) => item.id === studentId);
+    reports.set(studentId, {
+      studentName: student?.full_name || 'Học sinh', className: classroom?.name || 'Lớp học', periodLabel: `${month}/${year}`,
+      sessions: (sessions || []).map((session: any) => {
+        const attendanceRecord = (attendance || []).find((item: any) => item.session_id === session.id && item.student_id === studentId);
+        const evaluation = (evaluations || []).find((item: any) => item.session_id === session.id && item.student_id === studentId);
+        const exercises = (links || []).filter((item: any) => item.session_id === session.id).map((item: any) => {
+          const exercise = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises;
+          return { title: exercise?.title || 'Bài tập', dueDate: exercise?.due_date || undefined };
+        });
+        return { date: session.session_date, startTime: session.start_time, endTime: session.end_time, title: session.title || undefined,
+          attendanceStatus: String(attendanceRecord?.status || 'not_marked').toLowerCase(), learningContent: session.learning_content || undefined,
+          exercises, rating: evaluation?.rating || undefined, feedback: evaluation?.feedback || undefined };
+      })
+    });
+  }
+  return reports;
+}
+
 async function getAuthenticatedTeacher() {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -85,6 +120,15 @@ export async function getMonthlyBillingPreviewAction(classId: string, month: num
   return result.getValue();
 }
 
+export async function getLearningReportPreviewAction(classId: string, month: number, year: number, studentIds: string[]) {
+  const { user } = await getAuthenticatedTeacher();
+  const { createClient: createAdmin } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { data: classroom } = await supabaseAdmin.from('classes').select('teacher_id').eq('id', classId).maybeSingle();
+  if (!classroom || classroom.teacher_id !== user.id) throw new Error('Bạn không có quyền xem báo cáo của lớp này');
+  return Object.fromEntries((await buildLearningReports(supabaseAdmin, classId, month, year, studentIds)).entries());
+}
+
 /**
  * Sinh hàng loạt hóa đơn cho lớp
  */
@@ -135,13 +179,15 @@ export async function generateBatchInvoicesAction(params: {
     showAttendanceLog: template?.show_attendance_log !== false
   };
 
+  const learningReports = await buildLearningReports(supabaseAdmin, params.classId, params.month, params.year, params.items.map((item) => item.studentId));
+
   const result = await service.generateBatchInvoices({
     teacherId: user.id,
     classId: params.classId,
     month: params.month,
     year: params.year,
     dueDate: params.dueDate ? new Date(params.dueDate) : undefined,
-    items: params.items,
+    items: params.items.map((item) => ({ ...item, learningReport: learningReports.get(item.studentId) })),
     templateSnapshot
   });
 

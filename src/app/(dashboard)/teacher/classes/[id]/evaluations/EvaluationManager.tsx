@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Sparkles, Smile, AlertCircle, AlertTriangle, CheckCircle2, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { saveSessionEvaluation } from '../../evaluation-actions';
+import { saveSessionEvaluation, saveSessionLearningReport } from '../../evaluation-actions';
 import { toast } from 'sonner';
 import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -30,6 +30,9 @@ type EvaluationManagerProps = {
   isScheduled: boolean;
   scheduleDays: number[];
   initialEvaluations?: Record<string, { rating: string; feedback: string }>;
+  initialLearningContent?: string;
+  exercises?: Array<{ id: string; title: string; due_date?: string | null }>;
+  selectedExerciseIds?: string[];
 };
 
 const ratingColors: Record<string, { bg: string; border: string; text: string }> = {
@@ -49,6 +52,7 @@ export function EvaluationManager({
   isScheduled,
   scheduleDays,
   initialEvaluations = {}
+  , initialLearningContent = '', exercises = [], selectedExerciseIds = []
 }: EvaluationManagerProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -66,6 +70,9 @@ export function EvaluationManager({
     }, {})
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [learningContent, setLearningContent] = useState(initialLearningContent);
+  const [attachedExerciseIds, setAttachedExerciseIds] = useState<string[]>(selectedExerciseIds);
+  const [isSavingLearning, setIsSavingLearning] = useState(false);
 
   const selectedDate = new Date(selectedDateStr);
   const formattedDate = format(selectedDate, 'dd/MM/yyyy');
@@ -113,6 +120,26 @@ export function EvaluationManager({
     });
     setEvaluationsState(newState);
     toast.info('Đã chọn mức "Tốt" cho toàn bộ học sinh');
+  };
+
+  const saveLearningReport = async () => {
+    if (!sessionId) return;
+    setIsSavingLearning(true);
+    const formData = new FormData();
+    formData.append('classId', classId);
+    formData.append('sessionId', sessionId);
+    formData.append('learningContent', learningContent);
+    attachedExerciseIds.forEach((id) => formData.append('exerciseIds', id));
+    const result = await saveSessionLearningReport(formData);
+    setIsSavingLearning(false);
+    if (result.success) toast.success('Đã lưu nội dung và bài tập của buổi học');
+    else toast.error(result.error || 'Không thể lưu nội dung buổi học');
+  };
+
+  const toggleExercise = (exerciseId: string) => {
+    setAttachedExerciseIds((current) => current.includes(exerciseId)
+      ? current.filter((id) => id !== exerciseId)
+      : [...current, exerciseId]);
   };
 
   const handleSaveAll = async () => {
@@ -228,6 +255,37 @@ export function EvaluationManager({
           <p className="text-sm text-zinc-500">Giờ học: {timeRange}</p>
         </div>
       </div>
+
+      {sessionId && (
+        <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-4 space-y-4">
+          <div>
+            <h3 className="font-semibold text-zinc-900">Nội dung & bài tập buổi học</h3>
+            <p className="text-sm text-zinc-500">Thông tin này sẽ xuất hiện trong báo cáo gửi phụ huynh cùng hóa đơn.</p>
+          </div>
+          <textarea
+            value={learningContent}
+            onChange={(event) => setLearningContent(event.target.value)}
+            placeholder="Ví dụ: Ôn tập phương trình bậc nhất; thực hành 10 bài tập..."
+            className="min-h-24 w-full rounded-lg border border-zinc-200 bg-white p-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+          />
+          {exercises.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-zinc-700">Bài tập giao trong buổi này</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {exercises.map((exercise) => (
+                  <label key={exercise.id} className="flex min-h-11 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-sm cursor-pointer">
+                    <input type="checkbox" checked={attachedExerciseIds.includes(exercise.id)} onChange={() => toggleExercise(exercise.id)} />
+                    <span className="min-w-0 flex-1 truncate">{exercise.title}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+          <Button type="button" variant="outline" onClick={saveLearningReport} disabled={isSavingLearning} className="min-h-11">
+            {isSavingLearning ? 'Đang lưu...' : 'Lưu nội dung buổi học'}
+          </Button>
+        </div>
+      )}
 
       <div className="space-y-4">
         {students.length === 0 ? (
