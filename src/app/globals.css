@@ -267,3 +267,20 @@
 .animate-rotate {
   animation: rotate 3s linear infinite both;
 }
+
+/* Bảng báo cáo học tập: dùng tông cam Mari và xen kẽ cột để dễ theo dõi. */
+.learning-report table thead {
+  background: linear-gradient(90deg, #f97316, #ea580c) !important;
+}
+
+.learning-report table tbody td:nth-child(even) {
+  background-color: #fff7ed;
+}
+
+.learning-report table tbody tr:hover td {
+  background-color: #ffedd5;
+}
+
+.learning-report table tbody td {
+  border-color: #fed7aa;
+}
