@@ -4,6 +4,15 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { NotificationService } from '@/application/services/notification.service';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
+
+async function isTeacher(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const [{ data: roleData }, { data: profileData }] = await Promise.all([
+    supabase.from('user_roles').select('role').eq('user_id', userId).eq('is_primary', true).maybeSingle(),
+    supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
+  ]);
+  return (roleData?.role || profileData?.role) === 'teacher';
+}
 
 export async function saveSessionLearningReport(formData: FormData) {
   const supabase = await createClient();
@@ -48,7 +57,7 @@ export async function saveSessionEvaluation(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || user.user_metadata?.role !== 'teacher') {
+  if (!user || !await isTeacher(supabase, user.id)) {
     return { error: 'Bạn không có quyền thực hiện thao tác này.' };
   }
 
@@ -65,8 +74,13 @@ export async function saveSessionEvaluation(formData: FormData) {
     return { error: 'Dữ liệu đánh giá chưa hợp lệ.' };
   }
 
-  const { createClient: createAdmin } = require('@supabase/supabase-js');
-  const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { data: classroom } = await supabase
+    .from('classes').select('teacher_id').eq('id', parsed.data.classId).maybeSingle();
+  if (!classroom || classroom.teacher_id !== user.id) {
+    return { error: 'Bạn không có quyền đánh giá lớp này.' };
+  }
+
+  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
   // 1. Lưu hoặc cập nhật vào bảng session_evaluations
   const { error: upsertError } = await supabaseAdmin
