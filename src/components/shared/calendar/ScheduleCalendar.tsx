@@ -237,7 +237,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                         onClick={() => handleSlotClick(slot.class_id)}
                         className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all group ${classColors.get(slot.class_id)}`}
                       >
-                        <div className="font-semibold text-sm mb-1 leading-tight group-hover:underline">
+                        <div className="mb-1 text-center text-sm font-semibold leading-tight group-hover:underline">
                           {slot.title || slot.classes?.name || 'Buổi học'}
                         </div>
                         <div className="flex items-center gap-1.5 text-xs opacity-90 mb-1">
