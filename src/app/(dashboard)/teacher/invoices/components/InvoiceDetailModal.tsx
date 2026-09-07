@@ -43,6 +43,7 @@ export function InvoiceDetailModal({
   onCancelInvoice
 }: Props) {
   const [copied, setCopied] = useState(false);
+  const [viewTab, setViewTab] = useState<'invoice' | 'report'>('invoice');
 
   if (!invoice) return null;
 
@@ -93,6 +94,9 @@ export function InvoiceDetailModal({
   const noteMessage = templateSnapshot?.noteMessage || 'Cảm ơn Quý phụ huynh và học sinh đã tin tưởng đồng hành cùng thầy cô!';
   const themeColor = templateSnapshot?.themeColor || '#3B82F6';
   const showAttendanceLog = templateSnapshot?.showAttendanceLog !== false;
+  const learningReport = templateSnapshot?.learningReport || null;
+  const attendanceLabel: Record<string, string> = { present: 'Có mặt', late: 'Đi trễ', absent: 'Vắng', excused: 'Có phép', not_marked: 'Chưa điểm danh' };
+  const ratingLabel: Record<string, string> = { EXCELLENT: 'Xuất sắc', GOOD: 'Tốt', AVERAGE: 'Cần cố gắng', POOR: 'Chưa tập trung' };
   const classroom = Array.isArray(invoice.classes) ? invoice.classes[0] : invoice.classes;
   const isPerSessionInvoice = classroom?.fee_type === 'per_session' || Array.isArray(invoice.billingSessions);
 
@@ -205,8 +209,13 @@ export function InvoiceDetailModal({
             </div>
           </div>
 
+          <div className="flex w-full sm:w-fit rounded-lg bg-zinc-100 p-1 print:hidden">
+            <button type="button" onClick={() => setViewTab('invoice')} className={`min-h-10 flex-1 rounded-md px-4 text-sm font-medium ${viewTab === 'invoice' ? 'bg-white shadow text-zinc-900' : 'text-zinc-500'}`}>Hóa đơn</button>
+            <button type="button" onClick={() => setViewTab('report')} className={`min-h-10 flex-1 rounded-md px-4 text-sm font-medium ${viewTab === 'report' ? 'bg-white shadow text-zinc-900' : 'text-zinc-500'}`}>Báo cáo học tập</button>
+          </div>
+
           {/* Mẫu Hóa đơn chính (Phiếu Thu Điện Tử) */}
-          <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 bg-white dark:bg-zinc-900 shadow-sm space-y-6">
+          <div className={`border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 bg-white dark:bg-zinc-900 shadow-sm space-y-6 ${viewTab === 'invoice' ? '' : 'hidden'}`}>
             
             {/* Header Thương hiệu */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-6">
@@ -418,6 +427,14 @@ export function InvoiceDetailModal({
             </div>
 
           </div>
+
+          {viewTab === 'report' && (
+            learningReport ? <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8 space-y-5">
+              <header className="border-b pb-5 text-center"><p className="text-sm text-zinc-500">Báo cáo học tập</p><h2 className="text-xl font-bold">{learningReport.studentName || studentName}</h2><p className="mt-1 text-sm text-zinc-500">{learningReport.className || className} · Kỳ {learningReport.periodLabel || ''}</p></header>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">{(['present', 'late', 'absent', 'excused'] as const).map((status) => <div key={status} className="rounded-xl bg-zinc-50 p-3 text-center"><p className="text-lg font-bold">{learningReport.sessions.filter((session: any) => session.attendanceStatus === status).length}</p><p className="text-xs text-zinc-500">{attendanceLabel[status]}</p></div>)}</div>
+              <div className="space-y-3">{learningReport.sessions.map((session: any, index: number) => <details key={`${session.date}-${index}`} className="rounded-xl border border-zinc-200 p-4" open={index === 0}><summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3"><span className="font-semibold">Buổi {index + 1} · {new Date(`${session.date}T00:00:00`).toLocaleDateString('vi-VN')}</span><Badge variant="outline">{attendanceLabel[session.attendanceStatus] || 'Chưa điểm danh'}</Badge></summary><div className="mt-3 space-y-3 border-t pt-3 text-sm leading-6 text-zinc-600"><p><b className="text-zinc-900">Nội dung:</b> {session.learningContent || 'Chưa cập nhật nội dung buổi học.'}</p><p><b className="text-zinc-900">Bài tập:</b> {session.exercises?.length ? session.exercises.map((exercise: any) => exercise.title).join(', ') : 'Chưa giao bài tập.'}</p><p><b className="text-zinc-900">Đánh giá:</b> {session.rating ? ratingLabel[session.rating] || session.rating : 'Chưa đánh giá'}{session.feedback ? ` — ${session.feedback}` : ''}</p></div></details>)}</div>
+            </div> : <div className="rounded-2xl border border-dashed p-10 text-center text-sm text-zinc-500">Hóa đơn này được tạo trước khi tính năng báo cáo học tập có mặt nên chưa có snapshot báo cáo.</div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
