@@ -1,211 +1,43 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import React, { useEffect, useRef, useState } from 'react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import {
-  UploadCloud,
-  FileCheck2,
-  Clock,
-  Loader2,
-  Link2,
-  Send,
-} from 'lucide-react';
+import { Camera, FileUp, Link2, Loader2, Plus, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-interface StudentSubmitModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  exercise: {
-    id: string;
-    title: string;
-    description?: string | null;
-    due_date?: string | null;
-  } | null;
-  classId: string;
-  previousSubmission?: {
-    storage_path?: string;
-    created_at?: string;
-  } | null;
-  onSuccess?: () => void;
+type LocalAsset = { id: string; file?: File; url?: string; name: string; kind: 'file' | 'image' | 'link'; progress: number };
+
+async function compressImage(file: File) {
+  if (!file.type.startsWith('image/') || file.size < 700 * 1024) return file;
+  const image = await createImageBitmap(file);
+  const scale = Math.min(1, 1920 / Math.max(image.width, image.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(image.width * scale); canvas.height = Math.round(image.height * scale);
+  canvas.getContext('2d')?.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', 0.82));
+  return blob ? new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp' }) : file;
 }
 
-export function StudentSubmitModal({
-  isOpen,
-  onClose,
-  exercise,
-  classId,
-  previousSubmission,
-  onSuccess,
-}: StudentSubmitModalProps) {
-  const router = useRouter();
-  const [content, setContent] = useState('');
-  const [attachmentUrl, setAttachmentUrl] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (previousSubmission?.storage_path) {
-      if (previousSubmission.storage_path.startsWith('http')) {
-        setAttachmentUrl(previousSubmission.storage_path);
-      } else {
-        setContent(previousSubmission.storage_path);
-      }
-    } else {
-      setContent('');
-      setAttachmentUrl('');
-    }
-  }, [previousSubmission, isOpen]);
-
+export function StudentSubmitModal({ isOpen, onClose, exercise, previousSubmission, onSuccess }: any) {
+  const router = useRouter(); const fileRef = useRef<HTMLInputElement>(null); const cameraRef = useRef<HTMLInputElement>(null);
+  const [note, setNote] = useState(''); const [link, setLink] = useState(''); const [assets, setAssets] = useState<LocalAsset[]>([]); const [submitting, setSubmitting] = useState(false);
+  useEffect(() => { if (isOpen) { setNote(previousSubmission?.note || ''); setLink(''); setAssets([]); } }, [isOpen, previousSubmission]);
   if (!exercise) return null;
-
-  const isExpired = exercise.due_date ? new Date(exercise.due_date).getTime() < Date.now() : false;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!content.trim() && !attachmentUrl.trim()) {
-      toast.error('Vui lòng nhập nội dung bài làm hoặc dán link bài nộp');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/student/assignments/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          exerciseId: exercise.id,
-          classId,
-          content: content.trim(),
-          attachmentUrl: attachmentUrl.trim(),
-          fileName: exercise.title,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Nộp bài thất bại');
-
-      toast.success(previousSubmission ? 'Cập nhật bài nộp thành công!' : 'Nộp bài tập thành công!');
-      onClose();
-      if (onSuccess) onSuccess();
-      router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi khi nộp bài');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const addFiles = (files: FileList | null) => files && setAssets((current) => [...current, ...Array.from(files).slice(0, 10 - current.length).map((file): LocalAsset => ({ id: crypto.randomUUID(), file, name: file.name, kind: file.type.startsWith('image/') ? 'image' : 'file', progress: 0 }))]);
+  const addLink = () => { try { const url = new URL(link); setAssets((current) => [...current, { id: crypto.randomUUID(), url: url.toString(), name: url.hostname, kind: 'link', progress: 100 }]); setLink(''); } catch { toast.error('Link không hợp lệ'); } };
+  const upload = async (asset: LocalAsset) => {
+    if (asset.kind === 'link') return { kind: 'link', url: asset.url, name: asset.name };
+    const file = await compressImage(asset.file!);
+    const response = await fetch('/api/student/assignments/upload-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exerciseId: exercise.id, name: file.name, contentType: file.type || 'application/octet-stream', size: file.size }) });
+    const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Không thể chuẩn bị tải tệp');
+    await new Promise<void>((resolve, reject) => { const xhr = new XMLHttpRequest(); xhr.open('PUT', data.uploadUrl); xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream'); xhr.upload.onprogress = (event) => { if (event.lengthComputable) setAssets((all) => all.map((item) => item.id === asset.id ? { ...item, progress: Math.round(event.loaded / event.total * 100) } : item)); }; xhr.onload = () => xhr.status < 300 ? resolve() : reject(new Error('Tải tệp lên R2 thất bại')); xhr.onerror = () => reject(new Error('Mất kết nối khi tải tệp')); xhr.send(file); });
+    return { kind: asset.kind, objectKey: data.objectKey, name: file.name, contentType: file.type, size: file.size };
   };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg bg-white dark:bg-zinc-950 p-6">
-        <DialogHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600">
-              <FileCheck2 className="w-5 h-5" />
-            </div>
-            <div>
-              <DialogTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                {previousSubmission ? 'Cập nhật bài nộp' : 'Nộp bài tập'}
-              </DialogTitle>
-              <p className="text-xs text-zinc-500 font-medium truncate max-w-sm">
-                {exercise.title}
-              </p>
-            </div>
-          </div>
-        </DialogHeader>
-
-        {exercise.due_date && (
-          <div
-            className={`p-2.5 rounded-lg text-xs flex items-center justify-between ${
-              isExpired
-                ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900'
-                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900'
-            }`}
-          >
-            <div className="flex items-center gap-1.5 font-medium">
-              <Clock className="w-3.5 h-3.5 shrink-0" />
-              <span>
-                Hạn nộp: {new Date(exercise.due_date).toLocaleString('vi-VN')}
-              </span>
-            </div>
-            <span className="font-semibold text-[11px]">
-              {isExpired ? 'Đã hết hạn' : 'Đang mở'}
-            </span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-          {/* Link Drive bài làm */}
-          <div className="space-y-1.5">
-            <Label htmlFor="submit-link" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5 text-blue-600" />
-              <span>Link bài làm (Google Drive, Docs, Sheets, Canva, PDF...)</span>
-            </Label>
-            <Input
-              id="submit-link"
-              type="url"
-              value={attachmentUrl}
-              onChange={(e) => setAttachmentUrl(e.target.value)}
-              placeholder="https://drive.google.com/file/d/..."
-              className="bg-white dark:bg-zinc-900 text-xs"
-              disabled={isSubmitting}
-            />
-            <p className="text-[11px] text-zinc-400">
-              Hãy đảm bảo đã bật quyền "Bất kỳ ai có đường liên kết đều có thể xem".
-            </p>
-          </div>
-
-          {/* Textarea ghi chú / bài làm văn bản */}
-          <div className="space-y-1.5">
-            <Label htmlFor="submit-content" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Nội dung bài làm / Lời nhắn cho thầy cô
-            </Label>
-            <Textarea
-              id="submit-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Ghi chú bài làm hoặc nội dung trả lời câu hỏi..."
-              rows={4}
-              className="bg-white dark:bg-zinc-900 text-xs resize-none"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <DialogFooter className="gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-            <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
-              Hủy
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white min-w-[100px]"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  Đang nộp...
-                </>
-              ) : (
-                <>
-                  <Send className="w-3.5 h-3.5 mr-1.5" />
-                  {previousSubmission ? 'Cập nhật bài nộp' : 'Gửi bài nộp'}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); if (!assets.length) return toast.error('Hãy thêm file, ảnh hoặc link bài làm'); setSubmitting(true); try { const uploaded = await Promise.all(assets.map(upload)); const response = await fetch('/api/student/assignments/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exerciseId: exercise.id, note, assets: uploaded }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Nộp bài thất bại'); toast.success(data.message); onClose(); onSuccess?.(); router.refresh(); } catch (error: any) { toast.error(error.message || 'Nộp bài thất bại'); } finally { setSubmitting(false); } };
+  return <Dialog open={isOpen} onOpenChange={(open) => !open && !submitting && onClose()}><DialogContent className="sm:max-w-lg"><DialogHeader><DialogTitle>{previousSubmission ? 'Cập nhật bài nộp' : 'Nộp bài tập'} · {exercise.title}</DialogTitle></DialogHeader><form onSubmit={submit} className="space-y-4"><div className="grid grid-cols-2 gap-2"><Button type="button" variant="outline" disabled={submitting} onClick={() => fileRef.current?.click()}><FileUp className="mr-2 h-4 w-4" />Chọn file/ảnh</Button><Button type="button" variant="outline" disabled={submitting} onClick={() => cameraRef.current?.click()}><Camera className="mr-2 h-4 w-4" />Chụp ảnh</Button><input ref={fileRef} className="hidden" type="file" multiple onChange={(e) => addFiles(e.target.files)} /><input ref={cameraRef} className="hidden" type="file" accept="image/*" capture="environment" multiple onChange={(e) => addFiles(e.target.files)} /></div><div className="flex gap-2"><Input type="url" value={link} disabled={submitting} onChange={(e) => setLink(e.target.value)} placeholder="Dán link Google Drive, Docs, Canva…" /><Button type="button" variant="outline" onClick={addLink} disabled={submitting || !link}><Plus className="h-4 w-4" /></Button></div>{assets.length > 0 && <div className="space-y-2 rounded-lg border p-2">{assets.map((asset) => <div key={asset.id} className="flex items-center gap-2 text-xs"><span className="min-w-0 flex-1 truncate">{asset.kind === 'link' ? <Link2 className="mr-1 inline h-3 w-3" /> : null}{asset.name}</span>{submitting && asset.kind !== 'link' && <span>{asset.progress}%</span>}<button type="button" disabled={submitting} onClick={() => setAssets((all) => all.filter((item) => item.id !== asset.id))}><X className="h-4 w-4" /></button></div>)}</div>}<p className="text-[11px] text-zinc-500">Ảnh lớn được tự nén xuống tối đa 1920px trước khi tải lên. Tối đa 10 mục, 25 MB mỗi tệp.</p><div><Label>Nội dung/Lời nhắn cho giáo viên</Label><Textarea value={note} disabled={submitting} onChange={(e) => setNote(e.target.value)} className="mt-1" rows={3} /></div><DialogFooter><Button type="button" variant="outline" disabled={submitting} onClick={onClose}>Hủy</Button><Button type="submit" disabled={submitting}>{submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang nộp…</> : <><Send className="mr-2 h-4 w-4" />Gửi bài nộp</>}</Button></DialogFooter></form></DialogContent></Dialog>;
 }

@@ -103,8 +103,10 @@ export async function POST(req: NextRequest) {
     const type = (formData.get('type') as string) === 'ASSIGNMENT' ? 'ASSIGNMENT' : 'LECTURE';
     const dueDateStr = formData.get('dueDate') as string | null;
     const classIdsRaw = formData.get('classIds') as string | null;
+    const assignmentTargetsRaw = formData.get('assignmentTargets') as string | null;
 
     let classIds: string[] = [];
+    let assignmentTargets: Record<string, { sessionId?: string | null; scheduleSlotId?: string | null }> = {};
     if (classIdsRaw) {
       try {
         classIds = JSON.parse(classIdsRaw);
@@ -113,12 +115,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (assignmentTargetsRaw) {
+      try { assignmentTargets = JSON.parse(assignmentTargetsRaw); } catch { return NextResponse.json({ error: 'Thông tin buổi học không hợp lệ' }, { status: 400 }); }
+    }
+
     if (!file) {
       return NextResponse.json({ error: 'Vui lòng chọn file để tải lên' }, { status: 400 });
     }
 
     if (classIds.length === 0) {
       return NextResponse.json({ error: 'Vui lòng chọn ít nhất một lớp học để đăng bài' }, { status: 400 });
+    }
+
+    const { data: ownedClasses } = await admin.from('classes').select('id').in('id', classIds).eq('teacher_id', user.id);
+    if ((ownedClasses || []).length !== classIds.length) {
+      return NextResponse.json({ error: 'Bạn không có quyền đăng bài cho một hoặc nhiều lớp đã chọn' }, { status: 403 });
     }
 
     // 5. Perform multipart upload to Google Drive API v3
@@ -221,6 +232,18 @@ export async function POST(req: NextRequest) {
       } else {
         // ASSIGNMENT: Create exercise in exercises table
         const dueDate = dueDateStr ? new Date(dueDateStr).toISOString() : null;
+        const target = assignmentTargets[classId] || {};
+        if (target.sessionId && target.scheduleSlotId) {
+          return NextResponse.json({ error: 'Mỗi bài tập chỉ được gắn một buổi học hoặc một lịch học' }, { status: 400 });
+        }
+        if (target.sessionId) {
+          const { data: session } = await admin.from('class_sessions').select('id').eq('id', target.sessionId).eq('class_id', classId).maybeSingle();
+          if (!session) return NextResponse.json({ error: 'Buổi học đã chọn không thuộc lớp' }, { status: 400 });
+        }
+        if (target.scheduleSlotId) {
+          const { data: slot } = await admin.from('schedule_slots').select('id').eq('id', target.scheduleSlotId).eq('class_id', classId).maybeSingle();
+          if (!slot) return NextResponse.json({ error: 'Lịch học đã chọn không thuộc lớp' }, { status: 400 });
+        }
 
         await admin.from('exercises').insert({
           class_id: classId,
@@ -228,6 +251,8 @@ export async function POST(req: NextRequest) {
           description: description || null,
           due_date: dueDate,
           max_score: 10,
+          session_id: target.sessionId || null,
+          schedule_slot_id: target.scheduleSlotId || null,
           attachments: [
             {
               name: title,

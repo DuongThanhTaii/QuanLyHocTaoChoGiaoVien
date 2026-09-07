@@ -46,6 +46,7 @@ interface UploadMaterialModalProps {
   classes?: ClassOption[];
   preSelectedClassId?: string;
   onSuccess?: (result?: UploadResponse) => void;
+  scheduleTargets?: Record<string, Array<{ id: string; type: 'session' | 'slot'; label: string }>>;
 }
 
 export function UploadMaterialModal({
@@ -54,6 +55,7 @@ export function UploadMaterialModal({
   classes = [],
   preSelectedClassId,
   onSuccess,
+  scheduleTargets = {},
 }: UploadMaterialModalProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,6 +69,8 @@ export function UploadMaterialModal({
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [assignmentTargets, setAssignmentTargets] = useState<Record<string, string>>({});
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     if (preSelectedClassId) {
@@ -91,6 +95,8 @@ export function UploadMaterialModal({
     }
     setIsUploading(false);
     setErrorMessage(null);
+    setAssignmentTargets({});
+    setUploadProgress(0);
   };
 
   const handleClose = () => {
@@ -181,31 +187,39 @@ export function UploadMaterialModal({
     formData.append('type', type);
     formData.append('description', description.trim());
     formData.append('classIds', JSON.stringify(selectedClassIds));
+    formData.append('assignmentTargets', JSON.stringify(Object.fromEntries(Object.entries(assignmentTargets)
+      .filter(([, value]) => value && value !== 'none')
+      .map(([classId, value]) => {
+        const [targetType, id] = value.split(':');
+        return [classId, targetType === 'session' ? { sessionId: id } : { scheduleSlotId: id }];
+      }))));
     if (type === 'ASSIGNMENT' && dueDate) {
       formData.append('dueDate', dueDate);
     }
 
     try {
-      const response = await fetch('/api/teacher/content/upload', {
-        method: 'POST',
-        body: formData,
+      const responseText = await new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/teacher/content/upload');
+        xhr.upload.onprogress = (event) => { if (event.lengthComputable) setUploadProgress(Math.min(90, Math.round(event.loaded / event.total * 90))); };
+        xhr.onerror = () => reject(new Error('Không thể kết nối đến máy chủ'));
+        xhr.onload = () => {
+          setUploadProgress(100);
+          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.responseText);
+          else reject(new Error(xhr.responseText || 'Có lỗi xảy ra khi tải file lên.'));
+        };
+        xhr.send(formData);
       });
-
-      const responseText = await response.text();
       let data: UploadResponse;
 
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch {
-        if (response.status === 413 || /request entity too large/i.test(responseText)) {
+        if (/request entity too large/i.test(responseText)) {
           throw new Error('Tệp vượt giới hạn tải lên của máy chủ. Vui lòng nén tệp hoặc thử lại bằng tệp nhỏ hơn.');
         }
 
         throw new Error('Máy chủ trả về phản hồi không hợp lệ. Vui lòng thử lại sau ít phút.');
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Có lỗi xảy ra khi tải file lên.');
       }
 
       toast.success(
@@ -470,6 +484,16 @@ export function UploadMaterialModal({
             </div>
           )}
 
+          {type === 'ASSIGNMENT' && selectedClassIds.length > 0 && (
+            <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-3 dark:border-blue-900/40 dark:bg-blue-950/20">
+              <Label className="text-xs font-semibold text-blue-900 dark:text-blue-200">Gắn vào buổi học <span className="font-normal text-zinc-500">(không bắt buộc)</span></Label>
+              {selectedClassIds.map((classId) => {
+                const classroom = classes.find((item) => item.id === classId);
+                return <div key={classId} className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center"><span className="truncate text-xs font-medium">{classroom?.name}</span><select disabled={isUploading} value={assignmentTargets[classId] || 'none'} onChange={(event) => setAssignmentTargets((current) => ({ ...current, [classId]: event.target.value }))} className="h-9 rounded-md border border-input bg-background px-2 text-xs"><option value="none">Không gắn buổi học</option>{(scheduleTargets[classId] || []).map((target) => <option key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</option>)}</select></div>;
+              })}
+            </div>
+          )}
+
           {/* Title Input */}
           <div className="space-y-1.5">
             <Label htmlFor="material-title" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
@@ -529,6 +553,7 @@ export function UploadMaterialModal({
               )}
             </Button>
           </DialogFooter>
+          {isUploading && <div className="space-y-1"><div className="flex justify-between text-[11px] text-zinc-500"><span>{uploadProgress < 100 ? 'Đang tải tệp lên…' : 'Đang tạo bài tập…'}</span><span>{uploadProgress}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"><div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${uploadProgress}%` }} /></div></div>}
         </form>
       </DialogContent>
     </Dialog>

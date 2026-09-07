@@ -1,0 +1,14 @@
+'use client';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import { ExternalLink, Loader2 } from 'lucide-react';
+
+export function SubmissionManager({ exerciseId, students, submissions }: { exerciseId: string; students: any[]; submissions: any[] }) {
+  const [rows, setRows] = useState(submissions);
+  const byStudent = new Map(rows.map((row: any) => [row.student_id, row]));
+  const grade = async (submission: any, score: string, feedback: string) => { const response = await fetch(`/api/teacher/assignments/${exerciseId}/grade`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ submissionId: submission.id, score, feedback }) }); const data = await response.json(); if (!response.ok) return toast.error(data.error); setRows((all: any[]) => all.map((row) => row.id === submission.id ? { ...row, score: Number(score), teacher_feedback: feedback } : row)); toast.success('Đã lưu điểm'); };
+  return <div className="space-y-3">{students.map((student) => { const submission = byStudent.get(student.id); return <div key={student.id} className="rounded-xl border p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-semibold text-sm">{student.full_name}</p><p className="text-xs text-zinc-500">{submission ? `${submission.is_late ? 'Nộp trễ' : 'Đã nộp'} · ${new Date(submission.submitted_at).toLocaleString('vi-VN')}` : 'Chưa nộp'}</p></div>{submission && <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs text-emerald-700">{submission.score ?? 'Chưa chấm'}/10</span>}</div>{submission && <div className="mt-3 space-y-2"><p className="text-sm whitespace-pre-wrap">{submission.note}</p><div className="flex flex-wrap gap-2">{(submission.submission_assets || []).map((asset: any) => asset.external_url ? <a key={asset.id} className="text-xs text-blue-600 underline" href={asset.external_url} target="_blank">{asset.name}</a> : <a key={asset.id} className="inline-flex items-center gap-1 text-xs text-blue-600 underline" href={`/api/teacher/assignments/${exerciseId}/asset/${asset.id}`} target="_blank"><ExternalLink className="h-3 w-3" />{asset.name}</a>)}</div><div className="grid gap-2 sm:grid-cols-[100px_1fr_auto]"><Input defaultValue={submission.score ?? ''} type="number" min="0" max="10" step="0.25" id={`score-${submission.id}`} placeholder="Điểm /10"/><Textarea defaultValue={submission.teacher_feedback || ''} id={`feedback-${submission.id}`} rows={1} placeholder="Nhận xét"/><Button onClick={() => grade(submission, (document.getElementById(`score-${submission.id}`) as HTMLInputElement).value, (document.getElementById(`feedback-${submission.id}`) as HTMLTextAreaElement).value)}>Lưu điểm</Button></div></div>}</div>; })}</div>;
+}

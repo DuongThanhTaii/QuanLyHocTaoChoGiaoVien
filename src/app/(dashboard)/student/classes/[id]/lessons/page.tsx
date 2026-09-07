@@ -51,19 +51,15 @@ export default async function StudentLessonsPage({
     .eq('class_id', id)
     .order('created_at', { ascending: false });
 
-  // 4. Fetch student's submissions for this class
-  const { data: submissionsData } = await admin
-    .from('materials')
-    .select('id, name, storage_path, file_type, created_at')
-    .eq('class_id', id)
-    .eq('uploaded_by', user.id)
-    .like('file_type', 'SUBMISSION:%');
+  // 4. Fetch the student's normalized submissions and assets.
+  const { data: student } = await admin.from('students').select('id').eq('user_id', user.id).maybeSingle();
+  const { data: submissionsData } = student ? await admin
+    .from('assignment_submissions')
+    .select('id, exercise_id, note, is_late, score, teacher_feedback, submitted_at, submission_assets(*)')
+    .eq('student_id', student.id) : { data: [] };
 
   const mySubmissions: Record<string, any> = {};
-  (submissionsData || []).forEach((sub) => {
-    const exId = sub.file_type.replace('SUBMISSION:', '');
-    mySubmissions[exId] = sub;
-  });
+  (submissionsData || []).forEach((sub: any) => { mySubmissions[sub.exercise_id] = sub; });
 
   return (
     <StudentLessonsClient

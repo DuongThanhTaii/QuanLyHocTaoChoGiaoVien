@@ -75,6 +75,8 @@ export interface ExerciseRow {
   due_date?: string | null;
   max_score?: number | null;
   attachments?: any;
+  session_id?: string | null;
+  schedule_slot_id?: string | null;
   created_at: string;
 }
 
@@ -84,6 +86,7 @@ interface ContentManagerClientProps {
   initialMaterials: MaterialRow[];
   lessons: LessonRow[];
   exercises: ExerciseRow[];
+  scheduleTargets?: Record<string, Array<{ id: string; type: 'session' | 'slot'; label: string }>>;
 }
 
 export function ContentManagerClient({
@@ -92,6 +95,7 @@ export function ContentManagerClient({
   initialMaterials,
   lessons,
   exercises,
+  scheduleTargets,
 }: ContentManagerClientProps) {
   const router = useRouter();
   const [materials, setMaterials] = useState<MaterialRow[]>(initialMaterials);
@@ -731,15 +735,7 @@ export function ContentManagerClient({
                                   </div>
 
                                   {attached?.url && (
-                                    <Link
-                                      href={attached.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-zinc-400 hover:text-blue-600 shrink-0 p-1"
-                                      title="Xem trên Drive"
-                                    >
-                                      <ExternalLink className="w-4 h-4" />
-                                    </Link>
+                                    <div className="flex shrink-0 items-center gap-1"><Link href={`/teacher/classes/${ex.class_id}/assignments/${ex.id}`} className="rounded px-2 py-1 text-[11px] font-medium text-blue-600 hover:bg-blue-50" title="Quản lý bài nộp">Bài nộp</Link><Link href={attached.url} target="_blank" rel="noopener noreferrer" className="p-1 text-zinc-400 hover:text-blue-600" title="Xem trên Drive"><ExternalLink className="h-4 w-4" /></Link></div>
                                   )}
                                 </div>
                               );
@@ -788,6 +784,7 @@ export function ContentManagerClient({
         onClose={() => setIsUploadOpen(false)}
         classes={classes}
         preSelectedClassId={preSelectedClassForUpload}
+        scheduleTargets={scheduleTargets}
         onSuccess={handleUploadSuccess}
       />
 

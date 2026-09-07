@@ -50,6 +50,11 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
     .order('session_date', { ascending: false })
     .order('start_time', { ascending: false });
 
+  const { data: scheduledExercises } = await admin
+    .from('exercises')
+    .select('id, title, due_date, session_id, schedule_slot_id')
+    .eq('class_id', id);
+
   // 3. Lấy dữ liệu điểm danh của học sinh trong lớp này
   let attendanceMap = new Map<string, any>();
   if (student) {
@@ -70,6 +75,12 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
 
   const todayStr = new Date().toISOString().split('T')[0];
   const sessionList = sessions || [];
+  const exercisesBySession = new Map<string, any[]>();
+  const exercisesBySlot = new Map<string, any[]>();
+  (scheduledExercises || []).forEach((exercise: any) => {
+    if (exercise.session_id) exercisesBySession.set(exercise.session_id, [...(exercisesBySession.get(exercise.session_id) || []), exercise]);
+    if (exercise.schedule_slot_id) exercisesBySlot.set(exercise.schedule_slot_id, [...(exercisesBySlot.get(exercise.schedule_slot_id) || []), exercise]);
+  });
 
   return (
     <div className="space-y-6">
@@ -117,10 +128,11 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
                         </Badge>
                       )}
                     </div>
-                    <div className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                      <div className="text-xs font-semibold text-primary flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{startTime} - {endTime}</span>
-                    </div>
+                      </div>
+                      {(exercisesBySlot.get(slot.id) || []).map((exercise) => <Badge key={exercise.id} className="mt-1 bg-amber-100 text-[10px] text-amber-800 hover:bg-amber-100">Có bài tập: {exercise.title}</Badge>)}
                   </div>
                 );
               })}
@@ -212,6 +224,7 @@ export default async function StudentClassSchedulePage({ params }: { params: Pro
                               </span>
                             )}
                           </div>
+                          {(exercisesBySession.get(s.id) || []).map((exercise) => <Badge key={exercise.id} className="mt-1 bg-amber-100 text-[10px] text-amber-800 hover:bg-amber-100">Bài tập: {exercise.title}</Badge>)}
                         </TableCell>
 
                         <TableCell className="text-center">
