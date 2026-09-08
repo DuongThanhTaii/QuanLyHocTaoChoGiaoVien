@@ -18,15 +18,33 @@ begin
   if exists (select 1 from public.attendance_records source join public.attendance_records target on target.session_id = source.session_id and target.student_id = canonical_student where source.student_id in (duplicate_programming, duplicate_probability)) then
     raise exception 'Attendance conflict found; review it before merging.';
   end if;
-  if exists (select 1 from public.session_evaluations source join public.session_evaluations target on target.session_id = source.session_id and target.student_id = canonical_student where source.student_id in (duplicate_programming, duplicate_probability)) then
-    raise exception 'Session evaluation conflict found; review it before merging.';
-  end if;
   if exists (select 1 from public.assignment_submissions source join public.assignment_submissions target on target.exercise_id = source.exercise_id and target.student_id = canonical_student where source.student_id in (duplicate_programming, duplicate_probability)) then
     raise exception 'Assignment submission conflict found; review it before merging.';
   end if;
 
   update public.attendance_records set student_id = canonical_student where student_id in (duplicate_programming, duplicate_probability);
-  update public.session_evaluations set student_id = canonical_student where student_id in (duplicate_programming, duplicate_probability);
+  -- Move evaluations that do not already exist on the canonical profile.
+  update public.session_evaluations source
+  set student_id = canonical_student
+  where source.student_id in (duplicate_programming, duplicate_probability)
+    and not exists (
+      select 1 from public.session_evaluations target
+      where target.session_id = source.session_id and target.student_id = canonical_student
+    );
+
+  -- Keep the canonical rating when an evaluation already exists. Preserve a
+  -- source comment only if the canonical record has no comment; otherwise
+  -- append it with a merge marker instead of silently discarding it.
+  update public.session_evaluations target
+  set feedback = case
+    when coalesce(trim(target.feedback), '') = '' then source.feedback
+    when coalesce(trim(source.feedback), '') = '' or target.feedback = source.feedback then target.feedback
+    else target.feedback || E'\n[Dữ liệu gộp] ' || source.feedback
+  end
+  from public.session_evaluations source
+  where target.student_id = canonical_student
+    and source.student_id in (duplicate_programming, duplicate_probability)
+    and target.session_id = source.session_id;
   update public.assignment_submissions set student_id = canonical_student where student_id in (duplicate_programming, duplicate_probability);
   update public.invoices set student_id = canonical_student where student_id in (duplicate_programming, duplicate_probability);
   update public.student_guardians set student_id = canonical_student where student_id in (duplicate_programming, duplicate_probability) and not exists (select 1 from public.student_guardians target where target.student_id = canonical_student and target.guardian_id = public.student_guardians.guardian_id);
