@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import { useSearchParams } from 'next/navigation';
 import { Atom, BookOpen, Calculator, Eye, EyeOff, PencilLine, Sparkles } from "lucide-react";
 import { register, type AuthActionState } from "../actions";
 import { SupportButton } from "@/components/shared/SupportButton";
@@ -16,6 +17,8 @@ const backgroundIcons = [
 ];
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || '';
   const [state, formAction, isPending] = useActionState(register, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -28,13 +31,14 @@ export default function RegisterPage() {
         <div className="mb-3 flex justify-center"><div className="relative h-12 w-32 overflow-hidden"><Image src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" fill sizes="128px" className="object-contain mix-blend-multiply" priority /></div></div>
         <div className="text-center"><h1 className="text-2xl font-extrabold tracking-tight text-[#a95123]">Tạo tài khoản</h1><p className="mt-1 text-xs text-zinc-500">Bắt đầu quản lý lớp học cùng Mari</p></div>
         <form action={formAction} className="mt-5 space-y-3">
+          <input type="hidden" name="next" value={next} />
           {state?.error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{state.error}</div>}
           <label className="block text-xs font-semibold text-zinc-600" htmlFor="email">Email<input id="email" name="email" type="email" placeholder="tenban@email.com" required autoComplete="email" className="mt-1.5 h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" /></label>
           <PasswordField id="password" label="Mật khẩu" show={showPassword} onToggle={() => setShowPassword(!showPassword)} />
           <PasswordField id="confirmPassword" label="Xác nhận mật khẩu" show={showConfirmation} onToggle={() => setShowConfirmation(!showConfirmation)} />
           <button type="submit" disabled={isPending} className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-sm font-bold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] transition hover:brightness-105 active:translate-y-0.5 active:shadow-[0_3px_0_#d95508] disabled:cursor-not-allowed disabled:opacity-60"><Sparkles className="size-4" />{isPending ? "Đang gửi mã..." : "Đăng ký"}</button>
         </form>
-        <p className="mt-5 text-center text-xs text-zinc-600">Đã có tài khoản? <Link href="/login" className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng nhập</Link></p>
+        <p className="mt-5 text-center text-xs text-zinc-600">Đã có tài khoản? <Link href={next ? `/login?next=${encodeURIComponent(next)}` : '/login'} className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng nhập</Link></p>
         <p className="mt-3 text-center text-[11px] leading-5 text-zinc-500">Bằng việc đăng ký, bạn đồng ý với <Link href="/terms" className="font-medium text-[#a95123] hover:underline">Điều khoản sử dụng</Link> và <Link href="/privacy" className="font-medium text-[#a95123] hover:underline">Chính sách bảo mật</Link> của Mari.</p>
       </div>
       <Image src="/images/empty_states/cat_stand.png" alt="Mascot Mari" width={280} height={390} priority className="pointer-events-none absolute -bottom-5 -left-12 hidden h-auto w-52 drop-shadow-[0_12px_8px_rgba(133,69,17,0.25)] lg:block" />

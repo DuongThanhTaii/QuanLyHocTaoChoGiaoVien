@@ -2,17 +2,19 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function RoleSelectionForm() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleNext = () => {
     if (selectedRole) {
-      router.push(`/onboarding/${selectedRole}`);
+      const next = searchParams.get('next');
+      router.push(`/onboarding/${selectedRole}${next ? `?next=${encodeURIComponent(next)}` : ''}`);
     }
   };
 

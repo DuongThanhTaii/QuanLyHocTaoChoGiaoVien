@@ -13,7 +13,7 @@ const backgroundIcons = [
   { Icon: Atom, className: "right-[5%] top-[22%] size-16 rotate-12" }, { Icon: Calculator, className: "right-[8%] bottom-[17%] size-16 rotate-12" },
 ];
 
-export function VerifyEmailOtpForm({ email }: { email: string }) {
+export function VerifyEmailOtpForm({ email, next }: { email: string; next: string }) {
   const [state, verifyAction, isPending] = useActionState(verifySignupOtp, initialState);
   const [resendState, resendAction, isResending] = useActionState(resendEmailVerification, initialState);
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
@@ -53,7 +53,7 @@ export function VerifyEmailOtpForm({ email }: { email: string }) {
       <div className="mx-auto mb-3 relative h-12 w-32 overflow-hidden"><Image src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" fill sizes="128px" className="object-contain mix-blend-multiply" priority /></div>
       <h1 className="text-2xl font-extrabold tracking-tight text-[#a95123]">Xác thực email</h1>
       <p className="mt-2 text-xs leading-5 text-zinc-500">Nhập mã 6 chữ số Mari đã gửi tới<br /><strong className="font-semibold text-zinc-700">{email}</strong></p>
-      <form action={verifyAction} className="mt-5 space-y-4"><input type="hidden" name="email" value={email} /><input type="hidden" name="token" value={token} />
+      <form action={verifyAction} className="mt-5 space-y-4"><input type="hidden" name="email" value={email} /><input type="hidden" name="token" value={token} /><input type="hidden" name="next" value={next} />
         <div className="flex justify-center gap-2" aria-label="Mã xác thực gồm 6 chữ số">{digits.map((digit, index) => <input key={index} ref={(element) => { refs.current[index] = element; }} value={digit} onChange={(event) => updateDigits(event.target.value, index)} onPaste={handlePaste} onKeyDown={(event) => handleKeyDown(event, index)} inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} className="size-10 rounded-xl border border-[#e9c999] bg-[#fffaf2] text-center text-lg font-bold text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35 sm:size-11" />)}</div>
         {state?.error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{state.error}</p>}
         <button type="submit" disabled={isPending || token.length !== 6} className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-sm font-bold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] transition hover:brightness-105 active:translate-y-0.5 active:shadow-[0_3px_0_#d95508] disabled:cursor-not-allowed disabled:opacity-60"><ShieldCheck className="size-4" />{isPending ? "Đang xác thực..." : "Xác thực tài khoản"}</button>

@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { safeReturnTo } from '@/lib/auth/return-to'
+import { resolveCanonicalStudent } from '@/lib/students/resolve-canonical-student'
 
 function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -97,7 +99,7 @@ export async function completeTeacherOnboarding(_prevState: OnboardingActionStat
   })
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(safeReturnTo(formData.get('next')))
 }
 
 export async function completeStudentOnboarding(_prevState: OnboardingActionState, formData: FormData) {
@@ -135,13 +137,21 @@ export async function completeStudentOnboarding(_prevState: OnboardingActionStat
 
   if (studentError) return { error: studentError.message }
 
+  // Claim an email-based placeholder made by a teacher, or create the account's
+  // canonical student record before the student reaches a class invite.
+  try {
+    await resolveCanonicalStudent(admin, { userId: user.id, fullName, phone })
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Không thể liên kết hồ sơ học sinh' }
+  }
+
   // 4. Update auth metadata for backward compatibility
   await supabase.auth.updateUser({
     data: { full_name: fullName }
   })
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(safeReturnTo(formData.get('next')))
 }
 
 export async function completeGuardianOnboarding(_prevState: OnboardingActionState, formData: FormData) {
@@ -184,5 +194,5 @@ export async function completeGuardianOnboarding(_prevState: OnboardingActionSta
   })
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(safeReturnTo(formData.get('next')))
 }

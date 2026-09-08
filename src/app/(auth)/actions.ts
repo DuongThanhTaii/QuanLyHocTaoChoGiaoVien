@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/infrastructure/auth/supabase/server'
 import { z } from 'zod'
+import { safeReturnTo, withReturnTo } from '@/lib/auth/return-to'
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -56,7 +57,7 @@ export async function login(_prevState: AuthActionState, formData: FormData): Pr
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(safeReturnTo(formData.get('next')))
 }
 
 export async function register(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
@@ -86,7 +87,8 @@ export async function register(_prevState: AuthActionState, formData: FormData):
   }
 
   revalidatePath('/', 'layout')
-  redirect('/register/verify-email?email=' + encodeURIComponent(email))
+  const next = safeReturnTo(formData.get('next'))
+  redirect(withReturnTo('/register/verify-email?email=' + encodeURIComponent(email), next))
 }
 
 export async function resendEmailVerification(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
@@ -131,7 +133,7 @@ export async function verifySignupOtp(_prevState: AuthActionState, formData: For
   }
 
   revalidatePath('/', 'layout')
-  redirect('/onboarding')
+  redirect(withReturnTo('/onboarding', safeReturnTo(formData.get('next'))))
 }
 
 export async function requestPasswordReset(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {

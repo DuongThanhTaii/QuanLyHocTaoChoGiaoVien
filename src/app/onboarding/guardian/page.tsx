@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { completeGuardianOnboarding } from '../actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +13,14 @@ import Image from 'next/image';
 const initialState = { error: '' };
 
 export default function GuardianOnboardingPage() {
+  const searchParams = useSearchParams();
   const [state, formAction, isPending] = useActionState(completeGuardianOnboarding, initialState);
 
   return (
     <div className="relative flex flex-1 items-center justify-center px-4 pb-8 pt-4">
       <Image src="/images/empty_states/cat_stand.png" alt="" width={280} height={390} priority className="pointer-events-none absolute right-12 top-0 hidden h-auto w-52 drop-shadow-[0_12px_8px_rgba(133,69,17,0.25)] xl:block" />
       <form action={formAction} className="relative z-10 w-full max-w-md">
+        <input type="hidden" name="next" value={searchParams.get('next') || ''} />
         <Card className="border-white/90 bg-white/95 shadow-[0_18px_45px_rgba(137,77,33,0.24)]">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-extrabold tracking-tight text-[#a95123]">

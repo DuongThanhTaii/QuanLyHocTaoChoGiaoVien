@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/infrastructure/auth/supabase/server'
+import { safeReturnTo } from '@/lib/auth/return-to'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   // if "next" is in param, use it as the redirect URL
   const requestedNext = searchParams.get('next')
-  const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/dashboard'
+  const next = safeReturnTo(requestedNext)
 
   if (code) {
     const supabase = await createClient()

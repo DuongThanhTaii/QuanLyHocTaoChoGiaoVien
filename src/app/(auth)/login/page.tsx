@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useActionState, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Atom, BookOpen, Calculator, Eye, EyeOff, PencilLine, Sparkles } from 'lucide-react';
 import { login, type AuthActionState } from '../actions';
 import { SupportButton } from '@/components/shared/SupportButton';
@@ -22,6 +23,8 @@ const backgroundIcons = [
 ];
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || '';
   const [state, formAction, isPending] = useActionState(login, initialState);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,6 +56,7 @@ export default function LoginPage() {
           </div>
 
           <form action={formAction} className="mt-5 space-y-3">
+            <input type="hidden" name="next" value={next} />
             {passwordWasReset && (
               <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">Mật khẩu đã được cập nhật. Hãy đăng nhập bằng mật khẩu mới.</div>
             )}
@@ -81,9 +85,9 @@ export default function LoginPage() {
           </form>
 
           <div className="my-4 flex items-center gap-3 text-[11px] text-zinc-400"><span className="h-px flex-1 bg-zinc-200" />hoặc<span className="h-px flex-1 bg-zinc-200" /></div>
-          <GoogleSignInButton />
+          <GoogleSignInButton next={next} />
 
-          <p className="mt-5 text-center text-xs text-zinc-600">Chưa có tài khoản? <Link href="/register" className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng ký ngay</Link></p>
+          <p className="mt-5 text-center text-xs text-zinc-600">Chưa có tài khoản? <Link href={next ? `/register?next=${encodeURIComponent(next)}` : '/register'} className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng ký ngay</Link></p>
           <p className="mt-3 text-center text-[11px] leading-5 text-zinc-500">
             Bằng việc đăng nhập, bạn đồng ý với <Link href="/terms" className="font-medium text-[#a95123] hover:underline">Điều khoản sử dụng</Link> và <Link href="/privacy" className="font-medium text-[#a95123] hover:underline">Chính sách bảo mật</Link> của Mari.
           </p>
