@@ -331,33 +331,67 @@ export async function addStudentManual(prevState: any, formData: FormData) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // 1. Check if student already exists by phone/email (simplified for now, ideally search globally)
-    // Here we just create a new standalone student record
-    const { data: student, error: studentError } = await supabaseAdmin
-      .from('students')
-      .insert([{
+    const { data: classroom } = await supabaseAdmin.from('classes').select('teacher_id').eq('id', parsed.data.classId).maybeSingle();
+    if (!classroom || classroom.teacher_id !== user.id) return { error: 'Bạn không có quyền thêm học sinh vào lớp này.' };
+
+    const email = parsed.data.email?.trim().toLowerCase() || null;
+    let accountId: string | null = null;
+    if (email) {
+      const { data: accounts } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      accountId = accounts?.users.find((account) => account.email?.toLowerCase() === email)?.id || null;
+    }
+
+    let student = null as any;
+    if (email) {
+      const { data } = await supabaseAdmin.from('students').select('*').ilike('email', email).limit(1).maybeSingle();
+      student = data;
+    }
+
+    if (student) {
+      const { error: updateError } = await supabaseAdmin.from('students').update({
         full_name: parsed.data.fullName,
-        phone: parsed.data.phone || null,
-        email: parsed.data.email || null,
-      }])
-      .select()
-      .single();
-      
-    if (studentError) throw new Error(`Failed to create student: ${studentError.message}`);
-  
-    // 2. Create Enrollment
-    const { error } = await supabaseAdmin.from('enrollments').insert({
-      class_id: parsed.data.classId,
-      student_id: student.id,
-      status: 'ACTIVE'
-    });
-  
-    if (error) return { error: error.message };
+        phone: parsed.data.phone || student.phone || null,
+        email,
+        user_id: student.user_id || accountId,
+      }).eq('id', student.id);
+      if (updateError) throw updateError;
+    } else {
+      const { data, error: studentError } = await supabaseAdmin.from('students').insert({
+        full_name: parsed.data.fullName, phone: parsed.data.phone || null, email, user_id: accountId,
+      }).select().single();
+      if (studentError || !data) throw studentError ?? new Error('Không thể tạo hồ sơ học sinh');
+      student = data;
+    }
+
+    const { data: existingEnrollment } = await supabaseAdmin.from('enrollments')
+      .select('id').eq('class_id', parsed.data.classId).eq('student_id', student.id).maybeSingle();
+    if (existingEnrollment) return { error: 'Học sinh này đã có trong lớp.' };
+
+    const { error: enrollmentError } = await supabaseAdmin.from('enrollments').insert({ class_id: parsed.data.classId, student_id: student.id, status: 'ACTIVE' });
+    if (enrollmentError) throw enrollmentError;
   } catch (err: any) {
     return { error: err.message || 'Lỗi khi thêm học sinh' };
   }
 
   revalidatePath(`/teacher/classes/${parsed.data.classId}/students`);
+  revalidatePath('/student/classes');
+  return { success: true };
+}
+
+export async function removeStudentFromClass(enrollmentId: string, classId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Bạn cần đăng nhập.' };
+  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const [{ data: classroom }, { data: enrollment }] = await Promise.all([
+    supabaseAdmin.from('classes').select('teacher_id').eq('id', classId).maybeSingle(),
+    supabaseAdmin.from('enrollments').select('id, class_id').eq('id', enrollmentId).maybeSingle(),
+  ]);
+  if (!classroom || classroom.teacher_id !== user.id || !enrollment || enrollment.class_id !== classId) return { error: 'Bạn không có quyền xóa học sinh này.' };
+  const { error } = await supabaseAdmin.from('enrollments').delete().eq('id', enrollmentId);
+  if (error) return { error: error.message };
+  revalidatePath(`/teacher/classes/${classId}/students`);
+  revalidatePath('/student/classes');
   return { success: true };
 }
 

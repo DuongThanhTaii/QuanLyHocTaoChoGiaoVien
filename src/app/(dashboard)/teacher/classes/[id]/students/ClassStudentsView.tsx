@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Plus, CheckCircle2, HelpCircle, Pencil, Users, TrendingUp } from 'lucide-react';
+import { Plus, CheckCircle2, HelpCircle, Pencil, Trash2, Users, TrendingUp } from 'lucide-react';
 import { AddStudentTabs } from './AddStudentTabs';
 import { CopyPersonalLinkButton } from './CopyPersonalLinkButton';
 import { EditStudentForm } from './StudentForms';
@@ -14,6 +14,8 @@ import { ApproveEnrollmentButton } from './ApproveEnrollmentButton';
 import { ParentContactPopover } from './ParentContactPopover';
 import { StudentProgressLedger, StudentLedgerItem } from '../components/StudentProgressLedger';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { removeStudentFromClass } from '../../actions';
+import { toast } from 'sonner';
 
 const enrollmentStatusLabels: Record<string, string> = { 
   ACTIVE: 'Đang học', 
@@ -49,6 +51,14 @@ export function ClassStudentsView({
   const searchParams = useSearchParams();
   const initialView = searchParams.get('view') === 'progress' ? 'progress' : 'roster';
   const [activeView, setActiveView] = useState<'roster' | 'progress'>(initialView);
+  const router = useRouter();
+
+  const removeStudent = async (enrollmentId: string, studentName: string) => {
+    if (!window.confirm(`Xóa ${studentName} khỏi lớp? Học sinh sẽ không còn thấy lớp này trong tài khoản.`)) return;
+    const result = await removeStudentFromClass(enrollmentId, classId);
+    if (result.error) toast.error(result.error);
+    else { toast.success('Đã xóa học sinh khỏi lớp.'); router.refresh(); }
+  };
 
   return (
     <div className="space-y-6">
@@ -189,6 +199,9 @@ export function ClassStudentsView({
                               </SheetContent>
                             </Sheet>
                           )}
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-700" title="Xóa khỏi lớp" onClick={() => removeStudent(enrollment.id, studentProfile?.full_name || 'học sinh')}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
