@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/subscription-renewals",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/r2-submission-cleanup",
+      "schedule": "20 1 * * *"
     }
   ]
 }

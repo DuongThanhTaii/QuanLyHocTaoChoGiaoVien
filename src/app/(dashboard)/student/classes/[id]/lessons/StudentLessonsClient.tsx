@@ -19,8 +19,6 @@ import {
 
 interface StudentLessonsClientProps {
   classId: string;
-  className: string;
-  classSubject?: string | null;
   lessons: any[];
   exercises: any[];
   mySubmissions: Record<string, any>; // keyed by exerciseId
@@ -28,8 +26,6 @@ interface StudentLessonsClientProps {
 
 export function StudentLessonsClient({
   classId,
-  className,
-  classSubject,
   lessons,
   exercises,
   mySubmissions,
@@ -71,20 +67,15 @@ export function StudentLessonsClient({
     return new Date(dueDateStr).getTime() < Date.now();
   };
 
+  const formatSize = (bytes?: number | null) => {
+    if (!bytes || bytes < 1) return 'Không rõ dung lượng';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    return `${(bytes / 1024 ** index).toLocaleString('vi-VN', { maximumFractionDigits: index ? 1 : 0 })} ${units[index]}`;
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header Info */}
-      <div className="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            Học liệu & Bài tập lớp {className}
-          </h2>
-          <p className="text-xs text-zinc-500">
-            {classSubject ? `Môn: ${classSubject} • ` : ''}Xem bài giảng và nộp bài tập về nhà cho giáo viên
-          </p>
-        </div>
-      </div>
-
       {/* Tabs: Bài giảng & Bài tập */}
       <Tabs defaultValue="lectures" className="w-full">
         <TabsList className="mb-4">
@@ -113,7 +104,7 @@ export function StudentLessonsClient({
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               {lessons.map((lesson) => {
                 const attached = lesson.materials?.[0];
                 return (
@@ -190,7 +181,7 @@ export function StudentLessonsClient({
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               {exercises.map((exercise) => {
                 const expired = isExpired(exercise.due_date);
                 const attached = Array.isArray(exercise.attachments) ? exercise.attachments[0] : null;
@@ -255,6 +246,44 @@ export function StudentLessonsClient({
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Xem đề
                           </Link>
+                        </div>
+                      )}
+
+                      {submission && (
+                        <div className="rounded-lg border border-emerald-100 bg-emerald-50/50 p-3 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                            <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 dark:text-emerald-400">
+                              <CheckCircle2 className="h-3.5 w-3.5" /> Đã nộp {formatDateTime(submission.submitted_at)}
+                            </span>
+                            {submission.is_late && <span className="font-medium text-amber-700 dark:text-amber-400">Nộp trễ</span>}
+                            {submission.score !== null && submission.score !== undefined && (
+                              <span className="rounded-full bg-blue-600 px-2 py-0.5 font-bold text-white">Điểm: {submission.score}/10</span>
+                            )}
+                          </div>
+                          {submission.teacher_feedback && (
+                            <p className="mt-2 border-l-2 border-blue-400 pl-2 text-xs text-zinc-700 dark:text-zinc-300">
+                              <span className="font-semibold">Nhận xét của giáo viên: </span>{submission.teacher_feedback}
+                            </p>
+                          )}
+                          {submission.note && <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">Lời nhắn: {submission.note}</p>}
+                          {Array.isArray(submission.submission_assets) && submission.submission_assets.length > 0 && (
+                            <div className="mt-2 space-y-1.5 border-t border-emerald-100 pt-2 dark:border-emerald-900/50">
+                              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Bài đã nộp</p>
+                              {submission.submission_assets.map((asset: any) => (
+                                <div key={asset.id} className="flex items-center justify-between gap-2 text-xs">
+                                  <span className="min-w-0 truncate text-zinc-700 dark:text-zinc-200">{asset.name} {asset.kind !== 'link' && <span className="text-zinc-400">({formatSize(asset.size_bytes)})</span>}</span>
+                                  <a
+                                    href={asset.kind === 'link' ? asset.external_url : `/api/student/assignments/${exercise.id}/asset/${asset.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="shrink-0 font-medium text-blue-600 hover:underline"
+                                  >
+                                    {asset.kind === 'link' ? 'Mở link' : 'Xem tệp'}
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
 

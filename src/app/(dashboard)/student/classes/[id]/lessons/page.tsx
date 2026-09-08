@@ -64,8 +64,6 @@ export default async function StudentLessonsPage({
   return (
     <StudentLessonsClient
       classId={id}
-      className={currentClass.name}
-      classSubject={currentClass.subject}
       lessons={lessonsData || []}
       exercises={exercisesData || []}
       mySubmissions={mySubmissions}

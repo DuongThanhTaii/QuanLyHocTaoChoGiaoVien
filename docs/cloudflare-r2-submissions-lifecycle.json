@@ -1,0 +1,10 @@
+{
+  "Rules": [
+    {
+      "ID": "expire-student-submission-images-after-14-days",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "assignments/images/" },
+      "Expiration": { "Days": 14 }
+    }
+  ]
+}
