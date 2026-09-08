@@ -456,14 +456,18 @@ export async function updateStudent(prevState: any, formData: FormData) {
 export async function approveEnrollment(enrollmentId: string, classId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.user_metadata?.role !== 'teacher') return { error: 'Bạn không có quyền duyệt yêu cầu.' };
   const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  if (!user) return { error: 'Bạn không có quyền duyệt yêu cầu.' };
+
+  // user_metadata is not updated for accounts created before the role system.
+  // The class ownership check below is the authoritative permission check.
   const { data: enrollment } = await supabaseAdmin.from('enrollments').select('class_id').eq('id', enrollmentId).single();
   const { data: classroom } = await supabaseAdmin.from('classes').select('teacher_id').eq('id', enrollment?.class_id).single();
   if (!enrollment || !classroom || classroom.teacher_id !== user.id || enrollment.class_id !== classId) return { error: 'Yêu cầu không hợp lệ.' };
   const { error } = await supabaseAdmin.from('enrollments').update({ status: 'ACTIVE', left_at: null }).eq('id', enrollmentId);
   if (error) return { error: error.message };
   revalidatePath(`/teacher/classes/${classId}/students`);
+  revalidatePath('/student/classes');
   return { success: true };
 }
 

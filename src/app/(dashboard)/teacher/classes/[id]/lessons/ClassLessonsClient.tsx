@@ -39,6 +39,7 @@ interface ClassLessonsClientProps {
   exercises: any[];
   libraryMaterials: any[];
   submissionStats: Record<string, { submitted: number; total: number }>;
+  scheduleTargets: Record<string, Array<{ id: string; type: 'session' | 'slot'; label: string; month?: string }>>;
 }
 
 export function ClassLessonsClient({
@@ -48,12 +49,14 @@ export function ClassLessonsClient({
   exercises: initialExercises,
   libraryMaterials,
   submissionStats,
+  scheduleTargets,
 }: ClassLessonsClientProps) {
   const router = useRouter();
   const [lessons, setLessons] = useState(initialLessons);
   const [exercises, setExercises] = useState(initialExercises);
 
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'lectures' | 'assignments'>('lectures');
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -172,7 +175,7 @@ export function ClassLessonsClient({
 
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="lectures" className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'lectures' | 'assignments')} className="w-full">
         <div className="flex flex-col gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
           <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="lectures" className="flex flex-1 items-center gap-2 sm:flex-none">
@@ -203,7 +206,7 @@ export function ClassLessonsClient({
             className="text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
           >
             <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-            Đăng bài mới lên Drive
+            {activeTab === 'assignments' ? 'Đăng bài tập lên Drive' : 'Đăng bài giảng lên Drive'}
           </Button>
         </div>
         </div>
@@ -453,6 +456,8 @@ export function ClassLessonsClient({
         onClose={() => setIsUploadOpen(false)}
         classes={classes}
         preSelectedClassId={classId}
+        scheduleTargets={scheduleTargets}
+        initialType={activeTab === 'assignments' ? 'ASSIGNMENT' : 'LECTURE'}
         onSuccess={() => router.refresh()}
       />
 

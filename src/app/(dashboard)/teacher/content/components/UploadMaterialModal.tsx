@@ -47,7 +47,8 @@ interface UploadMaterialModalProps {
   classes?: ClassOption[];
   preSelectedClassId?: string;
   onSuccess?: (result?: UploadResponse) => void;
-  scheduleTargets?: Record<string, Array<{ id: string; type: 'session' | 'slot'; label: string }>>;
+  scheduleTargets?: Record<string, Array<{ id: string; type: 'session' | 'slot'; label: string; month?: string }>>;
+  initialType?: 'LECTURE' | 'ASSIGNMENT';
 }
 
 export function UploadMaterialModal({
@@ -57,6 +58,7 @@ export function UploadMaterialModal({
   preSelectedClassId,
   onSuccess,
   scheduleTargets = {},
+  initialType = 'LECTURE',
 }: UploadMaterialModalProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +74,7 @@ export function UploadMaterialModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [assignmentTargets, setAssignmentTargets] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [sessionMonth, setSessionMonth] = useState('');
 
   useEffect(() => {
     if (preSelectedClassId) {
@@ -80,6 +83,10 @@ export function UploadMaterialModal({
       setSelectedClassIds([classes[0].id]);
     }
   }, [preSelectedClassId, classes]);
+
+  useEffect(() => {
+    if (isOpen) setType(initialType);
+  }, [isOpen, initialType]);
 
   const resetForm = () => {
     setFile(null);
@@ -98,6 +105,7 @@ export function UploadMaterialModal({
     setErrorMessage(null);
     setAssignmentTargets({});
     setUploadProgress(0);
+    setSessionMonth('');
   };
 
   const handleClose = () => {
@@ -182,46 +190,32 @@ export function UploadMaterialModal({
     setIsUploading(true);
     setErrorMessage(null);
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', title.trim());
-    formData.append('type', type);
-    formData.append('description', description.trim());
-    formData.append('classIds', JSON.stringify(selectedClassIds));
-    formData.append('assignmentTargets', JSON.stringify(Object.fromEntries(Object.entries(assignmentTargets)
+    const payload = {
+      title: title.trim(), type, description: description.trim(), classIds: selectedClassIds,
+      assignmentTargets: Object.fromEntries(Object.entries(assignmentTargets)
       .filter(([, value]) => value && value !== 'none')
       .map(([classId, value]) => {
         const [targetType, id] = value.split(':');
         return [classId, targetType === 'session' ? { sessionId: id } : { scheduleSlotId: id }];
-      }))));
-    if (type === 'ASSIGNMENT' && dueDate) {
-      formData.append('dueDate', dueDate);
-    }
+      })), dueDate: type === 'ASSIGNMENT' && dueDate ? dueDate : null,
+    };
 
     try {
-      const responseText = await new Promise<string>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/teacher/content/upload');
-        xhr.upload.onprogress = (event) => { if (event.lengthComputable) setUploadProgress(Math.min(90, Math.round(event.loaded / event.total * 90))); };
-        xhr.onerror = () => reject(new Error('Không thể kết nối đến máy chủ'));
-        xhr.onload = () => {
-          setUploadProgress(100);
-          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.responseText);
-          else reject(new Error(xhr.responseText || 'Có lỗi xảy ra khi tải file lên.'));
-        };
-        xhr.send(formData);
+      const signed = await fetch('/api/teacher/content/upload-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: file.name, contentType: file.type || 'application/octet-stream' }) });
+      const signedData = await signed.json();
+      if (!signed.ok) throw new Error(signedData.error || 'Không thể chuẩn bị tải tệp');
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest(); xhr.open('PUT', signedData.uploadUrl);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.upload.onprogress = (event) => { if (event.lengthComputable) setUploadProgress(Math.round(event.loaded / event.total * 90)); };
+        xhr.onerror = () => reject(new Error('Không thể tải tệp lên kho lưu trữ'));
+        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('Không thể tải tệp lên kho lưu trữ'));
+        xhr.send(file);
       });
-      let data: UploadResponse;
-
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch {
-        if (/request entity too large/i.test(responseText)) {
-          throw new Error('Tệp vượt giới hạn tải lên của máy chủ. Vui lòng nén tệp hoặc thử lại bằng tệp nhỏ hơn.');
-        }
-
-        throw new Error('Máy chủ trả về phản hồi không hợp lệ. Vui lòng thử lại sau ít phút.');
-      }
+      const response = await fetch('/api/teacher/content/finalize', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, objectKey: signedData.objectKey, fileName: file.name, fileType: file.type || 'application/octet-stream', sizeBytes: file.size }) });
+      const data: UploadResponse = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Không thể đăng học liệu');
+      setUploadProgress(100);
 
       toast.success(
         type === 'LECTURE'
@@ -488,9 +482,17 @@ export function UploadMaterialModal({
           {type === 'ASSIGNMENT' && selectedClassIds.length > 0 && (
             <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-3 dark:border-blue-900/40 dark:bg-blue-950/20">
               <Label className="text-xs font-semibold text-blue-900 dark:text-blue-200">Gắn vào buổi học <span className="font-normal text-zinc-500">(không bắt buộc)</span></Label>
+              {(() => {
+                const months = Array.from(new Set(selectedClassIds.flatMap((classId) => (scheduleTargets[classId] || []).map((target) => target.month).filter((month): month is string => Boolean(month))))).sort();
+                if (!months.length) return null;
+                return <Select value={sessionMonth || months[0]} onValueChange={(value) => setSessionMonth(value || '')}><SelectTrigger className="h-9 bg-white text-xs"><SelectValue /></SelectTrigger><SelectContent>{months.map((month) => <SelectItem key={month} value={month}>Tháng {month.slice(5)}/{month.slice(0, 4)}</SelectItem>)}</SelectContent></Select>;
+              })()}
               {selectedClassIds.map((classId) => {
                 const classroom = classes.find((item) => item.id === classId);
-                return <div key={classId} className="space-y-1.5 rounded-lg border border-blue-100 bg-white/70 p-2.5 dark:border-blue-900/50 dark:bg-zinc-900/40"><p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-100">{classroom?.name}</p><Select disabled={isUploading} value={assignmentTargets[classId] || 'none'} onValueChange={(value) => setAssignmentTargets((current) => ({ ...current, [classId]: value || 'none' }))}><SelectTrigger className="h-9 w-full bg-background text-xs"><SelectValue placeholder="Không gắn buổi học" /></SelectTrigger><SelectContent><SelectItem value="none">Không gắn buổi học</SelectItem>{(scheduleTargets[classId] || []).map((target) => <SelectItem key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</SelectItem>)}</SelectContent></Select></div>;
+                const availableMonths = Array.from(new Set((scheduleTargets[classId] || []).map((target) => target.month).filter(Boolean)));
+                const activeMonth = sessionMonth || availableMonths[0];
+                const visibleTargets = (scheduleTargets[classId] || []).filter((target) => !activeMonth || target.month === activeMonth);
+                return <div key={classId} className="space-y-1.5 rounded-lg border border-blue-100 bg-white/70 p-2.5 dark:border-blue-900/50 dark:bg-zinc-900/40"><p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-100">{classroom?.name}</p><Select disabled={isUploading} value={assignmentTargets[classId] || 'none'} onValueChange={(value) => setAssignmentTargets((current) => ({ ...current, [classId]: value || 'none' }))}><SelectTrigger className="h-9 w-full bg-background text-xs"><SelectValue placeholder="Không gắn buổi học" /></SelectTrigger><SelectContent><SelectItem value="none">Không gắn buổi học</SelectItem>{visibleTargets.map((target) => <SelectItem key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</SelectItem>)}</SelectContent></Select></div>;
               })}
             </div>
           )}

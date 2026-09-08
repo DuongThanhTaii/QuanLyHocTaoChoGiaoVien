@@ -47,6 +47,22 @@ export default async function TeacherLessonsPage({
   const teacherClasses = teacherClassesData || [];
   const teacherClassIds = teacherClasses.map((c) => c.id);
 
+  // Actual generated sessions are passed to the assignment form, so teachers can
+  // attach an exercise to the exact lesson in the month they choose.
+  const { data: sessionsData } = teacherClassIds.length
+    ? await admin.from('class_sessions')
+      .select('id, class_id, session_date, start_time, end_time')
+      .in('class_id', teacherClassIds)
+      .order('session_date', { ascending: true })
+    : { data: [] as Array<{ id: string; class_id: string; session_date: string; start_time: string | null; end_time: string | null }> };
+  const scheduleTargets = (sessionsData || []).reduce<Record<string, Array<{ id: string; type: 'session'; label: string; month: string }>>>((targets, session) => {
+    const date = new Date(`${session.session_date}T00:00:00`);
+    const day = Number.isNaN(date.getTime()) ? session.session_date : date.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const time = session.start_time ? ` · ${session.start_time.slice(0, 5)}${session.end_time ? `–${session.end_time.slice(0, 5)}` : ''}` : '';
+    (targets[session.class_id] ||= []).push({ id: session.id, type: 'session', label: `${day}${time}`, month: session.session_date.slice(0, 7) });
+    return targets;
+  }, {});
+
   // 3. Fetch lessons for this class with materials
   const { data: lessonsData } = await admin
     .from('lessons')
@@ -102,6 +118,7 @@ export default async function TeacherLessonsPage({
       exercises={exercisesData || []}
       libraryMaterials={libraryMaterials}
       submissionStats={submissionStats}
+      scheduleTargets={scheduleTargets}
     />
   );
 }
