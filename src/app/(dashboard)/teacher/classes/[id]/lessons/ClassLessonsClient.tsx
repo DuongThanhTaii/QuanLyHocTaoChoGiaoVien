@@ -34,22 +34,20 @@ import { Label } from '@/components/ui/label';
 
 interface ClassLessonsClientProps {
   classId: string;
-  className: string;
-  classSubject?: string | null;
   classes: ClassOption[];
   lessons: any[];
   exercises: any[];
   libraryMaterials: any[];
+  submissionStats: Record<string, { submitted: number; total: number }>;
 }
 
 export function ClassLessonsClient({
   classId,
-  className,
-  classSubject,
   classes,
   lessons: initialLessons,
   exercises: initialExercises,
   libraryMaterials,
+  submissionStats,
 }: ClassLessonsClientProps) {
   const router = useRouter();
   const [lessons, setLessons] = useState(initialLessons);
@@ -173,19 +171,20 @@ export function ClassLessonsClient({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
-        <div>
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            Học liệu & Bài tập lớp {className}
-          </h2>
-          <p className="text-xs text-zinc-500">
-            {classSubject ? `Môn: ${classSubject}` : 'Quản lý bài giảng và bài tập giao cho học sinh'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <div className="space-y-4">
+      <Tabs defaultValue="lectures" className="w-full">
+        <div className="flex flex-col gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="lectures" className="flex flex-1 items-center gap-2 sm:flex-none">
+              <BookOpen className="w-4 h-4 text-blue-600" />
+              <span>Bài giảng ({lessons.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="assignments" className="flex flex-1 items-center gap-2 sm:flex-none">
+              <FileText className="w-4 h-4 text-amber-600" />
+              <span>Bài tập ({exercises.length})</span>
+            </TabsTrigger>
+          </TabsList>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
           {libraryMaterials.length > 0 && (
             <Button
               variant="outline"
@@ -207,20 +206,7 @@ export function ClassLessonsClient({
             Đăng bài mới lên Drive
           </Button>
         </div>
-      </div>
-
-      {/* Tabs: Bài giảng & Bài tập */}
-      <Tabs defaultValue="lectures" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="lectures" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-blue-600" />
-            <span>Bài giảng ({lessons.length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="assignments" className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-amber-600" />
-            <span>Bài tập ({exercises.length})</span>
-          </TabsTrigger>
-        </TabsList>
+        </div>
 
         {/* Tab 1: Bài giảng */}
         <TabsContent value="lectures" className="space-y-4 m-0">
@@ -440,6 +426,18 @@ export function ClassLessonsClient({
                           </Link>
                         </div>
                       )}
+
+                      <div className="flex items-center justify-between gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                        <span className="text-xs text-zinc-500">
+                          {submissionStats[exercise.id]?.submitted || 0}/{submissionStats[exercise.id]?.total || 0} học sinh đã nộp
+                        </span>
+                        <Link
+                          href={`/teacher/classes/${classId}/assignments/${exercise.id}`}
+                          className={buttonVariants({ variant: 'outline', size: 'sm', className: 'h-7 text-xs text-amber-700 border-amber-200 hover:bg-amber-50' })}
+                        >
+                          <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Quản lý bài nộp
+                        </Link>
+                      </div>
                     </CardContent>
                   </Card>
                 );

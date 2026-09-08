@@ -61,6 +61,21 @@ export default async function TeacherLessonsPage({
     .eq('class_id', id)
     .order('created_at', { ascending: false });
 
+  const exerciseIds = (exercisesData || []).map((exercise) => exercise.id);
+  const [{ data: activeEnrollments }, { data: submissionRows }] = await Promise.all([
+    admin.from('enrollments').select('student_id').eq('class_id', id).eq('status', 'ACTIVE'),
+    exerciseIds.length
+      ? admin.from('assignment_submissions').select('exercise_id, student_id').in('exercise_id', exerciseIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const activeStudentIds = new Set((activeEnrollments || []).map((enrollment: any) => enrollment.student_id));
+  const activeStudentCount = activeStudentIds.size;
+  const submissionStats = (submissionRows || []).filter((row: any) => activeStudentIds.has(row.student_id)).reduce<Record<string, { submitted: number; total: number }>>((stats, row: any) => {
+    stats[row.exercise_id] = { submitted: (stats[row.exercise_id]?.submitted || 0) + 1, total: activeStudentCount };
+    return stats;
+  }, {});
+  exerciseIds.forEach((exerciseId) => { submissionStats[exerciseId] ||= { submitted: 0, total: activeStudentCount }; });
+
   // 5. Fetch library materials (de-duplicated) for "Chọn từ Kho Drive"
   let libraryMaterials: any[] = [];
   if (teacherClassIds.length > 0) {
@@ -82,12 +97,11 @@ export default async function TeacherLessonsPage({
   return (
     <ClassLessonsClient
       classId={id}
-      className={currentClass.name}
-      classSubject={currentClass.subject}
       classes={teacherClasses}
       lessons={lessonsData || []}
       exercises={exercisesData || []}
       libraryMaterials={libraryMaterials}
+      submissionStats={submissionStats}
     />
   );
 }

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { Button } from '@/components/ui/button';
-import { Search, Star, MessageSquare, ExternalLink, Users, CheckCircle, Clock, AlertTriangle, FileSpreadsheet } from 'lucide-react';
+import { Search, Star, MessageSquare, ExternalLink, Users, CheckCircle, Clock, AlertTriangle, FileSpreadsheet, FileCheck2 } from 'lucide-react';
 import Link from 'next/link';
 
 export interface StudentLedgerItem {
@@ -29,6 +29,11 @@ export interface StudentLedgerItem {
   evaluation: {
     rating: 'EXCELLENT' | 'GOOD' | 'AVERAGE' | 'POOR' | null;
     feedback: string | null;
+  };
+  assignments: {
+    submittedCount: number;
+    totalAssignments: number;
+    lateCount: number;
   };
 }
 
@@ -86,6 +91,7 @@ export function StudentProgressLedger({ classId, students }: Props) {
                   <TableHead className="text-xs font-semibold">Học sinh</TableHead>
                   <TableHead className="text-xs font-semibold text-center">Chuyên cần</TableHead>
                   <TableHead className="text-xs font-semibold text-center">Học phí kỳ này</TableHead>
+                  <TableHead className="text-xs font-semibold text-center">Bài tập</TableHead>
                   <TableHead className="text-xs font-semibold">Đánh giá & Học lực</TableHead>
                   <TableHead className="text-xs font-semibold text-right">Lối tắt</TableHead>
                 </TableRow>
@@ -157,6 +163,22 @@ export function StudentProgressLedger({ classId, students }: Props) {
                             Chưa tạo HĐ
                           </Badge>
                         )}
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <div className="inline-flex flex-col items-center">
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+                            <FileCheck2 className="h-3.5 w-3.5 text-amber-600" />
+                            {s.assignments.submittedCount}/{s.assignments.totalAssignments} bài
+                          </span>
+                          {s.assignments.lateCount > 0 ? (
+                            <span className="text-[10px] font-medium text-amber-600">{s.assignments.lateCount} nộp trễ</span>
+                          ) : s.assignments.totalAssignments > 0 ? (
+                            <span className="text-[10px] text-zinc-400">Không có bài trễ</span>
+                          ) : (
+                            <span className="text-[10px] text-zinc-400">Chưa giao bài</span>
+                          )}
+                        </div>
                       </TableCell>
 
                       {/* Cột 4: Đánh giá & Học lực */}

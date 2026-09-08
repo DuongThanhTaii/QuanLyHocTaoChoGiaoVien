@@ -123,6 +123,13 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
     .eq('class_id', classId)
     .order('marked_at', { ascending: false });
 
+  const { data: classExercises } = await supabaseAdmin.from('exercises').select('id').eq('class_id', classId);
+  const exerciseIds = (classExercises || []).map((exercise: any) => exercise.id);
+  const { data: submissionsForClass } = exerciseIds.length
+    ? await supabaseAdmin.from('assignment_submissions').select('student_id, is_late, exercise_id').in('exercise_id', exerciseIds)
+    : { data: [] };
+  const totalAssignments = exerciseIds.length;
+
   const ledgerStudents: StudentLedgerItem[] = students
     .filter(s => s.studentProfile)
     .map(({ enrollment, studentProfile }) => {
@@ -145,6 +152,7 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
 
       // Đánh giá gần nhất
       const studEval = (evaluations || []).find((e: any) => e.student_id === stud.id);
+      const submittedAssignments = (submissionsForClass || []).filter((submission: any) => submission.student_id === stud.id);
 
       return {
         id: stud.id,
@@ -165,6 +173,11 @@ export default async function ClassStudentsPage(props: { params: Promise<{ id: s
         evaluation: {
           rating: studEval ? studEval.rating : null,
           feedback: studEval ? studEval.feedback : null
+        },
+        assignments: {
+          submittedCount: submittedAssignments.length,
+          totalAssignments,
+          lateCount: submittedAssignments.filter((submission: any) => submission.is_late).length,
         }
       };
     });
