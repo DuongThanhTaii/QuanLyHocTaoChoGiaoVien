@@ -32,7 +32,17 @@ export async function updateSession(request: NextRequest) {
     const { data } = await supabase.auth.getUser()
     user = data.user
   } catch (err) {
-    console.error('Error fetching user in middleware:', err)
+    // A browser with a clock ahead of Supabase can retain a token whose `iat`
+    // is in the future. Do not repeatedly surface this as a Vercel error.
+    // Clear only Supabase cookies so the next request starts a clean session.
+    const message = err instanceof Error ? err.message : String(err)
+    if (/jwt issued at future/i.test(message)) {
+      request.cookies.getAll().filter((cookie) => cookie.name.startsWith('sb-')).forEach((cookie) => {
+        supabaseResponse.cookies.delete(cookie.name)
+      })
+    } else {
+      console.error('Error fetching user in middleware:', err)
+    }
   }
 
   const isEmailVerificationRoute = request.nextUrl.pathname.startsWith('/register/verify-email')

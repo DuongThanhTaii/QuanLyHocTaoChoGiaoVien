@@ -1,0 +1,12 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://mari.io",
+      "https://www.mari.io"
+    ],
+    "AllowedMethods": ["GET", "HEAD", "PUT"],
+    "AllowedHeaders": ["Content-Type", "x-amz-*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]

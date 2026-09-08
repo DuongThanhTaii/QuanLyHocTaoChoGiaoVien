@@ -2,7 +2,6 @@
 
 import { useActionState } from 'react';
 import { completeTeacherOnboarding } from '../actions';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,9 +56,9 @@ export default function TeacherOnboardingPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" disabled={isPending} className="w-full rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] hover:brightness-105">
+            <button type="submit" disabled={isPending} className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-sm font-bold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] transition hover:brightness-105 active:translate-y-0.5 active:shadow-[0_3px_0_#d95508] disabled:cursor-not-allowed disabled:opacity-60">
               {isPending ? 'Đang lưu...' : 'Hoàn tất'}
-            </Button>
+            </button>
             <div className="text-center text-sm text-[#9f745f]">
               <Link href="/onboarding" className="text-[#a95123] hover:underline">
                 Quay lại chọn vai trò khác
