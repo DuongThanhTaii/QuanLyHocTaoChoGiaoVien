@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useState } from "react";
-import { Atom, BookOpen, Calculator, Eye, EyeOff, PencilLine, Sparkles } from "lucide-react";
+import { useActionState } from "react";
+import { Atom, BookOpen, Calculator, PencilLine, Sparkles } from "lucide-react";
 import { register, type AuthActionState } from "../actions";
 import { SupportButton } from "@/components/shared/SupportButton";
 
@@ -17,8 +17,6 @@ const backgroundIcons = [
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(register, initialState);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
   return <main className="mari-animated-background relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#fffaf0_0%,#fff1c9_48%,#ffe2b5_100%)] px-4 py-8 font-sans">
     <div className="pointer-events-none absolute inset-0 opacity-20 text-[#d97932]" aria-hidden="true">{backgroundIcons.map(({ Icon, className }, index) => <Icon key={index} className={`absolute stroke-[1.5] ${className}`} />)}</div>
     <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
@@ -30,8 +28,8 @@ export default function RegisterPage() {
         <form action={formAction} className="mt-5 space-y-3">
           {state?.error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{state.error}</div>}
           <label className="block text-xs font-semibold text-zinc-600" htmlFor="email">Email<input id="email" name="email" type="email" placeholder="tenban@email.com" required autoComplete="email" className="mt-1.5 h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" /></label>
-          <PasswordField id="password" label="Mật khẩu" show={showPassword} onToggle={() => setShowPassword(!showPassword)} />
-          <PasswordField id="confirmPassword" label="Xác nhận mật khẩu" show={showConfirmation} onToggle={() => setShowConfirmation(!showConfirmation)} />
+          <PasswordField id="password" label="Mật khẩu" />
+          <PasswordField id="confirmPassword" label="Xác nhận mật khẩu" />
           <button type="submit" disabled={isPending} className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#ff981b] to-[#f26808] text-sm font-bold text-white shadow-[0_5px_0_#d95508,0_8px_14px_rgba(217,85,8,0.3)] transition hover:brightness-105 active:translate-y-0.5 active:shadow-[0_3px_0_#d95508] disabled:cursor-not-allowed disabled:opacity-60"><Sparkles className="size-4" />{isPending ? "Đang gửi mã..." : "Đăng ký"}</button>
         </form>
         <p className="mt-5 text-center text-xs text-zinc-600">Đã có tài khoản? <Link href="/login" className="font-bold text-[#a95123] hover:text-[#ef7616] hover:underline">Đăng nhập</Link></p>
@@ -43,6 +41,6 @@ export default function RegisterPage() {
   </main>;
 }
 
-function PasswordField({ id, label, show, onToggle }: { id: string; label: string; show: boolean; onToggle: () => void }) {
-  return <div><label className="block text-xs font-semibold text-zinc-600" htmlFor={id}>{label}</label><div className="relative mt-1.5"><input id={id} name={id} type={show ? "text" : "password"} required autoComplete="new-password" className="h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 pr-10 text-sm text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" /><button type="button" onClick={onToggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a65b32] transition hover:text-[#ef7616]" aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"}>{show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></div></div>;
+function PasswordField({ id, label }: { id: string; label: string }) {
+  return <label className="block text-xs font-semibold text-zinc-600" htmlFor={id}>{label}<input id={id} name={id} type="password" required autoComplete="new-password" className="mt-1.5 h-10 w-full rounded-xl border border-[#e9c999] bg-[#fffaf2] px-3 pr-10 text-sm text-zinc-800 outline-none transition focus:border-[#ed8d35] focus:ring-3 focus:ring-[#f7bd76]/35" /></label>;
 }
