@@ -9,6 +9,7 @@ import { getRepositories } from '@/infrastructure/persistence/supabase/repositor
 import { ClassService } from '@/application/services/class.service';
 import { Money } from '@/domains/shared/value-objects';
 import { v4 as uuidv4 } from 'uuid';
+import { resolveCanonicalStudent } from '@/lib/students/resolve-canonical-student';
 
 const CreateClassWizardSchema = z.object({
   name: z.string().min(2),
@@ -120,17 +121,11 @@ export async function createClassWizard(prevState: any, formData: FormData) {
       const phone = contact.phone?.trim() || null;
       if (!email && !phone) continue;
 
-      const { data: student, error: studentError } = await supabaseAdmin
-        .from('students')
-        .insert({ full_name: email || phone, email, phone })
-        .select('id')
-        .single();
-
-      if (studentError || !student) throw studentError ?? new Error('Không thể tạo hồ sơ học sinh');
+      const student = await resolveCanonicalStudent(supabaseAdmin, { email, phone, fullName: email || phone });
 
       const { error: enrollmentError } = await supabaseAdmin
         .from('enrollments')
-        .insert({ class_id: classId, student_id: student.id, status: 'ACTIVE' });
+        .upsert({ class_id: classId, student_id: student.id, status: 'ACTIVE', left_at: null }, { onConflict: 'class_id,student_id' });
 
       if (enrollmentError) throw enrollmentError;
     }
@@ -334,40 +329,14 @@ export async function addStudentManual(prevState: any, formData: FormData) {
     const { data: classroom } = await supabaseAdmin.from('classes').select('teacher_id').eq('id', parsed.data.classId).maybeSingle();
     if (!classroom || classroom.teacher_id !== user.id) return { error: 'Bạn không có quyền thêm học sinh vào lớp này.' };
 
-    const email = parsed.data.email?.trim().toLowerCase() || null;
-    let accountId: string | null = null;
-    if (email) {
-      const { data: accounts } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-      accountId = accounts?.users.find((account) => account.email?.toLowerCase() === email)?.id || null;
-    }
-
-    let student = null as any;
-    if (email) {
-      const { data } = await supabaseAdmin.from('students').select('*').ilike('email', email).limit(1).maybeSingle();
-      student = data;
-    }
-
-    if (student) {
-      const { error: updateError } = await supabaseAdmin.from('students').update({
-        full_name: parsed.data.fullName,
-        phone: parsed.data.phone || student.phone || null,
-        email,
-        user_id: student.user_id || accountId,
-      }).eq('id', student.id);
-      if (updateError) throw updateError;
-    } else {
-      const { data, error: studentError } = await supabaseAdmin.from('students').insert({
-        full_name: parsed.data.fullName, phone: parsed.data.phone || null, email, user_id: accountId,
-      }).select().single();
-      if (studentError || !data) throw studentError ?? new Error('Không thể tạo hồ sơ học sinh');
-      student = data;
-    }
-
-    const { data: existingEnrollment } = await supabaseAdmin.from('enrollments')
-      .select('id').eq('class_id', parsed.data.classId).eq('student_id', student.id).maybeSingle();
-    if (existingEnrollment) return { error: 'Học sinh này đã có trong lớp.' };
-
-    const { error: enrollmentError } = await supabaseAdmin.from('enrollments').insert({ class_id: parsed.data.classId, student_id: student.id, status: 'ACTIVE' });
+    const student = await resolveCanonicalStudent(supabaseAdmin, {
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      fullName: parsed.data.fullName,
+    });
+    const { error: enrollmentError } = await supabaseAdmin.from('enrollments').upsert({
+      class_id: parsed.data.classId, student_id: student.id, status: 'ACTIVE', left_at: null,
+    }, { onConflict: 'class_id,student_id' });
     if (enrollmentError) throw enrollmentError;
   } catch (err: any) {
     return { error: err.message || 'Lỗi khi thêm học sinh' };
@@ -503,62 +472,11 @@ export async function joinClassByCode(prevState: any, formData: FormData) {
     .eq('id', classId)
     .maybeSingle();
   const className = classroom?.name || 'này';
-  const repos = await getRepositories();
-
   // 2. Find or create Student profile for this user
-  let student = await repos.students.findByUserId(user.id);
-  
-  if (!student) {
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    
-    let matchedStudent = null;
-    const claim = formData.get('claim')?.toString();
-    
-    if (claim) {
-      // Teacher gave a specific student ID to claim
-      const { data: claimStudent } = await supabaseAdmin.from('students').select('*').eq('id', claim).is('user_id', null).single();
-      if (claimStudent) {
-        matchedStudent = claimStudent;
-      }
-    }
-    
-    // Attempt to match by phone or email for unlinked student records if no claim or claim failed
-    if (!matchedStudent && (profile?.email || profile?.phone)) {
-      let query = supabaseAdmin.from('students').select('*').is('user_id', null);
-      if (profile.email && profile.phone) {
-        query = query.or(`email.eq.${profile.email},phone.eq.${profile.phone}`);
-      } else if (profile.email) {
-        query = query.eq('email', profile.email);
-      } else if (profile.phone) {
-        query = query.eq('phone', profile.phone);
-      }
-      
-      const { data: matches } = await query;
-      
-      if (matches && matches.length > 0) {
-        matchedStudent = matches[0];
-      }
-    }
-    
-    if (matchedStudent) {
-      const { error: updateError } = await supabaseAdmin.from('students')
-        .update({ user_id: user.id })
-        .eq('id', matchedStudent.id);
-        
-      if (!updateError) {
-        student = matchedStudent;
-      }
-    }
-
-    if (!student) {
-      student = await repos.students.create({
-        user_id: user.id,
-        full_name: profile?.full_name || 'Học sinh',
-        phone: profile?.phone,
-        email: profile?.email
-      });
-    }
-  }
+  const student = await resolveCanonicalStudent(supabaseAdmin, {
+    userId: user.id,
+    preferredStudentId: formData.get('claim')?.toString() || null,
+  });
 
   // 3. Do not create a duplicate request for a class the student already joined.
   const { data: existingEnrollment } = await supabaseAdmin

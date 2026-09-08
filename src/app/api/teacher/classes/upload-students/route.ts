@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { getRepositories } from '@/infrastructure/persistence/supabase/repositories/get-repositories';
+import { resolveCanonicalStudent } from '@/lib/students/resolve-canonical-student';
 
 export async function POST(req: Request) {
   try {
@@ -39,28 +40,21 @@ export async function POST(req: Request) {
 
       if (!fullName) continue;
 
-      // Create standalone student record
-      const { data: student, error: studentError } = await supabaseAdmin
-        .from('students')
-        .insert([{
-          full_name: fullName,
-          phone: phone,
-          email: email,
-        }])
-        .select()
-        .single();
-
-      if (studentError) {
-        console.error('Create student error:', studentError);
+      let student;
+      try {
+        student = await resolveCanonicalStudent(supabaseAdmin, { email, phone, fullName });
+      } catch (error) {
+        console.error('Resolve student error:', error);
         continue;
       }
 
       // Enroll student
-      const { error: enrollError } = await supabaseAdmin.from('enrollments').insert({
+      const { error: enrollError } = await supabaseAdmin.from('enrollments').upsert({
         class_id: classId,
         student_id: student.id,
-        status: 'ACTIVE'
-      });
+        status: 'ACTIVE',
+        left_at: null,
+      }, { onConflict: 'class_id,student_id' });
 
       if (enrollError) {
         console.error('Enroll error:', enrollError);
