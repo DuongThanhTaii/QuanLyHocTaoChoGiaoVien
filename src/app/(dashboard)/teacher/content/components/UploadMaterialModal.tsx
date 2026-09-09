@@ -65,7 +65,7 @@ export function UploadMaterialModal({
 
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<'LECTURE' | 'ASSIGNMENT'>('LECTURE');
+  const [types, setTypes] = useState<Array<'LECTURE' | 'ASSIGNMENT'>>(['LECTURE']);
   const [description, setDescription] = useState('');
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState<string>('');
@@ -85,13 +85,13 @@ export function UploadMaterialModal({
   }, [preSelectedClassId, classes]);
 
   useEffect(() => {
-    if (isOpen) setType(initialType);
+    if (isOpen) setTypes([initialType]);
   }, [isOpen, initialType]);
 
   const resetForm = () => {
     setFile(null);
     setTitle('');
-    setType('LECTURE');
+    setTypes([initialType]);
     setDescription('');
     setDueDate('');
     if (preSelectedClassId) {
@@ -182,8 +182,18 @@ export function UploadMaterialModal({
       return;
     }
 
+    if (!types.length) {
+      setErrorMessage('Hãy chọn bài giảng, bài tập hoặc cả hai.');
+      return;
+    }
+
     if (classes.length > 0 && selectedClassIds.length === 0) {
       setErrorMessage('Vui lòng chọn ít nhất một lớp học để đăng bài.');
+      return;
+    }
+
+    if (selectedClassIds.some((classId) => !assignmentTargets[classId] || assignmentTargets[classId] === 'none')) {
+      setErrorMessage('Vui lòng chọn buổi học cho từng lớp nhận nội dung.');
       return;
     }
 
@@ -191,13 +201,13 @@ export function UploadMaterialModal({
     setErrorMessage(null);
 
     const payload = {
-      title: title.trim(), type, description: description.trim(), classIds: selectedClassIds,
-      assignmentTargets: Object.fromEntries(Object.entries(assignmentTargets)
+      title: title.trim(), types, description: description.trim(), classIds: selectedClassIds,
+      sessionTargets: Object.fromEntries(Object.entries(assignmentTargets)
       .filter(([, value]) => value && value !== 'none')
       .map(([classId, value]) => {
         const [targetType, id] = value.split(':');
         return [classId, targetType === 'session' ? { sessionId: id } : { scheduleSlotId: id }];
-      })), dueDate: type === 'ASSIGNMENT' && dueDate ? dueDate : null,
+      })), dueDate: types.includes('ASSIGNMENT') && dueDate ? dueDate : null,
     };
 
     try {
@@ -218,9 +228,11 @@ export function UploadMaterialModal({
       setUploadProgress(100);
 
       toast.success(
-        type === 'LECTURE'
-          ? `Đã đăng bài giảng cho ${selectedClassIds.length} lớp học thành công!`
-          : `Đã giao bài tập cho ${selectedClassIds.length} lớp học thành công!`
+        types.length === 2
+          ? `Đã đăng bài giảng và giao bài tập cho ${selectedClassIds.length} lớp học!`
+          : types[0] === 'LECTURE'
+            ? `Đã đăng bài giảng cho ${selectedClassIds.length} lớp học thành công!`
+            : `Đã giao bài tập cho ${selectedClassIds.length} lớp học thành công!`
       );
       resetForm();
       onClose();
@@ -328,17 +340,17 @@ export function UploadMaterialModal({
             </div>
           )}
 
-          {/* Phân loại tài liệu */}
+          {/* Nội dung được tạo từ tệp này. Có thể đăng cả hai cho cùng một buổi. */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Phân loại tài liệu
+              Nội dung muốn đăng <span className="text-red-500">*</span>
             </Label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setType('LECTURE')}
+                onClick={() => setTypes((current) => current.includes('LECTURE') ? current.filter((item) => item !== 'LECTURE') : [...current, 'LECTURE'])}
                 className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border text-sm font-medium transition-all ${
-                  type === 'LECTURE'
+                  types.includes('LECTURE')
                     ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 ring-2 ring-blue-600/20'
                     : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
                 }`}
@@ -349,9 +361,9 @@ export function UploadMaterialModal({
 
               <button
                 type="button"
-                onClick={() => setType('ASSIGNMENT')}
+                onClick={() => setTypes((current) => current.includes('ASSIGNMENT') ? current.filter((item) => item !== 'ASSIGNMENT') : [...current, 'ASSIGNMENT'])}
                 className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border text-sm font-medium transition-all ${
-                  type === 'ASSIGNMENT'
+                  types.includes('ASSIGNMENT')
                     ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 ring-2 ring-amber-500/20'
                     : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
                 }`}
@@ -433,8 +445,8 @@ export function UploadMaterialModal({
             )}
           </div>
 
-          {/* Hạn nộp bài (Chỉ hiện khi là BÀI TẬP) */}
-          {type === 'ASSIGNMENT' && (
+          {/* Hạn nộp bài */}
+          {types.includes('ASSIGNMENT') && (
             <div className="space-y-2 p-3 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-200/80 dark:border-amber-900/40">
               <div className="flex items-center justify-between">
                 <Label
@@ -479,9 +491,9 @@ export function UploadMaterialModal({
             </div>
           )}
 
-          {type === 'ASSIGNMENT' && selectedClassIds.length > 0 && (
+          {selectedClassIds.length > 0 && (
             <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-3 dark:border-blue-900/40 dark:bg-blue-950/20">
-              <Label className="text-xs font-semibold text-blue-900 dark:text-blue-200">Gắn vào buổi học <span className="font-normal text-zinc-500">(không bắt buộc)</span></Label>
+              <Label className="text-xs font-semibold text-blue-900 dark:text-blue-200">Đăng cho buổi học <span className="text-red-500">*</span></Label>
               {(() => {
                 const months = Array.from(new Set(selectedClassIds.flatMap((classId) => (scheduleTargets[classId] || []).map((target) => target.month).filter((month): month is string => Boolean(month))))).sort();
                 if (!months.length) return null;
@@ -492,7 +504,7 @@ export function UploadMaterialModal({
                 const availableMonths = Array.from(new Set((scheduleTargets[classId] || []).map((target) => target.month).filter(Boolean)));
                 const activeMonth = sessionMonth || availableMonths[0];
                 const visibleTargets = (scheduleTargets[classId] || []).filter((target) => !activeMonth || target.month === activeMonth);
-                return <div key={classId} className="space-y-1.5 rounded-lg border border-blue-100 bg-white/70 p-2.5 dark:border-blue-900/50 dark:bg-zinc-900/40"><p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-100">{classroom?.name}</p><Select disabled={isUploading} value={assignmentTargets[classId] || 'none'} onValueChange={(value) => setAssignmentTargets((current) => ({ ...current, [classId]: value || 'none' }))}><SelectTrigger className="h-9 w-full bg-background text-xs"><SelectValue placeholder="Không gắn buổi học" /></SelectTrigger><SelectContent><SelectItem value="none">Không gắn buổi học</SelectItem>{visibleTargets.map((target) => <SelectItem key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</SelectItem>)}</SelectContent></Select></div>;
+                return <div key={classId} className="space-y-1.5 rounded-lg border border-blue-100 bg-white/70 p-2.5 dark:border-blue-900/50 dark:bg-zinc-900/40"><p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-100">{classroom?.name}</p><Select disabled={isUploading} value={assignmentTargets[classId] || ''} onValueChange={(value) => setAssignmentTargets((current) => ({ ...current, [classId]: value || '' }))}><SelectTrigger className="h-9 w-full bg-background text-xs"><SelectValue placeholder="Chọn ngày/buổi học" /></SelectTrigger><SelectContent>{visibleTargets.map((target) => <SelectItem key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</SelectItem>)}</SelectContent></Select></div>;
               })}
             </div>
           )}
@@ -500,7 +512,7 @@ export function UploadMaterialModal({
           {/* Title Input */}
           <div className="space-y-1.5">
             <Label htmlFor="material-title" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Tên bài giảng / bài tập <span className="text-red-500">*</span>
+              Tiêu đề nội dung <span className="text-red-500">*</span>
             </Label>
             <Input
               id="material-title"

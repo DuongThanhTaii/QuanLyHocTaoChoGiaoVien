@@ -40,14 +40,14 @@ export default async function StudentLessonsPage({
   // 2. Fetch lessons with attached materials
   const { data: lessonsData } = await admin
     .from('lessons')
-    .select('id, title, content, created_at, materials(id, name, storage_path, file_type, size_bytes)')
+    .select('id, session_id, title, content, created_at, materials(id, name, storage_path, file_type, size_bytes)')
     .eq('class_id', id)
     .order('created_at', { ascending: false });
 
   // 3. Fetch exercises for this class
   const { data: exercisesData } = await admin
     .from('exercises')
-    .select('id, class_id, title, description, due_date, max_score, attachments, created_at')
+    .select('id, class_id, session_id, title, description, due_date, max_score, attachments, created_at')
     .eq('class_id', id)
     .order('created_at', { ascending: false });
 
@@ -61,11 +61,18 @@ export default async function StudentLessonsPage({
   const mySubmissions: Record<string, any> = {};
   (submissionsData || []).forEach((sub: any) => { mySubmissions[sub.exercise_id] = sub; });
 
+  const { data: sessionsData } = await admin
+    .from('class_sessions')
+    .select('id, session_date, start_time, end_time')
+    .eq('class_id', id)
+    .order('session_date', { ascending: true });
+
   return (
     <StudentLessonsClient
       classId={id}
       lessons={lessonsData || []}
       exercises={exercisesData || []}
+      sessions={sessionsData || []}
       mySubmissions={mySubmissions}
     />
   );

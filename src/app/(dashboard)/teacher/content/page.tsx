@@ -55,14 +55,9 @@ export default async function TeacherContentPage({
     const classIds = classes.map((c) => c.id);
 
     if (classIds.length > 0) {
-      const [{ data: sessionsData }, { data: slotsData }] = await Promise.all([
-        admin.from('class_sessions').select('id, class_id, session_date, start_time, title').in('class_id', classIds).gte('session_date', new Date().toISOString().slice(0, 10)).order('session_date').limit(100),
-        admin.from('schedule_slots').select('id, class_id, day_of_week, start_time, end_time').in('class_id', classIds).order('day_of_week'),
-      ]);
-      for (const target of [...(sessionsData || []), ...(slotsData || [])] as any[]) {
-        (scheduleTargets[target.class_id] ||= []).push(target.session_date
-          ? { id: target.id, type: 'session', label: `${new Date(target.session_date).toLocaleDateString('vi-VN')} ${target.start_time?.slice(0, 5) || ''}${target.title ? ` · ${target.title}` : ''}` }
-          : { id: target.id, type: 'slot', label: `Lịch thứ ${target.day_of_week + 1} · ${target.start_time?.slice(0, 5)}–${target.end_time?.slice(0, 5)}` });
+      const { data: sessionsData } = await admin.from('class_sessions').select('id, class_id, session_date, start_time, title').in('class_id', classIds).gte('session_date', new Date().toISOString().slice(0, 10)).order('session_date').limit(100);
+      for (const target of sessionsData || []) {
+        (scheduleTargets[target.class_id] ||= []).push({ id: target.id, type: 'session', month: target.session_date.slice(0, 7), label: `${new Date(target.session_date).toLocaleDateString('vi-VN')} ${target.start_time?.slice(0, 5) || ''}${target.title ? ` · ${target.title}` : ''}` });
       }
       // 3. Fetch materials for teacher's classes
       const { data: materialsData } = await admin
@@ -83,7 +78,7 @@ export default async function TeacherContentPage({
       // 4. Fetch lessons for teacher's classes
       const { data: lessonsData } = await admin
         .from('lessons')
-        .select('id, class_id, title, content, created_at, materials(*)')
+        .select('id, class_id, session_id, title, content, created_at, materials(*)')
         .in('class_id', classIds)
         .order('created_at', { ascending: false });
 

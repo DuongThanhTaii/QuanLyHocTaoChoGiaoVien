@@ -55,25 +55,25 @@ export default async function TeacherLessonsPage({
       .in('class_id', teacherClassIds)
       .order('session_date', { ascending: true })
     : { data: [] as Array<{ id: string; class_id: string; session_date: string; start_time: string | null; end_time: string | null }> };
-  const scheduleTargets = (sessionsData || []).reduce<Record<string, Array<{ id: string; type: 'session'; label: string; month: string }>>>((targets, session) => {
+  const scheduleTargets = (sessionsData || []).reduce<Record<string, Array<{ id: string; type: 'session'; label: string; month: string; date: string; startTime: string | null; endTime: string | null }>>>((targets, session) => {
     const date = new Date(`${session.session_date}T00:00:00`);
     const day = Number.isNaN(date.getTime()) ? session.session_date : date.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
     const time = session.start_time ? ` · ${session.start_time.slice(0, 5)}${session.end_time ? `–${session.end_time.slice(0, 5)}` : ''}` : '';
-    (targets[session.class_id] ||= []).push({ id: session.id, type: 'session', label: `${day}${time}`, month: session.session_date.slice(0, 7) });
+    (targets[session.class_id] ||= []).push({ id: session.id, type: 'session', label: `${day}${time}`, month: session.session_date.slice(0, 7), date: session.session_date, startTime: session.start_time, endTime: session.end_time });
     return targets;
   }, {});
 
   // 3. Fetch lessons for this class with materials
   const { data: lessonsData } = await admin
     .from('lessons')
-    .select('id, class_id, title, content, created_at, materials(*)')
+    .select('id, class_id, session_id, title, content, created_at, materials(*)')
     .eq('class_id', id)
     .order('created_at', { ascending: false });
 
   // 4. Fetch exercises for this class
   const { data: exercisesData } = await admin
     .from('exercises')
-    .select('id, class_id, title, description, due_date, max_score, attachments, created_at')
+    .select('id, class_id, session_id, title, description, due_date, max_score, attachments, created_at')
     .eq('class_id', id)
     .order('created_at', { ascending: false });
 
