@@ -229,7 +229,12 @@ export default function DashboardLayout({
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
   const mobileNavItems = navItems.slice(0, 4);
   const pathname = usePathname();
-  const activeClassId = userRole === 'teacher' ? pathname.match(/^\/teacher\/classes\/([0-9a-f-]{36})(?:\/|$)/i)?.[1] || null : null;
+  const classRoute = userRole === 'teacher'
+    ? /^\/teacher\/classes\/([0-9a-f-]{36})(?:\/|$)/i
+    : userRole === 'student'
+      ? /^\/student\/classes\/([0-9a-f-]{36})(?:\/|$)/i
+      : null;
+  const activeClassId = classRoute ? pathname.match(classRoute)?.[1] || null : null;
   const [activeClassName, setActiveClassName] = useState<string | null>(null);
 
   const { setTheme } = useTheme();

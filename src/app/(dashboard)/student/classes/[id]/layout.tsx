@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { StudentClassTabs } from './StudentClassTabs';
-import { ExternalLink, MapPin, Video } from 'lucide-react';
 
 export default async function StudentClassLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,7 +12,5 @@ export default async function StudentClassLayout({ children, params }: { childre
   const { data: student } = await admin.from('students').select('id').eq('user_id', user.id).maybeSingle();
   const { data: enrollment } = student ? await admin.from('enrollments').select('id').eq('class_id', id).eq('student_id', student.id).eq('status', 'ACTIVE').maybeSingle() : { data: null };
   if (!enrollment) return <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">Bạn chưa được duyệt vào lớp này.</p>;
-  const { data: classroom } = await admin.from('classes').select('name, subject, fee_per_session, location, online_meeting_url').eq('id', id).maybeSingle();
-  const fee = classroom?.fee_per_session ? `${Number(classroom.fee_per_session).toLocaleString('vi-VN')} đ/buổi` : null;
-  return <div className="space-y-6"><section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"><h1 className="text-3xl font-bold tracking-tight text-zinc-900">{classroom?.name || 'Lớp học'}</h1><p className="mt-2 text-lg text-zinc-500">{[classroom?.subject, fee].filter(Boolean).join(' · ') || 'Thông tin lớp học'}</p>{(classroom?.location || classroom?.online_meeting_url) && <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-zinc-600">{classroom.location && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-zinc-400" />{classroom.location}</span>}{classroom.online_meeting_url && <a href={classroom.online_meeting_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"><Video className="size-4" />Vào lớp trực tuyến <ExternalLink className="size-3.5" /></a>}</div>}</section><StudentClassTabs classId={id} /><div className="pt-2">{children}</div></div>;
+  return <div className="space-y-3"><StudentClassTabs classId={id} /><div className="pt-3">{children}</div></div>;
 }

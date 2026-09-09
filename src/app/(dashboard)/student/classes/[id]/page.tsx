@@ -14,7 +14,9 @@ import {
   AlertTriangle,
   FileText,
   Mail,
-  Phone
+  Phone,
+  ExternalLink,
+  Video
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -66,6 +68,8 @@ export default async function StudentClassPage({ params }: { params: Promise<{ i
       subject,
       description,
       fee_per_session,
+      location,
+      online_meeting_url,
       teacher_id,
       profiles:teacher_id (
         full_name,
@@ -258,8 +262,15 @@ export default async function StudentClassPage({ params }: { params: Promise<{ i
               <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                 Thông tin lớp học
               </CardTitle>
+              <CardDescription className="text-sm">
+                {classroom?.name || 'Lớp học'}{classroom?.subject ? ` · ${classroom.subject}` : ''}{classroom?.fee_per_session ? ` · ${Number(classroom.fee_per_session).toLocaleString('vi-VN')} đ/buổi` : ''}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {(classroom?.location || classroom?.online_meeting_url) && <div className="flex flex-wrap gap-x-4 gap-y-2 border-b border-zinc-100 pb-4 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+                {classroom.location && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-zinc-400" />{classroom.location}</span>}
+                {classroom.online_meeting_url && <a href={classroom.online_meeting_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"><Video className="size-4" />Vào lớp trực tuyến <ExternalLink className="size-3.5" /></a>}
+              </div>}
               {/* Giáo viên phụ trách */}
               <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800">
                 <UserAvatar 
