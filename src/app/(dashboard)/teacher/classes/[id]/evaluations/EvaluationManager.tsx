@@ -31,8 +31,8 @@ type EvaluationManagerProps = {
   scheduleDays: number[];
   initialEvaluations?: Record<string, { rating: string; feedback: string }>;
   initialLearningContent?: string;
-  exercises?: Array<{ id: string; title: string; due_date?: string | null }>;
-  selectedExerciseIds?: string[];
+  lessons?: Array<{ id: string; title: string; content?: string | null }>;
+  exercises?: Array<{ id: string; title: string; description?: string | null; due_date?: string | null }>;
 };
 
 const ratingColors: Record<string, { bg: string; border: string; text: string }> = {
@@ -52,7 +52,7 @@ export function EvaluationManager({
   isScheduled,
   scheduleDays,
   initialEvaluations = {}
-  , initialLearningContent = '', exercises = [], selectedExerciseIds = []
+  , initialLearningContent = '', lessons = [], exercises = []
 }: EvaluationManagerProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -71,7 +71,6 @@ export function EvaluationManager({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [learningContent, setLearningContent] = useState(initialLearningContent);
-  const [attachedExerciseIds, setAttachedExerciseIds] = useState<string[]>(selectedExerciseIds);
   const [isSavingLearning, setIsSavingLearning] = useState(false);
 
   const selectedDate = new Date(selectedDateStr);
@@ -129,17 +128,10 @@ export function EvaluationManager({
     formData.append('classId', classId);
     formData.append('sessionId', sessionId);
     formData.append('learningContent', learningContent);
-    attachedExerciseIds.forEach((id) => formData.append('exerciseIds', id));
     const result = await saveSessionLearningReport(formData);
     setIsSavingLearning(false);
     if (result.success) toast.success('Đã lưu nội dung và bài tập của buổi học');
     else toast.error(result.error || 'Không thể lưu nội dung buổi học');
-  };
-
-  const toggleExercise = (exerciseId: string) => {
-    setAttachedExerciseIds((current) => current.includes(exerciseId)
-      ? current.filter((id) => id !== exerciseId)
-      : [...current, exerciseId]);
   };
 
   const handleSaveAll = async () => {
@@ -260,29 +252,27 @@ export function EvaluationManager({
         <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-4 space-y-4">
           <div>
             <h3 className="font-semibold text-zinc-900">Nội dung & bài tập buổi học</h3>
-            <p className="text-sm text-zinc-500">Thông tin này sẽ xuất hiện trong báo cáo gửi phụ huynh cùng hóa đơn.</p>
+            <p className="text-sm text-zinc-500">Được lấy tự động từ nội dung đã đăng cho buổi này.</p>
           </div>
+          <div className="space-y-3 rounded-lg border border-blue-100 bg-white p-3">
+            <p className="text-sm font-medium text-zinc-800">Bài giảng ({lessons.length})</p>
+            {lessons.length ? lessons.map((lesson) => <div key={lesson.id} className="border-l-2 border-blue-400 pl-3"><p className="text-sm font-medium text-zinc-900">{lesson.title}</p>{lesson.content && <p className="mt-0.5 text-sm text-zinc-500">{lesson.content}</p>}</div>) : <p className="text-sm text-zinc-500">Chưa có bài giảng được đăng cho buổi này.</p>}
+          </div>
+          <div className="space-y-3 rounded-lg border border-amber-100 bg-white p-3">
+            <p className="text-sm font-medium text-zinc-800">Bài tập ({exercises.length})</p>
+            {exercises.length ? exercises.map((exercise) => <div key={exercise.id} className="border-l-2 border-amber-400 pl-3"><p className="text-sm font-medium text-zinc-900">{exercise.title}</p>{exercise.description && <p className="mt-0.5 text-sm text-zinc-500">{exercise.description}</p>}{exercise.due_date && <p className="mt-1 text-xs text-amber-700">Hạn nộp: {new Date(exercise.due_date).toLocaleString('vi-VN')}</p>}</div>) : <p className="text-sm text-zinc-500">Chưa có bài tập được giao cho buổi này.</p>}
+          </div>
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium text-zinc-800">Ghi chú thêm sau buổi học</span>
           <textarea
             value={learningContent}
             onChange={(event) => setLearningContent(event.target.value)}
-            placeholder="Ví dụ: Ôn tập phương trình bậc nhất; thực hành 10 bài tập..."
+            placeholder="Ví dụ: Lớp cần ôn thêm phần giải phương trình ở nhà..."
             className="min-h-24 w-full rounded-lg border border-zinc-200 bg-white p-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           />
-          {exercises.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-zinc-700">Bài tập giao trong buổi này</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {exercises.map((exercise) => (
-                  <label key={exercise.id} className="flex min-h-11 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-sm cursor-pointer">
-                    <input type="checkbox" checked={attachedExerciseIds.includes(exercise.id)} onChange={() => toggleExercise(exercise.id)} />
-                    <span className="min-w-0 flex-1 truncate">{exercise.title}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
+          </label>
           <Button type="button" variant="outline" onClick={saveLearningReport} disabled={isSavingLearning} className="min-h-11">
-            {isSavingLearning ? 'Đang lưu...' : 'Lưu nội dung buổi học'}
+            {isSavingLearning ? 'Đang lưu...' : 'Lưu ghi chú'}
           </Button>
         </div>
       )}

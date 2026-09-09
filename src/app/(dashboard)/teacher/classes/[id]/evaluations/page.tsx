@@ -94,10 +94,10 @@ export default async function ClassEvaluationsPage({ params, searchParams }: { p
     return acc;
   }, {});
 
-  const [{ data: exercises }, { data: sessionExercises }] = sessionId
+  const [{ data: lessons }, { data: exercises }] = sessionId
     ? await Promise.all([
-        admin.from('exercises').select('id, title, due_date').eq('class_id', classId).order('created_at', { ascending: false }),
-        admin.from('class_session_exercises').select('exercise_id').eq('session_id', sessionId)
+        admin.from('lessons').select('id, title, content').eq('class_id', classId).eq('session_id', sessionId).order('created_at'),
+        admin.from('exercises').select('id, title, description, due_date').eq('class_id', classId).eq('session_id', sessionId).order('created_at')
       ])
     : [{ data: [] }, { data: [] }];
 
@@ -114,8 +114,8 @@ export default async function ClassEvaluationsPage({ params, searchParams }: { p
         scheduleDays={scheduleDays}
         initialEvaluations={initialEvaluations}
         initialLearningContent={(session as any)?.learning_content || ''}
+        lessons={lessons || []}
         exercises={exercises || []}
-        selectedExerciseIds={(sessionExercises || []).map((item: any) => item.exercise_id)}
       />
     </div>
   );

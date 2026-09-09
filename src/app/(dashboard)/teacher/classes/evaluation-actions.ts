@@ -22,7 +22,6 @@ export async function saveSessionLearningReport(formData: FormData) {
   const classId = String(formData.get('classId') || '');
   const sessionId = String(formData.get('sessionId') || '');
   const learningContent = String(formData.get('learningContent') || '').trim();
-  const exerciseIds = formData.getAll('exerciseIds').map(String);
   if (!classId || !sessionId) return { success: false, error: 'Thiếu thông tin buổi học' };
 
   const { data: classroom } = await supabase
@@ -32,15 +31,6 @@ export async function saveSessionLearningReport(formData: FormData) {
   const { error: contentError } = await supabase
     .from('class_sessions').update({ learning_content: learningContent || null }).eq('id', sessionId).eq('class_id', classId);
   if (contentError) return { success: false, error: contentError.message };
-
-  const { error: clearError } = await supabase.from('class_session_exercises').delete().eq('session_id', sessionId);
-  if (clearError) return { success: false, error: clearError.message };
-  if (exerciseIds.length) {
-    const { error: attachError } = await supabase.from('class_session_exercises').insert(
-      exerciseIds.map((exerciseId) => ({ session_id: sessionId, exercise_id: exerciseId }))
-    );
-    if (attachError) return { success: false, error: attachError.message };
-  }
 
   revalidatePath(`/teacher/classes/${classId}/evaluations`);
   return { success: true };

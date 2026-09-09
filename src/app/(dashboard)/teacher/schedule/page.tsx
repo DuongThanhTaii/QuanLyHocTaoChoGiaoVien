@@ -23,10 +23,22 @@ export default async function TeacherSchedulePage() {
       .in('class_id', classIds);
 
     if (scheduleSlots) {
+      const [{ data: sessions }, { data: exercises }] = await Promise.all([
+        supabase.from('class_sessions').select('id, schedule_slot_id, session_date').in('class_id', classIds).neq('status', 'CANCELLED'),
+        supabase.from('exercises').select('id, title, session_id').in('class_id', classIds).not('session_id', 'is', null)
+      ]);
+      const sessionById = new Map((sessions || []).map((session) => [session.id, session]));
+      const assignmentsBySlot = new Map<string, Array<{ id: string; title: string; sessionDate: string }>>();
+      (exercises || []).forEach((exercise) => {
+        const session = exercise.session_id ? sessionById.get(exercise.session_id) : null;
+        if (!session?.schedule_slot_id || !session.session_date) return;
+        assignmentsBySlot.set(session.schedule_slot_id, [...(assignmentsBySlot.get(session.schedule_slot_id) || []), { id: exercise.id, title: exercise.title, sessionDate: session.session_date }]);
+      });
       slots = scheduleSlots.map(slot => {
         const cls = classes.find(c => c.id === slot.class_id);
         return {
           ...slot,
+          assignments: assignmentsBySlot.get(slot.id) || [],
           classes: cls ? { id: cls.id, name: cls.name || '', location: cls.location, online_meeting_url: cls.online_meeting_url } : null
         } as ScheduleSlot;
       });

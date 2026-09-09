@@ -15,13 +15,14 @@ async function buildLearningReports(supabase: any, classId: string, month: numbe
     supabase.from('class_sessions').select('id, schedule_slot_id, session_date, start_time, end_time, title, learning_content').eq('class_id', classId).gte('session_date', start).lte('session_date', end).neq('status', 'CANCELLED').order('session_date')
   ]);
   const sessionIds = (sessions || []).map((session: any) => session.id);
-  const [{ data: attendance }, { data: evaluations }, { data: links }, { data: assignments }, { data: submissions }] = sessionIds.length ? await Promise.all([
+  const [{ data: attendance }, { data: evaluations }, { data: links }, { data: assignments }, { data: lessons }, { data: submissions }] = sessionIds.length ? await Promise.all([
     supabase.from('attendance_records').select('session_id, student_id, status, note').in('session_id', sessionIds).in('student_id', studentIds),
     supabase.from('session_evaluations').select('session_id, student_id, rating, feedback').in('session_id', sessionIds).in('student_id', studentIds),
     supabase.from('class_session_exercises').select('session_id, exercises(id, title, due_date)').in('session_id', sessionIds),
     supabase.from('exercises').select('id, title, due_date, session_id, schedule_slot_id').eq('class_id', classId),
+    supabase.from('lessons').select('session_id, title, content').eq('class_id', classId).in('session_id', sessionIds),
     supabase.from('assignment_submissions').select('exercise_id, student_id, score').in('student_id', studentIds)
-  ]) : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
+  ]) : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
   const reports = new Map<string, any>();
   for (const studentId of studentIds) {
     const student = (students || []).find((item: any) => item.id === studentId);
@@ -39,8 +40,10 @@ async function buildLearningReports(supabase: any, classId: string, month: numbe
           const submission = (submissions || []).find((item: any) => item.exercise_id === exercise.id && item.student_id === studentId);
           return { title: exercise.title, dueDate: exercise.dueDate || exercise.due_date || undefined, score: submission?.score ?? null };
         });
+        const lessonContent = (lessons || []).filter((lesson: any) => lesson.session_id === session.id).map((lesson: any) => lesson.content ? `${lesson.title}: ${lesson.content}` : lesson.title);
+        const sessionNote = session.learning_content ? `Ghi chú: ${session.learning_content}` : '';
         return { date: session.session_date, startTime: session.start_time, endTime: session.end_time, title: session.title || undefined,
-          attendanceStatus: String(attendanceRecord?.status || 'not_marked').toLowerCase(), attendanceNote: attendanceRecord?.note || undefined, learningContent: session.learning_content || undefined,
+          attendanceStatus: String(attendanceRecord?.status || 'not_marked').toLowerCase(), attendanceNote: attendanceRecord?.note || undefined, learningContent: [...lessonContent, sessionNote].filter(Boolean).join('\n\n') || undefined,
           exercises, rating: evaluation?.rating || undefined, feedback: evaluation?.feedback || undefined };
       })
     });

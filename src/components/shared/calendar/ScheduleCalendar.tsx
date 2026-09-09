@@ -17,6 +17,7 @@ export type ScheduleSlot = {
   start_time: string;
   end_time: string;
   room: string | null;
+  assignments?: Array<{ id: string; title: string; sessionDate: string }>;
   classes: {
     id: string;
     name: string;
@@ -42,6 +43,13 @@ const COLORS = [
 function MeetingLink({ href, compact = false }: { href?: string | null; compact?: boolean }) {
   if (!href) return null;
   return <a href={href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-current underline-offset-2 hover:underline" aria-label="Mở lớp học trực tuyến"><Video className="size-3" />{compact ? null : 'Vào lớp trực tuyến'}<ExternalLink className="size-3" /></a>;
+}
+
+function AssignmentBadges({ slot, date, compact = false }: { slot: ScheduleSlot; date: Date; compact?: boolean }) {
+  const assignments = (slot.assignments || []).filter((assignment) => assignment.sessionDate === format(date, 'yyyy-MM-dd'));
+  if (!assignments.length) return null;
+  const first = assignments[0];
+  return <div className={`mt-1 flex min-w-0 items-center gap-1 ${compact ? 'text-[9px]' : 'text-[11px]'}`}><span className="truncate rounded bg-amber-200/80 px-1.5 py-0.5 font-semibold text-amber-900">Bài tập: {first.title}</span>{assignments.length > 1 && <span className="shrink-0 font-semibold text-amber-900">+{assignments.length - 1}</span>}</div>;
 }
 
 export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
@@ -196,6 +204,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                         <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap pt-0.5 text-[11px] font-medium opacity-90"><Clock className="size-3" />{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
                       </div>
                       {(slot.room || slot.classes?.location) && <p className="mt-1 inline-flex items-center gap-1 text-[11px] opacity-80"><MapPin className="size-3" />{slot.room || slot.classes?.location}</p>}
+                      <AssignmentBadges slot={slot} date={day} />
                       <MeetingLink href={slot.classes?.online_meeting_url} />
                     </div>)}
                   </div>
@@ -245,6 +254,7 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                           <span>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
                         </div>
                         {(slot.room || slot.classes?.location) && <div className="flex items-center gap-1.5 text-xs opacity-80"><MapPin className="size-3" /><span className="truncate">{slot.room || slot.classes?.location}</span></div>}
+                        <AssignmentBadges slot={slot} date={day} />
                         <MeetingLink href={slot.classes?.online_meeting_url} />
                       </div>
                     ))}
@@ -268,9 +278,10 @@ export function ScheduleCalendar({ slots, userRole }: ScheduleCalendarProps) {
                         <div 
                           key={slot.id} 
                           onClick={() => handleSlotClick(slot.class_id)}
-                          className={`px-1.5 py-1 rounded border text-[10px] leading-tight cursor-pointer hover:opacity-80 transition-opacity truncate ${classColors.get(slot.class_id)}`}
+                          className={`px-1.5 py-1 rounded border text-[10px] leading-tight cursor-pointer hover:opacity-80 transition-opacity ${classColors.get(slot.class_id)}`}
                         >
-                          <span className="font-semibold">{formatTime(slot.start_time)}</span> {slot.title || slot.classes?.name || 'Ca học'}
+                          <div className="truncate"><span className="font-semibold">{formatTime(slot.start_time)}</span> {slot.title || slot.classes?.name || 'Ca học'}</div>
+                          <AssignmentBadges slot={slot} date={day} compact />
                           <MeetingLink href={slot.classes?.online_meeting_url} compact />
                         </div>
                       ))}
