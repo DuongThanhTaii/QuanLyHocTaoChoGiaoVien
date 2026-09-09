@@ -178,7 +178,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
         
         {/* Banner trạng thái */}
         {isPaid && (
@@ -197,7 +197,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         <InvoiceReportTabs
           invoice={<>
         {/* Thẻ Phiếu Thu Chính */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
+        <Card className="mx-auto max-w-2xl border-0 shadow-lg bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
           <CardContent className="p-6 sm:p-8 space-y-6">
             
             {/* Header Thương hiệu Giáo viên */}
