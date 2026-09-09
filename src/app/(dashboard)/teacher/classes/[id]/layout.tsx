@@ -1,7 +1,6 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { redirect } from 'next/navigation';
 import { ClassTabs } from './ClassTabs';
-import { ClassWorkspaceHeader } from './ClassWorkspaceHeader';
 
 export default async function ClassWorkspaceLayout({
   children,
@@ -30,8 +29,6 @@ export default async function ClassWorkspaceLayout({
 
   return (
     <div className="space-y-3">
-      <ClassWorkspaceHeader classId={id} name={classroom.name} subject={classroom.subject} fee={classroom.fee_per_session} />
-
       <ClassTabs classId={id} />
 
       {/* Tab Content */}

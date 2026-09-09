@@ -228,6 +228,7 @@ export default function DashboardLayout({
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
   const mobileNavItems = navItems.slice(0, 4);
   const pathname = usePathname();
+  const activeClassId = userRole === 'teacher' ? pathname.match(/^\/teacher\/classes\/([0-9a-f-]{36})(?:\/|$)/i)?.[1] || null : null;
   const [activeClassName, setActiveClassName] = useState<string | null>(null);
 
   const { setTheme } = useTheme();
@@ -250,25 +251,23 @@ export default function DashboardLayout({
   }, [isCollapsed]);
 
   useEffect(() => {
-    const match = userRole === 'teacher' ? pathname.match(/^\/teacher\/classes\/([0-9a-f-]{36})(?:\/|$)/i) : null;
-    if (!match) {
+    if (!activeClassId) {
       setActiveClassName(null);
       return;
     }
 
     let cancelled = false;
-    setActiveClassName(null);
     const loadClassName = async () => {
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
-      const { data } = await supabase.from('classes').select('name').eq('id', match[1]).maybeSingle();
+      const { data } = await supabase.from('classes').select('name').eq('id', activeClassId).maybeSingle();
       if (!cancelled) setActiveClassName(data?.name || null);
     };
     void loadClassName();
     return () => { cancelled = true; };
-  }, [pathname, userRole]);
+  }, [activeClassId]);
 
   const [unreadChatCount, setUnreadChatCount] = useState<number>(0);
 
