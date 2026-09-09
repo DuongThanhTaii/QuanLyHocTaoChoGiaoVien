@@ -29,13 +29,13 @@ export default async function ClassWorkspaceLayout({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <ClassWorkspaceHeader classId={id} name={classroom.name} subject={classroom.subject} fee={classroom.fee_per_session} />
 
       <ClassTabs classId={id} />
 
       {/* Tab Content */}
-      <div className="pt-4">
+      <div className="pt-3">
         {children}
       </div>
     </div>
