@@ -264,11 +264,8 @@ export default function DashboardLayout({
 
     let cancelled = false;
     const loadClassName = async () => {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-      const { data } = await supabase.from('classes').select('name').eq('id', activeClassId).maybeSingle();
+      const response = await fetch(`/api/classes/${activeClassId}/header`, { cache: 'no-store' });
+      const data = response.ok ? await response.json() as { name?: string } : null;
       if (!cancelled) setActiveClassName(data?.name || null);
     };
     void loadClassName();
