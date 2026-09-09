@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GoogleDriveIcon } from '@/components/icons/GoogleDriveIcon';
 import { UploadMaterialModal, ClassOption } from './UploadMaterialModal';
 import { AssignToClassModal } from './AssignToClassModal';
 import { DriveStorageWidget } from './DriveStorageWidget';
@@ -24,18 +23,11 @@ import {
   ExternalLink,
   PlusCircle,
   FolderPlus,
-  FileVideo,
   FileText,
   BookOpen,
   Trash2,
   Search,
-  FileType,
-  FileSpreadsheet,
-  Presentation,
-  FileArchive,
-  FileImage,
   Loader2,
-  Calendar,
   Share2,
   GraduationCap,
   Clock,
@@ -64,7 +56,7 @@ export interface LessonRow {
   title: string;
   content?: string | null;
   created_at: string;
-  materials?: any[];
+  materials?: Array<{ name?: string | null; storage_path?: string | null }>;
 }
 
 export interface ExerciseRow {
@@ -74,7 +66,7 @@ export interface ExerciseRow {
   description?: string | null;
   due_date?: string | null;
   max_score?: number | null;
-  attachments?: any;
+  attachments?: unknown;
   session_id?: string | null;
   schedule_slot_id?: string | null;
   created_at: string;
@@ -152,8 +144,8 @@ export function ContentManagerClient({
       setSelectedIds([]);
       window.dispatchEvent(new Event('materials:changed'));
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi khi xóa tệp');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Lỗi khi xóa tệp');
     } finally {
       setIsBulkDeleting(false);
     }
@@ -171,16 +163,16 @@ export function ContentManagerClient({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Xóa tài liệu thất bại');
+        throw new Error(data.error || 'Xóa tệp thất bại');
       }
 
       setMaterials((prev) => prev.filter((m) => m.id !== id));
-      toast.success('Đã xóa tài liệu thành công!');
+      toast.success('Đã xóa tệp thành công!');
       window.dispatchEvent(new Event('materials:changed'));
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Lỗi khi xóa tài liệu');
+      toast.error(err instanceof Error ? err.message : 'Lỗi khi xóa tệp');
     } finally {
       setDeletingId(null);
     }
@@ -229,32 +221,32 @@ export function ContentManagerClient({
     return new Date(dueDateStr).getTime() < Date.now();
   };
 
-  const getFileIcon = (mimeType?: string | null, title?: string) => {
+  const getFileBadge = (mimeType?: string | null, title?: string) => {
     const mime = (mimeType || '').toLowerCase();
     const ext = (title || '').split('.').pop()?.toLowerCase() || '';
 
     if (mime.includes('pdf') || ext === 'pdf') {
-      return <FileText className="w-5 h-5 text-red-500" />;
+      return { label: 'PDF', tone: 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300' };
     }
     if (mime.includes('video') || ['mp4', 'mov', 'avi', 'mkv'].includes(ext)) {
-      return <FileVideo className="w-5 h-5 text-purple-500" />;
+      return { label: 'VID', tone: 'bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300' };
     }
     if (mime.includes('word') || ['doc', 'docx'].includes(ext)) {
-      return <FileText className="w-5 h-5 text-blue-600" />;
+      return { label: 'W', tone: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' };
     }
     if (mime.includes('sheet') || ['xls', 'xlsx', 'csv'].includes(ext)) {
-      return <FileSpreadsheet className="w-5 h-5 text-emerald-600" />;
+      return { label: 'X', tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' };
     }
     if (mime.includes('presentation') || ['ppt', 'pptx'].includes(ext)) {
-      return <Presentation className="w-5 h-5 text-amber-500" />;
+      return { label: 'P', tone: 'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300' };
     }
     if (mime.includes('zip') || ['zip', 'rar', '7z', 'tar'].includes(ext)) {
-      return <FileArchive className="w-5 h-5 text-yellow-600" />;
+      return { label: 'ZIP', tone: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' };
     }
     if (mime.includes('image') || ['png', 'jpg', 'jpeg', 'webp'].includes(ext)) {
-      return <FileImage className="w-5 h-5 text-pink-500" />;
+      return { label: 'IMG', tone: 'bg-pink-50 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300' };
     }
-    return <FileType className="w-5 h-5 text-zinc-500" />;
+    return { label: ext ? ext.slice(0, 4).toUpperCase() : 'FILE', tone: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300' };
   };
 
   // Metrics for overview
@@ -273,7 +265,7 @@ export function ContentManagerClient({
 
   return (
     <div className="space-y-6">
-      {/* 1. Header: Title on Left, Drive Badge on Right */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -283,8 +275,8 @@ export function ContentManagerClient({
 
         {isDriveLinked && (
           <div className="flex items-center gap-2.5 bg-white dark:bg-zinc-900 px-3.5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-xs w-fit">
-            <GoogleDriveIcon className="w-5 h-5 shrink-0" />
-            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Đã kết nối</span>
+            <FileText className="w-4 h-4 shrink-0 text-blue-600" />
+            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Kho tệp sẵn sàng</span>
           </div>
         )}
       </div>
@@ -297,7 +289,7 @@ export function ContentManagerClient({
         {/* Toolbar: Tabs on Left, Upload Button on Right */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <TabsList>
-            <TabsTrigger value="library">Kho tài liệu gốc</TabsTrigger>
+            <TabsTrigger value="library">Kho tệp</TabsTrigger>
             <TabsTrigger value="classes_overview">Tổng quan theo lớp</TabsTrigger>
           </TabsList>
 
@@ -309,11 +301,11 @@ export function ContentManagerClient({
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
           >
             <PlusCircle className="w-4 h-4 mr-2" />
-            Tải tài liệu lên
+            Tải tệp lên
           </Button>
         </div>
 
-        {/* Tab 1: Kho tài liệu gốc */}
+        {/* Tab 1: Kho tệp */}
         <TabsContent value="library" className="space-y-4 m-0">
           {/* Bulk Action Bar if items selected */}
           {selectedIds.length > 0 && (
@@ -365,7 +357,7 @@ export function ContentManagerClient({
                       </label>
                     </div>
                   )}
-                  <CardTitle className="text-lg">Tất cả tài liệu</CardTitle>
+                  <CardTitle className="text-lg">Tất cả tệp</CardTitle>
                 </div>
 
                 {materials.length > 0 && (
@@ -375,7 +367,7 @@ export function ContentManagerClient({
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Tìm kiếm tài liệu..."
+                      placeholder="Tìm kiếm tệp..."
                       className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-blue-500 w-44 sm:w-64"
                     />
                   </div>
@@ -390,7 +382,7 @@ export function ContentManagerClient({
                     <FolderPlus className="w-8 h-8 text-zinc-400" />
                   </div>
                   <p className="font-semibold text-base text-zinc-900 dark:text-zinc-100 mb-1">
-                    Kho tài liệu đang trống
+                    Kho tệp đang trống
                   </p>
                   <Button
                     variant="outline"
@@ -401,12 +393,12 @@ export function ContentManagerClient({
                     className="mt-3 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                   >
                     <PlusCircle className="w-4 h-4 mr-2 text-blue-600" />
-                    Tải lên ngay
+                    Tải tệp lên
                   </Button>
                 </div>
               ) : filteredMaterials.length === 0 ? (
                 <div className="p-8 text-center text-zinc-500">
-                  <p className="text-sm font-medium">Không tìm thấy tài liệu phù hợp.</p>
+                  <p className="text-sm font-medium">Không tìm thấy tệp phù hợp.</p>
                   <p className="text-xs text-zinc-400 mt-1">Thử tìm kiếm với từ khóa khác.</p>
                 </div>
               ) : (
@@ -429,11 +421,11 @@ export function ContentManagerClient({
                         </div>
 
                         <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 shrink-0">
-                          {getFileIcon(item.file_type, item.name)}
+                          {(() => { const badge = getFileBadge(item.file_type, item.name); return <span aria-label={`Tệp ${badge.label}`} className={`grid h-7 min-w-7 place-items-center rounded-md px-1 text-[10px] font-bold tracking-tight ${badge.tone}`}>{badge.label}</span>; })()}
                         </div>
 
                         <div className="min-w-0">
-                          {item.storage_path ? <Link href={item.storage_path} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-semibold text-zinc-900 transition hover:text-blue-600 hover:underline dark:text-zinc-100 dark:hover:text-blue-400" title="Mở tệp trên Google Drive">{item.name}</Link> : <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</p>}
+                          {item.storage_path ? <Link href={item.storage_path} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-semibold text-zinc-900 transition hover:text-blue-600 hover:underline dark:text-zinc-100 dark:hover:text-blue-400" title="Mở tệp">{item.name}</Link> : <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</p>}
                           <div className="flex items-center gap-3 text-xs text-zinc-400 mt-1">
                             <span>{formatFileSize(item.size_bytes)}</span>
                             <span>•</span>
@@ -465,7 +457,7 @@ export function ContentManagerClient({
                             })}
                           >
                             <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                            Xem trên Drive
+                            Mở tệp
                           </Link>
                         )}
 
@@ -475,7 +467,7 @@ export function ContentManagerClient({
                           disabled={deletingId === item.id}
                           onClick={() => setMaterialPendingDeletion(item)}
                           className="h-8 w-8 p-0 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
-                          title="Xóa tài liệu"
+                          title="Xóa tệp"
                         >
                           {deletingId === item.id ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -668,7 +660,7 @@ export function ContentManagerClient({
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="text-zinc-400 hover:text-blue-600 shrink-0 p-1"
-                                      title="Xem trên Drive"
+                                      title="Mở tệp"
                                     >
                                       <ExternalLink className="w-4 h-4" />
                                     </Link>
@@ -739,7 +731,7 @@ export function ContentManagerClient({
                                   </div>
 
                                   {attached?.url && (
-                                    <div className="flex shrink-0 items-center gap-1"><Link href={`/teacher/classes/${ex.class_id}/assignments/${ex.id}`} className="rounded px-2 py-1 text-[11px] font-medium text-blue-600 hover:bg-blue-50" title="Quản lý bài nộp">Bài nộp</Link><Link href={attached.url} target="_blank" rel="noopener noreferrer" className="p-1 text-zinc-400 hover:text-blue-600" title="Xem trên Drive"><ExternalLink className="h-4 w-4" /></Link></div>
+                                    <div className="flex shrink-0 items-center gap-1"><Link href={`/teacher/classes/${ex.class_id}/assignments/${ex.id}`} className="rounded px-2 py-1 text-[11px] font-medium text-blue-600 hover:bg-blue-50" title="Quản lý bài nộp">Bài nộp</Link><Link href={attached.url} target="_blank" rel="noopener noreferrer" className="p-1 text-zinc-400 hover:text-blue-600" title="Mở tệp"><ExternalLink className="h-4 w-4" /></Link></div>
                                   )}
                                 </div>
                               );
@@ -759,12 +751,12 @@ export function ContentManagerClient({
       <AlertDialog open={materialPendingDeletion !== null} onOpenChange={(open) => !open && setMaterialPendingDeletion(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa tài liệu?</AlertDialogTitle>
-            <AlertDialogDescription>Tài liệu “{materialPendingDeletion?.name}” sẽ bị xóa khỏi Mari và Google Drive. Thao tác này không thể hoàn tác.</AlertDialogDescription>
+            <AlertDialogTitle>Xóa tệp?</AlertDialogTitle>
+            <AlertDialogDescription>Tệp “{materialPendingDeletion?.name}” sẽ bị xóa khỏi kho. Thao tác này không thể hoàn tác.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deletingId !== null}>Hủy</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" disabled={!materialPendingDeletion || deletingId !== null} onClick={() => materialPendingDeletion && handleDeleteMaterial(materialPendingDeletion.id)}>{deletingId ? 'Đang xóa...' : 'Xóa tài liệu'}</AlertDialogAction>
+            <AlertDialogAction variant="destructive" disabled={!materialPendingDeletion || deletingId !== null} onClick={() => materialPendingDeletion && handleDeleteMaterial(materialPendingDeletion.id)}>{deletingId ? 'Đang xóa...' : 'Xóa tệp'}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -773,7 +765,7 @@ export function ContentManagerClient({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xóa {selectedIds.length} tệp đã chọn?</AlertDialogTitle>
-            <AlertDialogDescription>Các học liệu được chọn sẽ bị xóa khỏi Mari và Google Drive. Thao tác này không thể hoàn tác.</AlertDialogDescription>
+            <AlertDialogDescription>Các tệp được chọn sẽ bị xóa khỏi kho. Thao tác này không thể hoàn tác.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBulkDeleting}>Hủy</AlertDialogCancel>

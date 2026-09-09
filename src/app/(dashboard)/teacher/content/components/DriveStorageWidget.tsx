@@ -30,7 +30,7 @@ export function DriveStorageWidget() {
   const progressTone = storage.isExhausted ? 'bg-destructive' : storage.isNearLimit ? 'bg-amber-500' : 'bg-primary';
 
   return <section className="rounded-xl border bg-card px-5 py-4 shadow-sm">
-    <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><HardDrive className="size-5" /></span><div className="min-w-0"><h2 className="text-sm font-semibold">Dung lượng học liệu</h2><p className="mt-0.5 text-xs text-muted-foreground">{storage.limit === null ? `${formatBytes(storage.used)} đã dùng · Không giới hạn` : `Đã dùng ${formatBytes(storage.used)} / ${formatBytes(storage.limit)}`}</p></div></div>
+    <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><HardDrive className="size-5" /></span><div className="min-w-0"><h2 className="text-sm font-semibold">Dung lượng kho tệp</h2><p className="mt-0.5 text-xs text-muted-foreground">{storage.limit === null ? `${formatBytes(storage.used)} đã dùng · Không giới hạn` : `Đã dùng ${formatBytes(storage.used)} / ${formatBytes(storage.limit)}`}</p></div></div>
     {storage.limit !== null && <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-[width] ${progressTone}`} style={{ width: `${percent}%` }} /></div>}
   </section>;
 }

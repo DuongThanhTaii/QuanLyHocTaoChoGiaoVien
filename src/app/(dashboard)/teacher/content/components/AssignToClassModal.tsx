@@ -86,13 +86,13 @@ export function AssignToClassModal({
         throw new Error(data.error || 'Gán bài vào lớp thất bại');
       }
 
-      toast.success(`Đã gắn tài liệu vào ${selectedClassIds.length} lớp học thành công!`);
+      toast.success(`Đã gắn tệp vào ${selectedClassIds.length} lớp học thành công!`);
       setSelectedClassIds([]);
       onClose();
       if (onSuccess) onSuccess();
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Có lỗi xảy ra');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Có lỗi xảy ra');
     } finally {
       setIsAssigning(false);
     }
@@ -118,7 +118,7 @@ export function AssignToClassModal({
         </DialogHeader>
 
         <form onSubmit={handleAssign} className="space-y-4 pt-2">
-          {/* Phân loại tài liệu */}
+          {/* Chọn cách dùng tệp */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Giao dưới dạng

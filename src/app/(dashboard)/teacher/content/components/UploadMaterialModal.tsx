@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { GoogleDriveIcon } from '@/components/icons/GoogleDriveIcon';
 import {
   UploadCloud,
   FileText,
@@ -173,7 +172,7 @@ export function UploadMaterialModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      setErrorMessage('Vui lòng chọn hoặc kéo thả một file tài liệu.');
+      setErrorMessage('Vui lòng chọn hoặc kéo thả một tệp.');
       return;
     }
 
@@ -257,11 +256,11 @@ export function UploadMaterialModal({
         <DialogHeader className="pb-2 border-b border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900/50">
-              <GoogleDriveIcon className="w-5 h-5" />
+              <UploadCloud className="w-5 h-5" />
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Tải học liệu lên
+                Tải tệp lên
               </DialogTitle>
             </div>
           </div>
