@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword, activateCassoReconciliation, activateCassoForBankAccount, disconnectCasso, getCassoAccounts, getCassoReconciliationQueue, resolveCassoReconciliation } from './actions';
+import { updateProfile, updatePayOS, addBankAccount, deleteBankAccount, setDefaultBankAccount, changePassword, activateCassoReconciliation, activateCassoForBankAccount, disconnectCasso, getCassoAccounts, getCassoReconciliationQueue, resolveCassoReconciliation, setMariAutoCollection } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -432,6 +432,21 @@ export function AddBankAccountForm({ isTeacher }: { isTeacher: boolean }) {
       </form>
     </Card>
   );
+}
+
+export function MariAutoCollectionCard({ setting, payables }: { setting: { collection_mode?: string } | null; payables: Array<{ status: string; net_amount: number }> }) {
+  const [saving, setSaving] = useState(false);
+  const enabled = setting?.collection_mode === 'mari_auto';
+  const total = payables.filter((item) => item.status !== 'paid').reduce((sum, item) => sum + Number(item.net_amount || 0), 0);
+  const paid = payables.filter((item) => item.status === 'paid').reduce((sum, item) => sum + Number(item.net_amount || 0), 0);
+  const toggle = async () => {
+    if (enabled && !confirm('Tắt Mari thu hộ? Hóa đơn đã phát hành vẫn giữ nguyên nơi nhận tiền.')) return;
+    setSaving(true);
+    const result = await setMariAutoCollection(!enabled);
+    setSaving(false);
+    if (result?.error) toast.error(result.error); else { toast.success(!enabled ? 'Đã bật Mari thu hộ cho hóa đơn phát hành sau thời điểm này.' : 'Đã tắt Mari thu hộ.'); window.location.reload(); }
+  };
+  return <Card className={enabled ? 'border-blue-200 bg-blue-50/40' : ''}><CardHeader><CardTitle>Mari thu hộ tự động</CardTitle><CardDescription>{enabled ? 'Phụ huynh sẽ chuyển vào Mari; Mari tự gạch nợ và chi lại theo đợt 17:00 mỗi ngày.' : 'Đang tắt. Bạn tự kiểm tra và xác nhận học phí đã nhận.'}</CardDescription></CardHeader><CardContent className="grid gap-3 sm:grid-cols-3"><div><p className="text-xs text-muted-foreground">Trạng thái</p><p className="font-semibold">{enabled ? 'Đang bật' : 'Thủ công'}</p></div><div><p className="text-xs text-muted-foreground">Mari chờ chi</p><p className="font-semibold">{total.toLocaleString('vi-VN')} đ</p></div><div><p className="text-xs text-muted-foreground">Đã chi</p><p className="font-semibold">{paid.toLocaleString('vi-VN')} đ</p></div></CardContent><CardFooter><Button onClick={toggle} disabled={saving} variant={enabled ? 'outline' : 'default'}>{saving ? 'Đang lưu...' : enabled ? 'Tắt Mari thu hộ' : 'Bật Mari thu hộ'}</Button></CardFooter></Card>;
 }
 
 type CassoConnection = { status?: string; bank_account_id?: string | null; last_synced_at?: string | null; last_error?: string | null } | null;

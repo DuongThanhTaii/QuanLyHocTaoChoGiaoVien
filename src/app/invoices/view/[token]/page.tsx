@@ -66,14 +66,20 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
   const student = Array.isArray(invoice.students) ? invoice.students[0] : invoice.students;
   const classroom = Array.isArray(invoice.classes) ? invoice.classes[0] : invoice.classes;
 
-  // 2. Lấy tài khoản ngân hàng của giáo viên
-  const { data: bankAccount } = await supabaseAdmin
+  // A Mari-managed invoice keeps its collection destination snapshot forever.
+  const { data: teacherBankAccount } = await supabaseAdmin
     .from('bank_accounts')
     .select('*')
     .eq('user_id', invoice.teacher_id)
     .order('is_default', { ascending: false })
     .limit(1)
     .maybeSingle();
+  const collectionSnapshot = invoice.collection_mode === 'mari_auto' ? invoice.collection_account_snapshot : null;
+  const bankAccount = collectionSnapshot ? {
+    bank_name: collectionSnapshot.bankName,
+    account_number: collectionSnapshot.accountNumber,
+    account_name: collectionSnapshot.accountName,
+  } : teacherBankAccount;
 
   // Parse notes nếu có metadata
   let lineItems: any[] = [];

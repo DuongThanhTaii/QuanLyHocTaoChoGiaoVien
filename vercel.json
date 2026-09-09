@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/r2-submission-cleanup",
       "schedule": "20 1 * * *"
+    },
+    {
+      "path": "/api/cron/payout-drafts",
+      "schedule": "0 10 * * *"
     }
   ]
 }

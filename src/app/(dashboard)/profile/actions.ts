@@ -83,6 +83,32 @@ export async function updatePayOS(prevState: any, formData: FormData) {
   return { success: true, message: 'Lưu cấu hình PayOS thành công!' };
 }
 
+export async function setMariAutoCollection(enabled: boolean) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Vui lòng đăng nhập lại.' };
+  const { data: role } = await supabase.from('user_roles').select('role').eq('user_id', user.id).eq('is_primary', true).maybeSingle();
+  if (role?.role !== 'teacher') return { error: 'Chỉ giáo viên có thể đổi chế độ thu học phí.' };
+  const admin = getServiceClient();
+  const { data: defaultAccount } = await admin.from('bank_accounts').select('id').eq('user_id', user.id).eq('is_default', true).maybeSingle();
+  if (enabled && !defaultAccount) return { error: 'Hãy đặt một tài khoản ngân hàng mặc định trước khi bật Mari thu hộ.' };
+  if (enabled) {
+    const { data: mariAccount } = await admin.from('platform_collection_accounts').select('id').eq('is_active', true).maybeSingle();
+    if (!mariAccount) return { error: 'Mari chưa cấu hình tài khoản thu hộ. Vui lòng liên hệ quản trị viên.' };
+  }
+  const { error } = await admin.from('teacher_tuition_collection_settings').upsert({
+    teacher_id: user.id,
+    collection_mode: enabled ? 'mari_auto' : 'manual',
+    payout_bank_account_id: enabled ? defaultAccount?.id : null,
+    enabled_at: enabled ? new Date().toISOString() : null,
+    disabled_at: enabled ? null : new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'teacher_id' });
+  if (error) return { error: error.message };
+  revalidatePath('/profile');
+  return { success: true };
+}
+
 type CassoAccount = { id: string | number; accountNumber?: string; accountName?: string; bankName?: string; connectStatus?: number };
 
 async function getCurrentCassoConnection() {

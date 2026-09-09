@@ -25,6 +25,11 @@ export async function createSubmissionDownloadUrl(key: string, download = false)
   return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: key, ResponseContentDisposition: download ? 'attachment' : undefined }), { expiresIn: 60 * 10 });
 }
 
+export async function putSubmissionObject(key: string, body: Uint8Array, contentType: string) {
+  const { client, bucket } = config();
+  await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }));
+}
+
 export async function deleteSubmissionObject(key: string) {
   const { client, bucket } = config();
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));

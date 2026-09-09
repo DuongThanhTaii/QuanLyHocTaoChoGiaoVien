@@ -1,6 +1,6 @@
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { getServiceClient } from '@/lib/admin/server';
-import { BasicProfileForm, BankAccountsList, AddBankAccountForm } from './ProfileForms';
+import { BasicProfileForm, BankAccountsList, AddBankAccountForm, MariAutoCollectionCard } from './ProfileForms';
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -33,6 +33,10 @@ export default async function ProfilePage() {
     .select('status, bank_account_id, last_synced_at, last_error')
     .eq('teacher_id', user.id)
     .maybeSingle()).data : null;
+  const [{ data: collectionSetting }, { data: payables }] = isTeacher ? await Promise.all([
+    getServiceClient().from('teacher_tuition_collection_settings').select('collection_mode').eq('teacher_id', user.id).maybeSingle(),
+    getServiceClient().from('teacher_payables').select('status, net_amount').eq('teacher_id', user.id),
+  ]) : [{ data: null }, { data: [] }];
 
   return (
     <div className="space-y-8 pb-10">
@@ -51,6 +55,7 @@ export default async function ProfilePage() {
         {/* Right Column */}
         <div className="space-y-8">
           <BankAccountsList accounts={accounts || []} cassoConnection={cassoConnection} />
+          {isTeacher && <MariAutoCollectionCard setting={collectionSetting} payables={payables || []} />}
           <AddBankAccountForm isTeacher={isTeacher} />
         </div>
       </div>

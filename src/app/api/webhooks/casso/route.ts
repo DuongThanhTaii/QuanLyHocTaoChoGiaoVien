@@ -11,6 +11,41 @@ export async function POST(request: NextRequest) {
   const payload = JSON.parse(rawBody) as { error?: number; data?: CassoTransaction[] };
   const transactions = Array.isArray(payload.data) ? payload.data : [];
   const admin = getServiceClient();
+  const { data: platformConnections } = await admin.from('platform_casso_connections')
+    .select('id, webhook_secret_encrypted').eq('status', 'active');
+  const platformConnection = (platformConnections || []).find((item) => {
+    try {
+      const secret = decryptCassoSecret(item.webhook_secret_encrypted);
+      return signature === secret || verifyCassoWebhookSignature(rawBody, signature, secret);
+    } catch { return false; }
+  });
+
+  if (platformConnection) {
+    for (const transaction of transactions) {
+      const transactionId = String(transaction.id ?? transaction.tid ?? crypto.createHash('sha256').update(JSON.stringify(transaction)).digest('hex'));
+      const { error: eventError } = await admin.from('platform_casso_webhook_events').insert({ casso_transaction_id: transactionId, connection_id: platformConnection.id, payload: transaction, signature, verified: true });
+      if (eventError?.code === '23505') continue;
+      if (eventError) continue;
+      const amount = Number(transaction.amount ?? 0);
+      const description = String(transaction.description ?? '');
+      const invoiceRef = description.match(/[A-Z]{2,}[\-_]?\d{4,}/i)?.[0] ?? '';
+      const query = admin.from('invoices').select('id, teacher_id, total_amount, status, invoice_number')
+        .eq('collection_mode', 'mari_auto').in('status', ['sent', 'overdue']);
+      const { data: candidates } = invoiceRef ? await query.ilike('invoice_number', `%${invoiceRef}%`) : await query.eq('total_amount', amount);
+      const matching = (candidates ?? []).filter((invoice) => Number(invoice.total_amount) === amount && (!invoiceRef || invoice.invoice_number.toLowerCase().includes(invoiceRef.toLowerCase())));
+      if (matching.length === 1) {
+        const invoice = matching[0];
+        const now = new Date().toISOString();
+        await admin.from('invoices').update({ status: 'paid', paid_at: now, mari_collected_at: now, mari_casso_transaction_id: transactionId, paid_amount: amount, payment_method: 'bank_transfer', payment_reference: `mari-casso:${transactionId}`, updated_at: now }).eq('id', invoice.id).neq('status', 'paid');
+        await admin.from('payment_transactions').insert({ invoice_id: invoice.id, amount, method: 'bank_transfer', status: 'paid', gateway_response: { gateway: 'mari_casso', transactionId, description } });
+        await admin.from('teacher_payables').upsert({ teacher_id: invoice.teacher_id, invoice_id: invoice.id, gross_amount: amount, fee_amount: 0, net_amount: amount, status: 'available', available_at: now }, { onConflict: 'invoice_id', ignoreDuplicates: true });
+      } else {
+        await admin.from('platform_casso_webhook_events').update({ processing_error: matching.length ? 'Có nhiều hóa đơn Mari trùng khớp' : 'Không tìm thấy hóa đơn Mari khớp' }).eq('casso_transaction_id', transactionId);
+      }
+      await admin.from('platform_casso_webhook_events').update({ processed_at: new Date().toISOString() }).eq('casso_transaction_id', transactionId);
+    }
+    return NextResponse.json({ ok: true, platform: true });
+  }
   const { data: connections, error } = await admin.from('casso_connections').select('id, teacher_id, bank_account_id, webhook_secret_encrypted').eq('status', 'active');
   if (error || !connections?.length) return NextResponse.json({ ok: false, message: 'Không có kết nối Casso hoạt động.' }, { status: 401 });
 

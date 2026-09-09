@@ -5,6 +5,7 @@ import { getRepositories } from '@/infrastructure/persistence/supabase/repositor
 import { InvoiceService } from '@/application/services/invoice-generation.service';
 import { revalidatePath } from 'next/cache';
 import { PaymentMethod } from '@/domains/payment/entities/invoice';
+import { applyInvoiceCollectionSnapshot } from '@/lib/mari-collection';
 
 async function buildLearningReports(supabase: any, classId: string, month: number, year: number, studentIds: string[]) {
   const start = `${year}-${String(month).padStart(2, '0')}-01`;
@@ -204,6 +205,7 @@ export async function generateBatchInvoicesAction(params: {
   if (result.isFailure()) {
     throw new Error(result.getError().message);
   }
+  await applyInvoiceCollectionSnapshot(supabaseAdmin, user.id, result.getValue().map((invoice) => invoice.id));
 
   revalidatePath('/', 'layout');
   return { success: true, count: result.getValue().length };
@@ -273,6 +275,7 @@ export async function createCustomInvoiceAction(params: {
   if (result.isFailure()) {
     throw new Error(result.getError().message);
   }
+  await applyInvoiceCollectionSnapshot(supabaseAdmin, user.id, [result.getValue().id]);
 
   revalidatePath('/', 'layout');
   return { success: true, invoiceId: result.getValue().id };
@@ -291,6 +294,9 @@ export async function recordPaymentAction(params: {
   const { user } = await getAuthenticatedTeacher();
   const { createClient: createAdmin } = require('@supabase/supabase-js');
   const supabaseAdmin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { data: invoiceRow } = await supabaseAdmin.from('invoices').select('collection_mode, teacher_id').eq('id', params.invoiceId).maybeSingle();
+  if (!invoiceRow || invoiceRow.teacher_id !== user.id) throw new Error('Không tìm thấy hóa đơn hoặc bạn không có quyền.');
+  if (invoiceRow.collection_mode === 'mari_auto') throw new Error('Hóa đơn Mari thu hộ chỉ được xác nhận tự động qua Casso.');
   
   const { createRepositories } = await import('@/infrastructure/persistence/supabase/repositories/index');
   const adminRepos = createRepositories(supabaseAdmin);

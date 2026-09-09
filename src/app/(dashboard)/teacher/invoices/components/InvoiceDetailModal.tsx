@@ -162,7 +162,7 @@ export function InvoiceDetailModal({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              {!isPaid && (
+              {!isPaid && invoice.collection_mode !== 'mari_auto' && (
                 <Button
                   size="sm"
                   onClick={() => {
@@ -174,6 +174,7 @@ export function InvoiceDetailModal({
                   <Banknote className="w-3.5 h-3.5 mr-1.5" /> Thu tiền mặt / Chuyển khoản
                 </Button>
               )}
+              {!isPaid && invoice.collection_mode === 'mari_auto' && <span className="text-xs text-blue-700">Mari đang tự đối soát giao dịch Casso</span>}
 
               <Button
                 variant="outline"

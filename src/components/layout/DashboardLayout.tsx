@@ -91,6 +91,7 @@ const adminNav: SidebarItem[] = [
   { icon: ShieldCheckIcon, label: 'Vai trò & quyền', href: '/admin/roles' },
   { icon: TagsIcon, label: 'Gói & giá cước', href: '/admin/plans' },
   { icon: BadgeDollarSignIcon, label: 'Subscription', href: '/admin/subscriptions' },
+  { icon: BadgeDollarSignIcon, label: 'Đối soát & chi trả', href: '/admin/payouts' },
   { icon: ScrollText, label: 'Nhật ký hệ thống', href: '/admin/logs' },
 ];
 
