@@ -203,10 +203,7 @@ export function UploadMaterialModal({
       title: title.trim(), types, description: description.trim(), classIds: selectedClassIds,
       sessionTargets: Object.fromEntries(Object.entries(assignmentTargets)
       .filter(([, value]) => value && value !== 'none')
-      .map(([classId, value]) => {
-        const [targetType, id] = value.split(':');
-        return [classId, targetType === 'session' ? { sessionId: id } : { scheduleSlotId: id }];
-      })), dueDate: types.includes('ASSIGNMENT') && dueDate ? dueDate : null,
+      .map(([classId, sessionId]) => [classId, { sessionId }])), dueDate: types.includes('ASSIGNMENT') && dueDate ? dueDate : null,
     };
 
     try {
@@ -503,7 +500,8 @@ export function UploadMaterialModal({
                 const availableMonths = Array.from(new Set((scheduleTargets[classId] || []).map((target) => target.month).filter(Boolean)));
                 const activeMonth = sessionMonth || availableMonths[0];
                 const visibleTargets = (scheduleTargets[classId] || []).filter((target) => !activeMonth || target.month === activeMonth);
-                return <div key={classId} className="space-y-1.5 rounded-lg border border-blue-100 bg-white/70 p-2.5 dark:border-blue-900/50 dark:bg-zinc-900/40"><p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-100">{classroom?.name}</p><Select disabled={isUploading} value={assignmentTargets[classId] || ''} onValueChange={(value) => setAssignmentTargets((current) => ({ ...current, [classId]: value || '' }))}><SelectTrigger className="h-9 w-full bg-background text-xs"><SelectValue placeholder="Chọn ngày/buổi học" /></SelectTrigger><SelectContent>{visibleTargets.map((target) => <SelectItem key={`${target.type}:${target.id}`} value={`${target.type}:${target.id}`}>{target.label}</SelectItem>)}</SelectContent></Select></div>;
+                const selectedTarget = visibleTargets.find((target) => target.id === assignmentTargets[classId]);
+                return <div key={classId} className="space-y-1.5 rounded-lg border border-blue-100 bg-white/70 p-2.5 dark:border-blue-900/50 dark:bg-zinc-900/40"><p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-100">{classroom?.name}</p><Select disabled={isUploading} value={assignmentTargets[classId] || ''} onValueChange={(value) => setAssignmentTargets((current) => ({ ...current, [classId]: value || '' }))}><SelectTrigger className="h-9 w-full bg-background text-xs"><span className="truncate">{selectedTarget?.label || 'Chọn ngày/buổi học'}</span></SelectTrigger><SelectContent>{visibleTargets.map((target) => <SelectItem key={target.id} value={target.id}>{target.label}</SelectItem>)}</SelectContent></Select></div>;
               })}
             </div>
           )}

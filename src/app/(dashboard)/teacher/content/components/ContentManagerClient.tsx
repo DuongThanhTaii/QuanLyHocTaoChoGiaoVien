@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { GoogleDriveIcon } from '@/components/icons/GoogleDriveIcon';
 import { UploadMaterialModal, ClassOption } from './UploadMaterialModal';
 import { AssignToClassModal } from './AssignToClassModal';
 import { DriveStorageWidget } from './DriveStorageWidget';
@@ -275,8 +276,8 @@ export function ContentManagerClient({
 
         {isDriveLinked && (
           <div className="flex items-center gap-2.5 bg-white dark:bg-zinc-900 px-3.5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-xs w-fit">
-            <FileText className="w-4 h-4 shrink-0 text-blue-600" />
-            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Kho tệp sẵn sàng</span>
+            <GoogleDriveIcon className="w-5 h-5 shrink-0" />
+            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Đã kết nối đến Drive</span>
           </div>
         )}
       </div>
@@ -357,7 +358,6 @@ export function ContentManagerClient({
                       </label>
                     </div>
                   )}
-                  <CardTitle className="text-lg">Tất cả tệp</CardTitle>
                 </div>
 
                 {materials.length > 0 && (
