@@ -228,6 +228,7 @@ export default function DashboardLayout({
   const navItems = userRole === 'teacher' ? teacherNav : userRole === 'parent' ? parentNav : userRole === 'student' ? studentNav : userRole === 'admin' ? adminNav : [];
   const mobileNavItems = navItems.slice(0, 4);
   const pathname = usePathname();
+  const [activeClassName, setActiveClassName] = useState<string | null>(null);
 
   const { setTheme } = useTheme();
   const { setThemeColor } = useThemeColor();
@@ -247,6 +248,27 @@ export default function DashboardLayout({
       videoRef.current.play().catch(() => {});
     }
   }, [isCollapsed]);
+
+  useEffect(() => {
+    const match = userRole === 'teacher' ? pathname.match(/^\/teacher\/classes\/([0-9a-f-]{36})(?:\/|$)/i) : null;
+    if (!match) {
+      setActiveClassName(null);
+      return;
+    }
+
+    let cancelled = false;
+    setActiveClassName(null);
+    const loadClassName = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data } = await supabase.from('classes').select('name').eq('id', match[1]).maybeSingle();
+      if (!cancelled) setActiveClassName(data?.name || null);
+    };
+    void loadClassName();
+    return () => { cancelled = true; };
+  }, [pathname, userRole]);
 
   const [unreadChatCount, setUnreadChatCount] = useState<number>(0);
 
@@ -441,7 +463,7 @@ export default function DashboardLayout({
               <img src="/images/empty_states/logo_text.webp?v=20260904" alt="Mari" className="h-10 w-[140px] object-contain object-left" />
             </div>
             <h2 className="text-foreground font-medium text-lg hidden sm:block">
-              {greeting}, <span className="font-semibold text-primary">{displayName}</span>
+              {activeClassName ? <span className="font-semibold text-primary">{activeClassName}</span> : <>{greeting}, <span className="font-semibold text-primary">{displayName}</span></>}
             </h2>
           </div>
 

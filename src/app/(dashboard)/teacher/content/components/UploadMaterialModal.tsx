@@ -63,9 +63,11 @@ export function UploadMaterialModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
-  const [title, setTitle] = useState('');
-  const [types, setTypes] = useState<Array<'LECTURE' | 'ASSIGNMENT'>>(['LECTURE']);
-  const [description, setDescription] = useState('');
+  const [contentType, setContentType] = useState<'LECTURE' | 'ASSIGNMENT'>(initialType);
+  const [lectureTitle, setLectureTitle] = useState('');
+  const [lectureDescription, setLectureDescription] = useState('');
+  const [assignmentTitle, setAssignmentTitle] = useState('');
+  const [assignmentDescription, setAssignmentDescription] = useState('');
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
@@ -84,14 +86,16 @@ export function UploadMaterialModal({
   }, [preSelectedClassId, classes]);
 
   useEffect(() => {
-    if (isOpen) setTypes([initialType]);
+    if (isOpen) setContentType(initialType);
   }, [isOpen, initialType]);
 
   const resetForm = () => {
     setFile(null);
-    setTitle('');
-    setTypes([initialType]);
-    setDescription('');
+    setLectureTitle('');
+    setLectureDescription('');
+    setAssignmentTitle('');
+    setAssignmentDescription('');
+    setContentType(initialType);
     setDueDate('');
     if (preSelectedClassId) {
       setSelectedClassIds([preSelectedClassId]);
@@ -117,9 +121,12 @@ export function UploadMaterialModal({
     setFile(selectedFile);
     setErrorMessage(null);
 
-    if (!title || title.trim() === '') {
-      const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '');
-      setTitle(nameWithoutExt);
+    const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '');
+    if (contentType === 'LECTURE' && !lectureTitle.trim()) {
+      setLectureTitle(nameWithoutExt);
+    }
+    if (contentType === 'ASSIGNMENT' && !assignmentTitle.trim()) {
+      setAssignmentTitle(nameWithoutExt);
     }
   };
 
@@ -176,13 +183,10 @@ export function UploadMaterialModal({
       return;
     }
 
+    const title = contentType === 'LECTURE' ? lectureTitle : assignmentTitle;
+    const description = contentType === 'LECTURE' ? lectureDescription : assignmentDescription;
     if (!title.trim()) {
-      setErrorMessage('Vui lòng nhập tên bài giảng / bài tập.');
-      return;
-    }
-
-    if (!types.length) {
-      setErrorMessage('Hãy chọn bài giảng, bài tập hoặc cả hai.');
+      setErrorMessage(contentType === 'LECTURE' ? 'Vui lòng nhập tiêu đề bài giảng.' : 'Vui lòng nhập tên bài tập.');
       return;
     }
 
@@ -200,10 +204,10 @@ export function UploadMaterialModal({
     setErrorMessage(null);
 
     const payload = {
-      title: title.trim(), types, description: description.trim(), classIds: selectedClassIds,
+      title: title.trim(), type: contentType, description: description.trim(), classIds: selectedClassIds,
       sessionTargets: Object.fromEntries(Object.entries(assignmentTargets)
       .filter(([, value]) => value && value !== 'none')
-      .map(([classId, sessionId]) => [classId, { sessionId }])), dueDate: types.includes('ASSIGNMENT') && dueDate ? dueDate : null,
+      .map(([classId, sessionId]) => [classId, { sessionId }])), dueDate: contentType === 'ASSIGNMENT' && dueDate ? dueDate : null,
     };
 
     try {
@@ -224,11 +228,9 @@ export function UploadMaterialModal({
       setUploadProgress(100);
 
       toast.success(
-        types.length === 2
-          ? `Đã đăng bài giảng và giao bài tập cho ${selectedClassIds.length} lớp học!`
-          : types[0] === 'LECTURE'
-            ? `Đã đăng bài giảng cho ${selectedClassIds.length} lớp học thành công!`
-            : `Đã giao bài tập cho ${selectedClassIds.length} lớp học thành công!`
+        contentType === 'LECTURE'
+          ? `Đã đăng bài giảng cho ${selectedClassIds.length} lớp học thành công!`
+          : `Đã giao bài tập cho ${selectedClassIds.length} lớp học thành công!`
       );
       resetForm();
       onClose();
@@ -336,7 +338,7 @@ export function UploadMaterialModal({
             </div>
           )}
 
-          {/* Nội dung được tạo từ tệp này. Có thể đăng cả hai cho cùng một buổi. */}
+          {/* Mỗi lượt đăng chỉ tạo một loại nội dung, để tiêu đề và mô tả không bị dùng lẫn. */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Nội dung muốn đăng <span className="text-red-500">*</span>
@@ -344,9 +346,9 @@ export function UploadMaterialModal({
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setTypes((current) => current.includes('LECTURE') ? current.filter((item) => item !== 'LECTURE') : [...current, 'LECTURE'])}
+                onClick={() => setContentType('LECTURE')}
                 className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border text-sm font-medium transition-all ${
-                  types.includes('LECTURE')
+                  contentType === 'LECTURE'
                     ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 ring-2 ring-blue-600/20'
                     : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
                 }`}
@@ -357,9 +359,9 @@ export function UploadMaterialModal({
 
               <button
                 type="button"
-                onClick={() => setTypes((current) => current.includes('ASSIGNMENT') ? current.filter((item) => item !== 'ASSIGNMENT') : [...current, 'ASSIGNMENT'])}
+                onClick={() => setContentType('ASSIGNMENT')}
                 className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border text-sm font-medium transition-all ${
-                  types.includes('ASSIGNMENT')
+                  contentType === 'ASSIGNMENT'
                     ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 ring-2 ring-amber-500/20'
                     : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
                 }`}
@@ -442,7 +444,7 @@ export function UploadMaterialModal({
           </div>
 
           {/* Hạn nộp bài */}
-          {types.includes('ASSIGNMENT') && (
+          {contentType === 'ASSIGNMENT' && (
             <div className="space-y-2 p-3 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-200/80 dark:border-amber-900/40">
               <div className="flex items-center justify-between">
                 <Label
@@ -509,13 +511,13 @@ export function UploadMaterialModal({
           {/* Title Input */}
           <div className="space-y-1.5">
             <Label htmlFor="material-title" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Tiêu đề nội dung <span className="text-red-500">*</span>
+              {contentType === 'LECTURE' ? 'Tiêu đề bài giảng' : 'Tên bài tập'} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="material-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="VD: Bài tập Tuần 1 - Phân loại dữ liệu"
+              value={contentType === 'LECTURE' ? lectureTitle : assignmentTitle}
+              onChange={(e) => contentType === 'LECTURE' ? setLectureTitle(e.target.value) : setAssignmentTitle(e.target.value)}
+              placeholder={contentType === 'LECTURE' ? 'VD: Phân loại dữ liệu — Buổi 1' : 'VD: Bài tập Tuần 1 — Phân loại dữ liệu'}
               required
               disabled={isUploading}
               className="bg-white dark:bg-zinc-900 text-sm"
@@ -525,13 +527,13 @@ export function UploadMaterialModal({
           {/* Description Input */}
           <div className="space-y-1.5">
             <Label htmlFor="material-desc" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Mô tả / Ghi chú <span className="text-zinc-400 font-normal">(không bắt buộc)</span>
+              {contentType === 'LECTURE' ? 'Mô tả bài giảng' : 'Yêu cầu bài tập'} <span className="text-zinc-400 font-normal">(không bắt buộc)</span>
             </Label>
             <Textarea
               id="material-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ghi chú thêm về yêu cầu hoàn thành..."
+              value={contentType === 'LECTURE' ? lectureDescription : assignmentDescription}
+              onChange={(e) => contentType === 'LECTURE' ? setLectureDescription(e.target.value) : setAssignmentDescription(e.target.value)}
+              placeholder={contentType === 'LECTURE' ? 'Tóm tắt kiến thức, hướng dẫn xem tài liệu...' : 'Nêu yêu cầu, cách nộp và tiêu chí hoàn thành...'}
               rows={2}
               disabled={isUploading}
               className="bg-white dark:bg-zinc-900 text-sm resize-none"
@@ -560,7 +562,7 @@ export function UploadMaterialModal({
               ) : (
                 <>
                   <UploadCloud className="w-4 h-4 mr-2" />
-                  Tải lên ngay
+                  {contentType === 'LECTURE' ? 'Đăng bài giảng' : 'Giao bài tập'}
                 </>
               )}
             </Button>

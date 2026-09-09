@@ -1,6 +1,6 @@
 import { createClient } from "@/infrastructure/auth/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Calendar, Banknote, BookOpenCheck } from "lucide-react";
+import { Users, Calendar, Banknote, BookOpenCheck, MapPin, Video } from "lucide-react";
 import { ClassFeedList, FeedItem } from "./components/ClassFeedList";
 
 export default async function ClassOverviewPage({
@@ -19,6 +19,12 @@ export default async function ClassOverviewPage({
 
   const todayStr = new Date().toISOString().split("T")[0];
   const now = new Date();
+
+  const { data: classroom } = await supabaseAdmin
+    .from("classes")
+    .select("name, subject, description, location, online_meeting_url, fee_per_session, fee_type")
+    .eq("id", id)
+    .maybeSingle();
 
   // 1. Thống kê học sinh Active
   const { data: enrollments } = await supabaseAdmin
@@ -195,6 +201,35 @@ export default async function ClassOverviewPage({
 
   return (
     <div className="space-y-6">
+      <Card className="overflow-hidden rounded-xl border border-zinc-200/80 bg-card shadow-xs dark:border-zinc-800">
+        <CardHeader className="border-b border-zinc-100 pb-4 dark:border-zinc-800">
+          <CardTitle className="text-base">Thông tin lớp học</CardTitle>
+          <p className="text-sm text-zinc-500">Các thông tin thiết lập cho lớp {classroom?.name || 'học này'}.</p>
+        </CardHeader>
+        <CardContent className="grid gap-5 pt-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-zinc-500">Môn học</p>
+            <p className="font-medium text-zinc-900 dark:text-zinc-100">{classroom?.subject || 'Chưa cập nhật'}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-zinc-500">Học phí</p>
+            <p className="font-medium text-zinc-900 dark:text-zinc-100">{Number(classroom?.fee_per_session || 0) > 0 ? `${Number(classroom?.fee_per_session).toLocaleString('vi-VN')} đ/${({ per_session: 'buổi', per_month: 'tháng', per_course: 'khóa' } as Record<string, string>)[classroom?.fee_type || 'per_session']}` : 'Miễn phí'}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="flex items-center gap-1 text-xs font-medium text-zinc-500"><MapPin className="size-3.5" />Địa điểm học</p>
+            <p className="font-medium text-zinc-900 dark:text-zinc-100">{classroom?.location || 'Chưa cập nhật'}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="flex items-center gap-1 text-xs font-medium text-zinc-500"><Video className="size-3.5" />Học trực tuyến</p>
+            {classroom?.online_meeting_url ? <a href={classroom.online_meeting_url} target="_blank" rel="noreferrer" className="inline-flex font-medium text-blue-600 hover:underline">Mở phòng học</a> : <p className="font-medium text-zinc-900 dark:text-zinc-100">Chưa có liên kết</p>}
+          </div>
+          <div className="space-y-1 sm:col-span-2 lg:col-span-4">
+            <p className="text-xs font-medium text-zinc-500">Mô tả lớp học</p>
+            <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-700 dark:text-zinc-300">{classroom?.description || 'Chưa có mô tả cho lớp học này.'}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 4 Thẻ Thống kê */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Thẻ 1: Học sinh */}
