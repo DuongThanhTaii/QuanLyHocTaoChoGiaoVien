@@ -27,11 +27,11 @@ export function InvoiceReportTabs({ invoice, report }: { invoice: ReactNode; rep
         body { background: white !important; }
       }
     `}</style>
-    <div className="public-tabs sticky top-0 z-10 flex items-center gap-1 rounded-xl border border-blue-100 bg-white/95 p-1 shadow-sm backdrop-blur print:hidden">
+    <div className="public-tabs sticky top-0 z-10 mx-auto flex max-w-2xl items-center gap-1 rounded-xl border border-blue-100 bg-white/95 p-1 shadow-sm backdrop-blur print:hidden">
       <button className={`min-h-11 flex-1 whitespace-nowrap rounded-lg px-3 text-sm font-semibold ${tab === 'invoice' ? 'bg-orange-500 text-white shadow-sm' : 'text-zinc-600'}`} onClick={() => setTab('invoice')}>Hóa đơn</button>
       <button className={`min-h-11 flex-1 whitespace-nowrap rounded-lg px-3 text-sm font-semibold ${tab === 'report' ? 'bg-blue-600 text-white shadow-sm' : 'text-zinc-600'}`} onClick={() => setTab('report')}>Báo cáo học tập</button>
     </div>
-    <div className="print-actions flex flex-wrap justify-end gap-2 print:hidden">
+    <div className="print-actions mx-auto flex max-w-2xl flex-wrap justify-end gap-2 print:hidden">
       <Button variant="outline" size="sm" onClick={() => print('invoice')}><Printer className="mr-1.5 h-4 w-4" />In hóa đơn</Button>
       <Button variant="outline" size="sm" onClick={() => print('report')}><Printer className="mr-1.5 h-4 w-4" />In báo cáo</Button>
       <Button size="sm" onClick={() => print('both')}><Printer className="mr-1.5 h-4 w-4" />In cả hai</Button>

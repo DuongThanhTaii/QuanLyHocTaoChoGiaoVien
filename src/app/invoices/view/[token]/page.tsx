@@ -182,7 +182,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
         
         {/* Banner trạng thái */}
         {isPaid && (
-          <div className="bg-emerald-500 text-white p-4 rounded-2xl shadow-md flex items-center gap-3">
+          <div className="mx-auto max-w-2xl bg-emerald-500 text-white p-4 rounded-2xl shadow-md flex items-center gap-3">
             <CheckCircle2 className="w-8 h-8 flex-shrink-0" />
             <div>
               <h3 className="font-bold">Hóa đơn đã được thanh toán</h3>
@@ -398,7 +398,7 @@ export default async function PublicInvoiceViewPage({ params }: Props) {
           ) : <Card className="border-0 shadow-lg bg-white rounded-3xl"><CardContent className="p-8 text-center text-sm text-zinc-500">Chưa có báo cáo học tập cho hóa đơn này.</CardContent></Card>}
         />
 
-        <div className="text-center text-xs text-zinc-400">
+        <div className="mx-auto max-w-2xl text-center text-xs text-zinc-400">
           Nền tảng Quản lý Lớp học & Học phí Thông minh • Mari
         </div>
 
