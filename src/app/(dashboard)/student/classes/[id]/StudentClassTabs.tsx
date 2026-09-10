@@ -10,9 +10,9 @@ export function StudentClassTabs({ classId }: { classId: string }) {
     ['', 'Tổng quan'],
     ['students', 'Học sinh'],
     ['schedule', 'Lịch học'],
+    ['lessons', 'Bài giảng'],
     ['attendance', 'Điểm danh'],
     ['evaluations', 'Đánh giá'],
-    ['lessons', 'Bài giảng']
   ];
 
   return (

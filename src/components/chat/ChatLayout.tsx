@@ -190,7 +190,7 @@ export function ChatLayout({
     <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex h-[calc(100vh-10rem)] min-h-[550px]">
       {/* Cột 1: Sidebar danh sách cuộc trò chuyện */}
       <div
-        className={`w-full md:w-80 lg:w-96 shrink-0 h-full ${
+        className={`w-full md:w-80 lg:w-82 shrink-0 h-full ${
           activeConversationId ? 'hidden md:flex' : 'flex'
         }`}
       >

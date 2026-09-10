@@ -9,6 +9,7 @@ import { GoogleDriveIcon } from '@/components/icons/GoogleDriveIcon';
 import { UploadMaterialModal, ClassOption } from './UploadMaterialModal';
 import { AssignToClassModal } from './AssignToClassModal';
 import { DriveStorageWidget } from './DriveStorageWidget';
+import { FileTypeIcon } from './FileTypeIcon';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
@@ -222,34 +223,6 @@ export function ContentManagerClient({
     return new Date(dueDateStr).getTime() < Date.now();
   };
 
-  const getFileBadge = (mimeType?: string | null, title?: string) => {
-    const mime = (mimeType || '').toLowerCase();
-    const ext = (title || '').split('.').pop()?.toLowerCase() || '';
-
-    if (mime.includes('pdf') || ext === 'pdf') {
-      return { label: 'PDF', tone: 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300' };
-    }
-    if (mime.includes('video') || ['mp4', 'mov', 'avi', 'mkv'].includes(ext)) {
-      return { label: 'VID', tone: 'bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300' };
-    }
-    if (mime.includes('word') || ['doc', 'docx'].includes(ext)) {
-      return { label: 'W', tone: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' };
-    }
-    if (mime.includes('sheet') || ['xls', 'xlsx', 'csv'].includes(ext)) {
-      return { label: 'X', tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' };
-    }
-    if (mime.includes('presentation') || ['ppt', 'pptx'].includes(ext)) {
-      return { label: 'P', tone: 'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300' };
-    }
-    if (mime.includes('zip') || ['zip', 'rar', '7z', 'tar'].includes(ext)) {
-      return { label: 'ZIP', tone: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' };
-    }
-    if (mime.includes('image') || ['png', 'jpg', 'jpeg', 'webp'].includes(ext)) {
-      return { label: 'IMG', tone: 'bg-pink-50 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300' };
-    }
-    return { label: ext ? ext.slice(0, 4).toUpperCase() : 'FILE', tone: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300' };
-  };
-
   // Metrics for overview
   const totalLessons = lessons.length;
   const totalExercises = exercises.length;
@@ -275,15 +248,13 @@ export function ContentManagerClient({
         </div>
 
         {isDriveLinked && (
-          <div className="flex items-center gap-2.5 bg-white dark:bg-zinc-900 px-3.5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-xs w-fit">
+          <div className="flex max-w-full flex-wrap items-center gap-2.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
             <GoogleDriveIcon className="w-5 h-5 shrink-0" />
             <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Đã kết nối đến Drive</span>
+            <DriveStorageWidget />
           </div>
         )}
       </div>
-
-      {/* Storage Quota Widget */}
-      {isDriveLinked && <DriveStorageWidget />}
 
       {/* 2. Main Content Tabs & Toolbar */}
       <Tabs defaultValue="library" className="w-full">
@@ -420,9 +391,7 @@ export function ContentManagerClient({
                           />
                         </div>
 
-                        <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 shrink-0">
-                          {(() => { const badge = getFileBadge(item.file_type, item.name); return <span aria-label={`Tệp ${badge.label}`} className={`grid h-7 min-w-7 place-items-center rounded-md px-1 text-[10px] font-bold tracking-tight ${badge.tone}`}>{badge.label}</span>; })()}
-                        </div>
+                        <div className="shrink-0 rounded-xl border border-zinc-200/60 bg-zinc-100 p-2 dark:border-zinc-700/60 dark:bg-zinc-800/80"><FileTypeIcon fileType={item.file_type} name={item.name} /></div>
 
                         <div className="min-w-0">
                           {item.storage_path ? <Link href={item.storage_path} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-semibold text-zinc-900 transition hover:text-blue-600 hover:underline dark:text-zinc-100 dark:hover:text-blue-400" title="Mở tệp">{item.name}</Link> : <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</p>}

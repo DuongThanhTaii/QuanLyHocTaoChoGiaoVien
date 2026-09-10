@@ -5,7 +5,7 @@ export function ChatSkeleton() {
   return (
     <Card className="border-border/60 shadow-xs overflow-hidden flex h-[calc(100vh-10rem)] min-h-[550px] bg-card">
       {/* Cột trái: Danh sách hội thoại */}
-      <div className="w-full md:w-80 lg:w-96 shrink-0 h-full border-r border-border/60 flex flex-col">
+      <div className="w-full md:w-80 lg:w-82 shrink-0 h-full border-r border-border/60 flex flex-col">
         {/* Header & Search */}
         <div className="p-3 border-b border-border/60 space-y-3">
           <div className="flex items-center justify-between">
