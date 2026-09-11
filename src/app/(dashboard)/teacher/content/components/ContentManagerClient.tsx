@@ -10,6 +10,7 @@ import { UploadMaterialModal, ClassOption } from './UploadMaterialModal';
 import { AssignToClassModal } from './AssignToClassModal';
 import { DriveStorageWidget } from './DriveStorageWidget';
 import { FileTypeIcon } from './FileTypeIcon';
+import { GoogleDrivePickerButton } from './GoogleDrivePickerButton';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
@@ -265,16 +266,19 @@ export function ContentManagerClient({
             <TabsTrigger value="classes_overview">Tổng quan theo lớp</TabsTrigger>
           </TabsList>
 
-          <Button
-            onClick={() => {
-              setPreSelectedClassForUpload(undefined);
-              setIsUploadOpen(true);
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-          >
-            <PlusCircle className="w-4 h-4 mr-2" />
-            Tải tệp lên
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <GoogleDrivePickerButton onImported={(file) => { setAssigningMaterial({ ...file, created_at: new Date().toISOString() }); toast.success('Đã chọn tệp Drive. Hãy chọn lớp để giao.'); }} />
+            <Button
+              onClick={() => {
+                setPreSelectedClassForUpload(undefined);
+                setIsUploadOpen(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Tải tệp lên
+            </Button>
+          </div>
         </div>
 
         {/* Tab 1: Kho tệp */}
@@ -391,7 +395,7 @@ export function ContentManagerClient({
                           />
                         </div>
 
-                        <div className="shrink-0 rounded-xl border border-zinc-200/60 bg-zinc-100 p-2 dark:border-zinc-700/60 dark:bg-zinc-800/80"><FileTypeIcon fileType={item.file_type} name={item.name} /></div>
+                        <FileTypeIcon fileType={item.file_type} name={item.name} className="shrink-0" />
 
                         <div className="min-w-0">
                           {item.storage_path ? <Link href={item.storage_path} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-semibold text-zinc-900 transition hover:text-blue-600 hover:underline dark:text-zinc-100 dark:hover:text-blue-400" title="Mở tệp">{item.name}</Link> : <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</p>}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/infrastructure/auth/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { getGoogleAccessToken } from '@/lib/google-drive/server';
 
 export const runtime = 'nodejs';
 
@@ -45,54 +46,9 @@ export async function POST(req: NextRequest) {
       if (error) throw new Error(error.message);
     };
 
-    const { data: profile, error: profileError } = await admin
-      .from('profiles')
-      .select('google_refresh_token')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || !profile?.google_refresh_token) {
-      return NextResponse.json(
-        { error: 'Tài khoản chưa được liên kết với Google Drive. Vui lòng kết nối trước khi tải tài liệu.' },
-        { status: 400 }
-      );
-    }
-
-    // 3. Exchange refresh token for fresh access token
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) {
-      return NextResponse.json(
-        { error: 'Thiếu cấu hình Google OAuth trong hệ thống' },
-        { status: 500 }
-      );
-    }
-
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: profile.google_refresh_token,
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    const tokens = await tokenResponse.json();
-
-    if (!tokenResponse.ok || !tokens.access_token) {
-      console.error('Lỗi làm mới token Google:', tokens);
-      return NextResponse.json(
-        { error: 'Không thể xác thực với Google Drive. Vui lòng kết nối lại tài khoản.' },
-        { status: 401 }
-      );
-    }
-
-    const accessToken = tokens.access_token;
+    let accessToken: string;
+    try { accessToken = await getGoogleAccessToken(admin, user.id); }
+    catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : 'Không thể xác thực Google Drive.' }, { status: 401 }); }
     const hocLieuFolderId = await ensureMariHocLieuFolder(accessToken);
 
     // 4. Parse form data

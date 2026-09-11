@@ -36,11 +36,11 @@ export default async function TeacherContentPage({
     // 1. Check Google Drive connection
     const { data: profile } = await admin
       .from('profiles')
-      .select('google_refresh_token')
+      .select('google_refresh_token, google_refresh_token_encrypted')
       .eq('id', user.id)
       .single();
 
-    if (profile?.google_refresh_token) {
+    if (profile?.google_refresh_token || profile?.google_refresh_token_encrypted) {
       isDriveLinked = true;
     }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/infrastructure/auth/supabase/server';
+import { encryptGoogleToken } from '@/lib/google-drive/server';
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -70,7 +71,7 @@ export async function GET(req: NextRequest) {
     if (refresh_token) {
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ google_refresh_token: refresh_token })
+        .update({ google_refresh_token_encrypted: encryptGoogleToken(refresh_token), google_drive_connected_at: new Date().toISOString() })
         .eq('id', user.id);
         
       if (updateError) {

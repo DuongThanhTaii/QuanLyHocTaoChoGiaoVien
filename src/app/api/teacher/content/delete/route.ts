@@ -25,38 +25,7 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // 1. Get Google access token to delete files from Drive
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('google_refresh_token')
-      .eq('id', user.id)
-      .single();
-
-    let accessToken: string | null = null;
-    if (profile?.google_refresh_token) {
-      const clientId = process.env.GOOGLE_CLIENT_ID;
-      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
-      try {
-        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: clientId!,
-            client_secret: clientSecret!,
-            refresh_token: profile.google_refresh_token,
-            grant_type: 'refresh_token',
-          }),
-        });
-
-        const tokens = await tokenResponse.json();
-        accessToken = tokens.access_token || null;
-      } catch (tokenErr) {
-        console.warn('Lỗi lấy access token xóa file Drive:', tokenErr);
-      }
-    }
-
-    // 2. Fetch materials to get Drive file IDs and verify ownership
+    // Fetch the Mari links to remove. Source files are intentionally left on Drive.
     const { data: materials } = await admin
       .from('materials')
       .select('id, storage_path, lesson_id, class_id')
@@ -74,23 +43,7 @@ export async function POST(req: NextRequest) {
       ).map((exercise: any) => exercise.id);
       if (exerciseIds.length) await admin.from('exercises').delete().in('id', exerciseIds);
       // Extract Google Drive file ID from storage_path (e.g., https://drive.google.com/file/d/FILE_ID/view)
-      let driveFileId: string | null = null;
-      const match = mat.storage_path?.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-      if (match) {
-        driveFileId = match[1];
-      }
-
-      // Delete from Google Drive if access token and file ID exist
-      if (accessToken && driveFileId) {
-        try {
-          await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
-        } catch (driveErr) {
-          console.warn(`Lỗi xóa file ${driveFileId} trên Drive:`, driveErr);
-        }
-      }
+      // Never delete the teacher's source Drive file. Mari only removes its lesson/material link.
 
       // If attached to a lesson, also clean up lesson if desired
       if (mat.lesson_id) {
