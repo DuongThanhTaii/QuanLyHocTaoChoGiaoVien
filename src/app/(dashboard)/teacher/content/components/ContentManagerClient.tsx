@@ -11,6 +11,7 @@ import { AssignToClassModal } from './AssignToClassModal';
 import { DriveStorageWidget } from './DriveStorageWidget';
 import { FileTypeIcon } from './FileTypeIcon';
 import { GoogleDrivePickerButton } from './GoogleDrivePickerButton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
@@ -37,6 +38,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -249,11 +251,29 @@ export function ContentManagerClient({
         </div>
 
         {isDriveLinked && (
-          <div className="flex max-w-full flex-wrap items-center gap-2.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-            <GoogleDriveIcon className="w-5 h-5 shrink-0" />
-            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Đã kết nối đến Drive</span>
-            <DriveStorageWidget />
-          </div>
+          <Popover>
+            <PopoverTrigger
+              className="flex max-w-full cursor-pointer flex-wrap items-center gap-2.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-left shadow-xs transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+              aria-label="Quản lý kết nối Google Drive"
+            >
+              <GoogleDriveIcon className="size-5 shrink-0" />
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Đã kết nối đến Drive</span>
+              <DriveStorageWidget />
+            </PopoverTrigger>
+            <PopoverContent align="end" sideOffset={8} className="w-64 space-y-3 p-3">
+              <div>
+                <p className="text-sm font-semibold">Google Drive</p>
+                <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">Kết nối lại khi bạn đổi tài khoản Google hoặc quyền truy cập đã hết hạn.</p>
+              </div>
+              <Link
+                href="/api/auth/google"
+                className="inline-flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-blue-600 px-3 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+              >
+                <RefreshCw className="size-4" />
+                Kết nối lại Drive
+              </Link>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
 

@@ -15,7 +15,11 @@ export default async function TeacherContentPage({
 }) {
   const params = await searchParams;
   const successMessage = params.success === 'drive_linked' ? 'Kết nối Google Drive thành công!' : null;
-  const errorMessage = params.error ? 'Kết nối thất bại hoặc token đã hết hạn. Vui lòng thử lại.' : null;
+  const errorMessage = params.error === 'db_update_failed'
+    ? 'Không thể lưu kết nối Drive. Hãy kiểm tra migration Supabase và GOOGLE_TOKEN_ENCRYPTION_KEY trên Vercel.'
+    : params.error
+      ? 'Kết nối thất bại hoặc token đã hết hạn. Vui lòng thử lại.'
+      : null;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
